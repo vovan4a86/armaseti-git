@@ -1,0 +1,13 @@
+{
+    "name": "fanky/admin",
+    "description": "contant manager sistem",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Oleg Kuznetsov",
+            "email": "oleg@klee.ru"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {}
+}

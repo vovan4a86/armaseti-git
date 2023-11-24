@@ -1,0 +1,1 @@
+<textarea class="form-control" rows="4" name="{{ $name ?? 'setting['.$setting->id.']' }}" placeholder="{{ $placeholder ?? '' }}">{{ $value ?? $setting->value }}</textarea>

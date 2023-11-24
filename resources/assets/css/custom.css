@@ -1,0 +1,71 @@
+.breadcrumbs__list {
+    flex-wrap: wrap;
+}
+
+.autocomplete-suggestions {
+    cursor: pointer;
+    width: 100%;
+    max-height: unset!important;
+    padding: 5px 5px 5px 60px;
+    background: rgba(255, 255, 255, 1);
+    border: 1px solid var(--silver);
+    -webkit-backdrop-filter: blur(3px);
+    backdrop-filter: blur(3px);
+    border-radius: 4px;
+    font-weight: 400;
+    font-size: calc(14px + 0.1041666667vw);
+    line-height: 1.5;
+    letter-spacing: 0.04em;
+    color: #313030;
+    -webkit-transition: var(--transition);
+    -o-transition: var(--transition);
+    transition: var(--transition);
+    outline: 1px solid transparent;
+}
+.autocomplete-suggestion {}
+
+.adminedit {
+    position: fixed;
+    top: 210px;
+    right: 0;
+    padding: 3px 10px 5px;
+    background: rgba(255,0,0,0.7);
+    z-index: 100;
+    font-size: 14px;
+    line-height: 1.3;
+    overflow: hidden;
+    padding-left: 25px;
+    transition: transform 0.3s;
+}
+
+.adminedit.is-shifted {
+    -ms-transform: translateX(calc(100% - 20px));
+    transform: translateX(calc(100% - 20px));
+}
+
+.adminedit__ico {
+    background: #8b0000;
+    width: 30px;
+    height: 30px;
+    position: absolute;
+    top: 50%;
+    margin-top: -15px;
+    left: -19px;
+    -ms-transform: rotate(-45deg);
+    transform: rotate(-45deg);
+    cursor: pointer;
+}
+
+.adminedit__ico:hover {
+    -ms-transform: rotate(-45deg) scale(1.1);
+    transform: rotate(-45deg) scale(1.1);
+}
+
+.adminedit__name {
+    color: #fff !important;
+    text-decoration: none;
+}
+
+.adminedit__name:hover {
+    text-decoration: underline;
+}

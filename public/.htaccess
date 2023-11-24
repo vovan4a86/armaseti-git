@@ -1,0 +1,42 @@
+<IfModule mod_rewrite.c>
+
+    RewriteEngine On
+
+    RewriteCond %{HTTP_HOST} ^www.begriff.ru$
+    RewriteRule ^(.*)$ http://begriff.ru/$1 [R=301,L]
+#
+#    RewriteCond %{HTTPS} =off
+#    RewriteRule (.*) https://2gas.ru%{REQUEST_URI} [R=301,QSA,L]
+
+	RewriteCond %{THE_REQUEST} ^[A-Z]{3,9}\ /index\.php
+	RewriteRule ^index\.php$ / [L,R=301]
+
+	RewriteCond %{THE_REQUEST} ^[A-Z]{3,9}\ /([^/]+/)*index\.php/([^\ ]*)\ HTTP/
+	RewriteRule ^index\.php(.*)$ $1$2 [R=301,L]
+
+    #redirect if multi slashes
+	RewriteCond %{REQUEST_URI} ^(.*[^/])/{2,}(.*)$
+    RewriteRule . %1/%2 [R=301,L]
+    RewriteCond %{THE_REQUEST} \s/{2,}(.*)\s
+    RewriteRule .* /%1 [R=301,L]
+
+	# Redirect Trailing Slashes...
+    RewriteRule ^(.*)/$ /$1 [L,R=301]
+
+
+
+    # Handle Front Controller...
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteRule ^ index.php [L]
+</IfModule>
+
+# Cache
+<FilesMatch ".(flv|gif|jpg|jpeg|png|ico|swf|js|css|pdf|eot|ttf|woff|svg)$">
+  Header set Cache-Control "max-age=604800"
+</FilesMatch>
+
+# сжатие text, html, javascript, css, xml:
+<ifModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE image/svg+xml text/html text/plain text/xml application/xml application/xhtml+xml text/css text/javascript application/javascript application/x-javascript
+</ifModule>

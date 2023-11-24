@@ -1,0 +1,2 @@
+<textarea id="{{ $id ?? 'editor_'.$setting->id }}" name="{{ $name ?? 'setting['.$setting->id.']' }}" rows="10" cols="80">{{ $value ?? $setting->value }}</textarea>
+<script type="text/javascript">startCkeditor("{{ $id ?? 'editor_'.$setting->id }}");</script>
