@@ -59,26 +59,6 @@ trait HasImage{
 		};
 	}
 
-	public function top_view($thumb) {
-		if (!$this->top_view) {
-			return null;
-		} else {
-			$file = public_path(self::UPLOAD_URL . $this->top_view);
-			$file = str_replace(['\\\\', '//'], DIRECTORY_SEPARATOR, $file);
-			$file = str_replace(['\\', '/'], DIRECTORY_SEPARATOR, $file);
-
-			if (!is_file(public_path(Thumb::url(self::UPLOAD_URL . $this->top_view, $thumb)))) {
-				if (!is_file($file))
-					return null; //нет исходного файла
-				//создание миниатюры
-				Thumb::make(self::UPLOAD_URL . $this->top_view, self::$thumbs_top_view);
-
-			}
-
-			return url(Thumb::url(self::UPLOAD_URL . $this->top_view, $thumb));
-		}
-	}
-
 	/**
 	 * @param \Illuminate\Http\UploadedFile $image
 	 * @return string
@@ -93,19 +73,6 @@ trait HasImage{
 			})
 			->save(null, Settings::get('image_quality', 100));
 		Thumb::make(self::UPLOAD_URL . $file_name, self::$thumbs);
-		return $file_name;
-	}
-
-	public static function uploadTopView($image) {
-		$file_name = md5(uniqid(rand(), true)) . '_' . time() . '.' . Str::lower($image->getClientOriginalExtension());
-		$image->move(public_path(self::UPLOAD_URL), $file_name);
-		Image::make(public_path(self::UPLOAD_URL . $file_name))
-			->resize(1920, 1080, function ($constraint) {
-				$constraint->aspectRatio();
-				$constraint->upsize();
-			})
-			->save(null, Settings::get('image_quality', 100));
-		Thumb::make(self::UPLOAD_URL . $file_name, self::$thumbs_top_view);
 		return $file_name;
 	}
 

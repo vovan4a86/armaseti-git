@@ -142,29 +142,27 @@ class Catalog extends Model {
 			->orderBy('order');
 	}
 
-	public function products(): HasMany {
+    public function products(): HasMany {
 		return $this->hasMany(Product::class, 'catalog_id');
 	}
 
-    public function params(): HasMany {
-        return $this->hasMany('Fanky\Admin\Models\CatalogParam', 'catalog_id')
-            ->join('params', 'catalog_params.param_id', '=', 'params.id');
+    public function public_products() {
+        return $this->hasMany('Fanky\Admin\Models\Product', 'catalog_id')
+            ->public()->orderBy('order');
     }
 
-    public function filters(): HasMany {
-        return $this->hasMany('Fanky\Admin\Models\CatalogFilter', 'catalog_id')
-            ->join('params', 'catalog_filters.param_id', '=', 'params.id');
+    public function product_chars(): HasMany {
+        return $this->hasMany(ProductChar::class, 'catalog_id');
     }
 
-    public function add_params(): HasMany {
-        return $this->hasMany(CatalogParam::class, 'catalog_id')
-            ->join('params', 'catalog_params.param_id', '=', 'params.id');
+    public function filters_list(): HasMany {
+        return $this->hasMany(CatalogFilter::class, 'catalog_id');
     }
 
-	public function public_products() {
-		return $this->hasMany('Fanky\Admin\Models\Product', 'catalog_id')
-			->public()->orderBy('order');
-	}
+//    public function filters(): HasMany {
+//        return $this->hasMany('Fanky\Admin\Models\CatalogFilter', 'catalog_id')
+//            ->join('params', 'catalog_filters.param_id', '=', 'params.id');
+//    }
 
 	public function scopePublic($query) {
 		return $query->where('published', 1);

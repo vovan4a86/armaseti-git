@@ -161,7 +161,7 @@ trait ParseFunctions {
 
     public function downloadJpgFile($url, $uploadPath, $fileName): bool {
         $safeUrl = str_replace(' ', '%20', $url);
-        $this->info('downloadImageFile: ' . $safeUrl);
+        $this->info('Загрузка изображения: ' . $safeUrl);
         $file = file_get_contents($safeUrl);
         if (!is_dir(public_path($uploadPath))) {
             mkdir(public_path($uploadPath), 0777, true);
@@ -170,7 +170,7 @@ trait ParseFunctions {
             file_put_contents(public_path($uploadPath . $fileName), $file);
             return true;
         } catch (\Exception $e) {
-            $this->warn('download jpg error: ' . $e->getMessage());
+            $this->warn('Ошибка загрузки изображения: ' . $e->getMessage());
             return false;
         }
     }
@@ -254,27 +254,6 @@ trait ParseFunctions {
                 'published' => 1,
             ]);
             $this->info('+++ ' . ' Новый раздел: ' . $categoryName);
-        }
-        return $catalog;
-    }
-
-    private function getCatalogTestByName(string $categoryName, int $parentId, string $catFilters = null): CatalogTest {
-        $catalog = CatalogTest::whereName($categoryName)->first();
-        if (!$catalog) {
-            $catalog = CatalogTest::create([
-                'name' => $categoryName,
-                'title' => $categoryName,
-                'h1' => $categoryName,
-                'parent_id' => $parentId,
-                'filters' => $catFilters,
-                'alias' => Text::translit($categoryName),
-                'slug' => Text::translit($categoryName),
-                'order' => CatalogTest::whereParentId($parentId)->max('order') + 1,
-                'published' => 1,
-            ]);
-        } else {
-            $catalog->filters = $catFilters;
-            $catalog->save();
         }
         return $catalog;
     }

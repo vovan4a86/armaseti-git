@@ -14,17 +14,7 @@ class Kernel extends ConsoleKernel {
 	 * @var array
 	 */
 	protected $commands = [
-		'App\Console\Commands\Inspire',
-		'App\Console\Commands\Test',
-        'App\Console\Commands\CableProducts',
-        'App\Console\Commands\CableSystems',
-        'App\Console\Commands\Uteplitel',
-        'App\Console\Commands\Vodostok',
-        'App\Console\Commands\SnowHolder',
-        'App\Console\Commands\Tubes',
-        'App\Console\Commands\Lights',
-        'App\Console\Commands\Arenda',
-		Commands\ImportOld::class,
+		Commands\ParseProducts::class,
 		Commands\SitemapCommand::class,
 	];
 

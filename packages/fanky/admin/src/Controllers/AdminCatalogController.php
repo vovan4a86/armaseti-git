@@ -73,6 +73,18 @@ class AdminCatalogController extends AdminController
             ->get();
 
         $catalogProducts = $catalog->getRecurseProducts()->orderBy('name')->pluck('id', 'name')->all();
+        $f = $catalog->filters_list()->public()->pluck('name')->all();
+
+        $show_catalog_filters = [];
+        foreach ($f as $name) {
+            $show_catalog_filters[$name] = $catalog->product_chars()
+                ->where('name', $name)
+                ->select('value')
+                ->distinct()
+                ->pluck('value')
+                ->all();
+        }
+        dd($show_catalog_filters);
 
         return view(
             'admin::catalog.catalog_edit',
@@ -100,7 +112,9 @@ class AdminCatalogController extends AdminController
     public function postCatalogSave(): array
     {
         $id = Request::input('id');
-        $data = Request::except(['id']);
+        $data = Request::except(['id', 'filters']);
+        $filters = Request::get('filters');
+
         if (!array_get($data, 'alias')) {
             $data['alias'] = Text::translit($data['name']);
         }
@@ -110,17 +124,11 @@ class AdminCatalogController extends AdminController
         if (!array_get($data, 'h1')) {
             $data['h1'] = $data['name'];
         }
-        if (!array_get($data, 'on_header_menu')) {
-            $data['on_header_menu'] = 0;
-        }
-        if (!array_get($data, 'on_footer_menu')) {
-            $data['on_footer_menu'] = 0;
+        if (!array_get($data, 'published')) {
+            $data['published'] = 0;
         }
 
         $image = Request::file('image');
-        $top_view = Request::file('top_view');
-
-        $bg = Request::file('bg');
 
         // валидация данных
         $validator = Validator::make(
@@ -137,21 +145,6 @@ class AdminCatalogController extends AdminController
             $file_name = Catalog::uploadImage($image);
             $data['image'] = $file_name;
         }
-        if ($top_view) {
-            $file_name = Catalog::uploadTopView($top_view);
-            $data['top_view'] = $file_name;
-        }
-
-        // Загружаем bg
-        if ($bg) {
-            if ($catalog->getBackgroundType() == 1) {
-                $file_name = Catalog::uploadImage($bg);
-            } else {
-                $file_name = Catalog::uploadVideo($bg, $catalog->alias . '_bg');
-            }
-
-            $data['background'] = $file_name;
-        }
 
         $redirect = false;
         // сохраняем страницу
@@ -162,6 +155,15 @@ class AdminCatalogController extends AdminController
             $redirect = true;
         } else {
             $catalog->update($data);
+        }
+
+        //сохраняем фильтры раздела
+        foreach ($catalog->filters_list as $filter) {
+            if (in_array($filter->id, $filters)) {
+                $filter->update(['published' => 1]);
+            } else {
+                $filter->update(['published' => 0]);
+            }
         }
 
         if ($redirect) {

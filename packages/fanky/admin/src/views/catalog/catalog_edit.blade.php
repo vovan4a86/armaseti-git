@@ -22,6 +22,7 @@
         <ul class="nav nav-tabs">
             <li class="active"><a href="#tab_1" data-toggle="tab">Параметры</a></li>
             <li><a href="#tab_2" data-toggle="tab">Тексты</a></li>
+            <li><a href="#tab_3" data-toggle="tab">Фильтры раздела</a></li>
             @if($catalog->id)
                 <li class="pull-right">
                     <a href="{{ $catalog->url }}" target="_blank">Посмотреть</a>
@@ -33,14 +34,9 @@
 
                 {!! Form::groupText('name', $catalog->name, 'Название') !!}
                 {!! Form::groupText('h1', $catalog->h1, 'H1') !!}
-
-                @if($catalog->parent_id == 5)
-                    {!! Form::groupText('h1_add', $catalog->h1_add, 'Перевод в скобках') !!}
-                @endif
-
+                {!! Form::groupText('alias', $catalog->alias, 'Alias') !!}
                 {!! Form::groupSelect('parent_id', ['0' => '---корень---'] + $catalogs->pluck('name', 'id')->all(),
                     $catalog->parent_id, 'Родительский раздел') !!}
-                {!! Form::groupText('alias', $catalog->alias, 'Alias') !!}
                 {!! Form::groupText('title', $catalog->title, 'Title') !!}
                 {!! Form::groupText('keywords', $catalog->keywords, 'keywords') !!}
                 {!! Form::groupText('description', $catalog->description, 'description') !!}
@@ -50,7 +46,7 @@
                 <div class="row">
                     <div class="form-group col-xs-3" style="display: flex; column-gap: 30px;">
                         <div>
-                            <label for="article-image">Изображение раздела (253x160)</label>
+                            <label for="article-image">Изображение раздела</label>
                             <input id="article-image" type="file" name="image" value=""
                                    onchange="return newsImageAttache(this, event)">
                             <div id="article-image-block">
@@ -59,7 +55,8 @@
                                          src="{{ $catalog->image_src }}" height="100"
                                          data-image="{{ $catalog->image_src }}"
                                          onclick="return popupImage($(this).data('image'))" alt="">
-                                    <a class="images_del" href="{{ route('admin.catalog.catalogImageDel', [$catalog->id]) }}"
+                                    <a class="images_del"
+                                       href="{{ route('admin.catalog.catalogImageDel', [$catalog->id]) }}"
                                        onclick="return catalogImageDel(this)">
                                         <span class="glyphicon glyphicon-trash text-red"></span>
                                     </a>
@@ -67,24 +64,6 @@
                                     <p class="text-yellow">Изображение не загружено.</p>
                                 @endif
                             </div>
-                        </div>
-                    </div>
-                    <div class="form-group col-xs-9">
-                        <label for="article-image">Фон внутренней шапки (1920x311)</label>
-                        <input id="article-image" type="file" name="top_view" value=""
-                               onchange="return topViewAttache(this, event)" accept=".jpg, .jpeg, .png">
-                        <div id="top-view">
-                            @if ($catalog->top_view)
-                                <img class="img-polaroid" src="{{ $catalog->top_view(1) }}" height="100"
-                                     data-image="{{ $catalog->top_view(1) }}"
-                                     onclick="return popupImage($(this).data('image'))" alt="">
-                                <a class="images_del" href="{{ route('admin.catalog.top-view-del', [$catalog->id]) }}"
-                                   onclick="return topViewDel(this)">
-                                    <span class="glyphicon glyphicon-trash text-red"></span>
-                                </a>
-                            @else
-                                <p class="text-yellow">Изображение не загружено.</p>
-                            @endif
                         </div>
                     </div>
                 </div>
@@ -123,13 +102,28 @@
             </div>
 
             <div class="tab-pane" id="tab_2">
-                {!! Form::groupRichtext('announce', $catalog->announce, 'Анонс', ['rows' => 3]) !!}
-                {!! Form::groupRichtext('text', $catalog->text, 'Основной текст', ['rows' => 3]) !!}
+                {{--                {!! Form::groupRichtext('announce', $catalog->announce, 'Анонс', ['rows' => 3]) !!}--}}
+                {!! Form::groupRichtext('text', $catalog->text, 'Основной текст') !!}
+            </div>
+
+            <div class="tab-pane" id="tab_3">
+                @if(count($catalog->filters_list))
+                    <div style="display: flex; flex-direction: column;">
+                        @foreach($catalog->filters_list as $item)
+                            <div class="form-group">
+                                <input type="checkbox" name="filters[]" id="filter_{{ $item->id }}"
+                                       value="{{ $item->id }}" {{ $item->published ? 'checked' : '' }}>
+                                <label for="size_{{ $item->id }}" style="margin-right: 10px;">{{ $item->name }}</label>
+                            </div>
+                        @endforeach
+                    </div>
+                @else
+                    <p>Нет фильтров</p>
+                @endif
+            </div>
+
+            <div class="box-footer">
+                <button type="submit" class="btn btn-primary">Сохранить</button>
             </div>
         </div>
-
-        <div class="box-footer">
-            <button type="submit" class="btn btn-primary">Сохранить</button>
-        </div>
-    </div>
 </form>

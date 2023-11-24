@@ -37,21 +37,24 @@
 
                 {!! Form::groupText('name', $product->name, 'Название') !!}
                 {!! Form::groupText('h1', $product->h1, 'H1') !!}
-                {!! Form::groupText('article', $product->article, 'Артикул') !!}
+                {!! Form::groupText('alias', $product->alias, 'Alias', ['disabled' => true]) !!}
+                {!! Form::groupText('article', $product->article, 'Артикул', ['disabled' => true]) !!}
                 {!! Form::groupSelect('catalog_id', $catalogs, $product->catalog_id, 'Каталог') !!}
-                {!! Form::groupText('alias', $product->alias, 'Alias') !!}
                 {!! Form::groupText('title', $product->title, 'Title') !!}
                 {!! Form::groupText('keywords', $product->keywords, 'keywords') !!}
                 {!! Form::groupText('description', $product->description, 'description') !!}
-                {!! Form::groupText('price', $product->price ?: 0, 'Цена, р (значение через точку)') !!}
-                <div style="display: flex; gap: 20px">
-                {!! Form::groupText('length', $product->length ?: 0, 'Длина, мм') !!}
-                {!! Form::groupText('width', $product->width ?: 0, 'Ширина, мм') !!}
-                {!! Form::groupText('height', $product->height ?: 0, 'Высота, мм') !!}
-                </div>
-                <hr>
 
+                <div style="display: flex; gap: 20px">
+                    {!! Form::groupText('price', $product->price ?: 0, 'Цена') !!}
+                    {!! Form::groupText('is_discount', $product->is_discount, 'Скидка') !!}
+                    {!! Form::groupText('price', $product->product_count ?: 0, 'Наличие, шт') !!}
+                </div>
+
+                {!! Form::groupCheckbox('is_hit', 1, $product->is_hit, 'Хит') !!}
+
+                <hr>
                 {!! Form::groupCheckbox('published', 1, $product->published, 'Показывать товар') !!}
+                {!! Form::groupCheckbox('in_stock', 1, $product->in_stock, 'Наличие') !!}
 
             </div>
             <div class="tab-pane" id="tab_2">
@@ -69,7 +72,6 @@
                             Загрузить изображения
                         </label>
                     </div>
-                    <p>Размер изображения: 616x453</p>
 
                     <div class="images_list">
                         @foreach ($product->images()->get() as $image)
