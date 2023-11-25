@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 use Carbon\Carbon;
 use DB;
 use Fanky\Admin\Models\Catalog;
+use Fanky\Admin\Models\CatalogFilter;
 use Fanky\Admin\Models\City;
 use Fanky\Admin\Models\Feedback;
 use Fanky\Admin\Models\Order as Order;
@@ -508,5 +509,18 @@ class AjaxController extends Controller
         session(['confirm_city' => null]);
 
         return ['success' => true];
+    }
+
+    public function postUpdateCatalogFilter()
+    {
+        $id = request()->get('id');
+
+        if (!$id) return ['success' => false, 'msg' => 'Ошибка, нет id'];
+
+        $item = CatalogFilter::where('id', $id)->first();
+        if($item->published == 1) $item->update(['published' => 0]);
+        else $item->update(['published' => 1]);
+
+        return ['success' => true, 'msg' => 'Успешно обновлено!'];
     }
 }

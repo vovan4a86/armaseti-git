@@ -91,7 +91,7 @@ class ParseProducts extends Command
                     $catalog_crawler->filter('.prod-list.prod-list-top tr')
                         ->reduce(
                             function (Crawler $a, $i) {
-                                return ($i == 0);
+                                return ($i < 3);
                             }
                         )
                         ->each(
@@ -132,13 +132,13 @@ class ParseProducts extends Command
                         );
 
                     //проход по следующим страницам
-                    if ($catalog_crawler->filter('.menu-h')->count() > 0) {
-                        $last_li_class = $catalog_crawler->filter('.menu-h li a')->last()->attr('class');
-                        if ($last_li_class == 'inline-link') {
-                            $url = $this->baseUrl . $catalog_crawler->filter('.menu-h li a')->last()->attr('href');
-                            $this->parseCatalogNextPage($url, $catalog);
-                        }
-                    }
+//                    if ($catalog_crawler->filter('.menu-h')->count() > 0) {
+//                        $last_li_class = $catalog_crawler->filter('.menu-h li a')->last()->attr('class');
+//                        if ($last_li_class == 'inline-link') {
+//                            $url = $this->baseUrl . $catalog_crawler->filter('.menu-h li a')->last()->attr('href');
+//                            $this->parseCatalogNextPage($url, $catalog);
+//                        }
+//                    }
                 }
             }
         } catch (\Exception $e) {

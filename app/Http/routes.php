@@ -23,6 +23,10 @@ Route::group(
         Route::post('get-correct-region-link', 'AjaxController@postGetCorrectRegionLink')->name(
             'get-correct-region-link'
         );
+
+        Route::post('update-catalog-filter', 'AjaxController@postUpdateCatalogFilter')
+            ->name('update-catalog-filter');
+
     }
 );
 

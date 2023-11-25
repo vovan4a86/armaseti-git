@@ -199,29 +199,6 @@ function productImageUpload(elem, e) {
     });
 }
 
-function productCertificateUpload(elem, e) {
-    var url = $(elem).data('url');
-    let certs = e.target.files;
-    var data = new FormData();
-    $.each(certs, function (key, value) {
-        if (value['size'] > max_file_size) {
-            alert('Слишком большой размер файла. Максимальный размер 2Мб');
-        } else {
-            data.append('certificates[]', value);
-        }
-    });
-    $(elem).val('');
-
-    sendFiles(url, data, function (json) {
-        if (typeof json.html != 'undefined') {
-            $('.certificates_list').append(urldecode(json.html));
-            // if (!$('.certificates_list img.active').length) {
-            //     $('.certificates_list .img_check').eq(0).trigger('click');
-            // }
-        }
-    });
-}
-
 function productCheckImage(elem) {
     $('.images_list img').removeClass('active');
     $('.images_list .img_check .glyphicon').removeClass('glyphicon-check').addClass('glyphicon-unchecked');
@@ -261,18 +238,18 @@ function catalogImageDel(elem) {
     return false;
 }
 
-function productCertificateDel(elem) {
-    if (!confirm('Удалить сертификат?')) return false;
-    var url = $(elem).attr('href');
-    sendAjax(url, {}, function (json) {
-        if (typeof json.msg != 'undefined') alert(urldecode(json.msg));
-        if (typeof json.success != 'undefined' && json.success === true) {
-            $(elem).closest('.certificate_item').fadeOut(300, function () {
-                $(this).remove();
-            });
+function updateCatalogFilter(elem) {
+    const id = $(elem).val();
+    const url = '/ajax/update-catalog-filter';
+
+    sendAjax(url, {id}, function(json) {
+        if (json.success) {
+            if (typeof json.msg != 'undefined') $(elem).closest('form').find('[type=submit]').after(autoHideMsg('green', urldecode(json.msg)));
+
+        } else {
+            if (typeof json.msg != 'undefined') $(elem).closest('form').find('[type=submit]').after(autoHideMsg('red', urldecode(json.msg)));
         }
-    });
-    return false;
+    })
 }
 
 $(document).ready(function () {
@@ -389,17 +366,6 @@ function delDoc(elem, e) {
     });
 }
 
-function saveRelated(form, e) {
-    e.preventDefault();
-    var url = $(form).attr('action');
-    var data = $(form).serialize();
-    var id = $(form).data('id');
-    sendAjax(url, data, function (html) {
-        popupClose();
-        $('tr#related' + id).replaceWith(html);
-    }, 'html');
-}
-
 function addProductParam(link, e) {
     e.preventDefault();
     var conteiner = $(link).prev();
@@ -418,18 +384,3 @@ function delProductParam(elem, e) {
     });
 }
 
-function delSpec(elem, e) {
-    e.preventDefault();
-    if (!confirm('Точно удалить файл?')) return;
-    var url = $(elem).attr('href');
-    var row = $('#product-doc-block');
-
-    sendAjax(url, {}, function (json) {
-        if (typeof json.success != 'undefined') {
-            $(row).fadeOut(300, function () {
-                $(this).remove();
-            });
-            location.href = json.redirect;
-        }
-    });
-}

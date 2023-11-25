@@ -53,6 +53,8 @@ use URL;
  * @property bool               $on_footer_menu
  * @property bool               $on_drop_down
  * @property mixed background
+ * @property mixed $children
+ * @property mixed $filters_list
  * @mixin \Eloquent
  * @method static whereId(int|mixed $id)
  * @method static whereName($value)
@@ -159,10 +161,41 @@ class Catalog extends Model {
         return $this->hasMany(CatalogFilter::class, 'catalog_id');
     }
 
-//    public function filters(): HasMany {
-//        return $this->hasMany('Fanky\Admin\Models\CatalogFilter', 'catalog_id')
-//            ->join('params', 'catalog_filters.param_id', '=', 'params.id');
-//    }
+    public function getRecurseFilterList()
+    {
+        if (!count($this->children)) return $this->filters_list()
+            ->groupBy('name')
+            ->get();
+
+//            ->select('id', 'name', 'published')
+//            ->pluck('name', 'id')
+//            ->all();
+
+        $children_ids = $this->getRecurseChildrenIds();
+
+       return  CatalogFilter::whereIn('catalog_id', $children_ids)
+            ->groupBy('name')
+            ->get();
+//       $res = [];
+//       foreach ($f as $elem) {
+//           $res[] = [$elem->id, $elem->name];
+//       }
+//       return $res;
+
+//        $show_catalog_filters = [];
+//        foreach ($f as $name) {
+//             $arr = ProductChar::whereIn('catalog_id', $children_ids)
+//                ->where('name', $name)
+//                ->select('value')
+//                ->distinct()
+//                ->pluck('value')
+//                ->all();
+//
+//            natsort($arr);
+//            $show_catalog_filters[$name] = $arr;
+//        }
+
+    }
 
 	public function scopePublic($query) {
 		return $query->where('published', 1);

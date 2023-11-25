@@ -22,7 +22,11 @@
         <ul class="nav nav-tabs">
             <li class="active"><a href="#tab_1" data-toggle="tab">Параметры</a></li>
             <li><a href="#tab_2" data-toggle="tab">Тексты</a></li>
-            <li><a href="#tab_3" data-toggle="tab">Фильтры раздела</a></li>
+
+            @if($catalog->parent_id == 0)
+                <li><a href="#tab_3" data-toggle="tab">Фильтры раздела</a></li>
+            @endif
+
             @if($catalog->id)
                 <li class="pull-right">
                     <a href="{{ $catalog->url }}" target="_blank">Посмотреть</a>
@@ -106,21 +110,25 @@
                 {!! Form::groupRichtext('text', $catalog->text, 'Основной текст') !!}
             </div>
 
-            <div class="tab-pane" id="tab_3">
-                @if(count($catalog->filters_list))
-                    <div style="display: flex; flex-direction: column;">
-                        @foreach($catalog->filters_list as $item)
-                            <div class="form-group">
-                                <input type="checkbox" name="filters[]" id="filter_{{ $item->id }}"
-                                       value="{{ $item->id }}" {{ $item->published ? 'checked' : '' }}>
-                                <label for="size_{{ $item->id }}" style="margin-right: 10px;">{{ $item->name }}</label>
-                            </div>
-                        @endforeach
-                    </div>
-                @else
-                    <p>Нет фильтров</p>
-                @endif
-            </div>
+            @if($catalog->parent_id == 0)
+                <div class="tab-pane" id="tab_3">
+                    @if(count($catalogFiltersList))
+                        <div style="display: flex; flex-direction: column;">
+                            @foreach($catalogFiltersList as $item)
+                                <div class="form-group">
+                                    <input type="checkbox" name="filters[]" id="f_{{ $item->id }}"
+                                           value="{{ $item->id }}" {{ $item->published ? 'checked' : '' }}
+                                           onclick="updateCatalogFilter(this)">
+                                    <label for="f_{{ $item->id }}" style="margin-right: 10px;">{{ $item->name }}</label>
+                                </div>
+
+                            @endforeach
+                        </div>
+                    @else
+                        <p>Нет фильтров</p>
+                    @endif
+                </div>
+            @endif
 
             <div class="box-footer">
                 <button type="submit" class="btn btn-primary">Сохранить</button>

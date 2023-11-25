@@ -72,26 +72,31 @@ class AdminCatalogController extends AdminController
             ->where('id', '!=', $catalog->id)
             ->get();
 
-        $catalogProducts = $catalog->getRecurseProducts()->orderBy('name')->pluck('id', 'name')->all();
-        $f = $catalog->filters_list()->public()->pluck('name')->all();
+        $catalogProducts = $catalog->getRecurseProducts()
+            ->orderBy('name')
+            ->pluck('id', 'name')
+            ->all();
 
-        $show_catalog_filters = [];
-        foreach ($f as $name) {
-            $show_catalog_filters[$name] = $catalog->product_chars()
-                ->where('name', $name)
-                ->select('value')
-                ->distinct()
-                ->pluck('value')
-                ->all();
-        }
-        dd($show_catalog_filters);
+        $catalogFiltersList = $catalog->parent_id == 0 ? $catalog->getRecurseFilterList() : [];
 
+//        $show_catalog_filters = [];
+//        foreach ($catalogFiltersList as $name) {
+//            $show_catalog_filters[$name] = $catalog->product_chars()
+//                ->where('name', $name)
+//                ->select('value')
+//                ->distinct()
+//                ->pluck('value')
+//                ->all();
+//        }
+//        dd($catalog->getRecurseFilterList());
+//
         return view(
             'admin::catalog.catalog_edit',
             [
                 'catalog' => $catalog,
                 'catalogs' => $catalogs,
                 'catalogProducts' => $catalogProducts,
+                'catalogFiltersList' => $catalogFiltersList
             ]
         );
     }
@@ -113,7 +118,7 @@ class AdminCatalogController extends AdminController
     {
         $id = Request::input('id');
         $data = Request::except(['id', 'filters']);
-        $filters = Request::get('filters');
+//        $filters = Request::get('filters');
 
         if (!array_get($data, 'alias')) {
             $data['alias'] = Text::translit($data['name']);
@@ -158,13 +163,13 @@ class AdminCatalogController extends AdminController
         }
 
         //сохраняем фильтры раздела
-        foreach ($catalog->filters_list as $filter) {
-            if (in_array($filter->id, $filters)) {
-                $filter->update(['published' => 1]);
-            } else {
-                $filter->update(['published' => 0]);
-            }
-        }
+//        foreach ($catalog->filters_list as $filter) {
+//            if (in_array($filter->id, $filters)) {
+//                $filter->update(['published' => 1]);
+//            } else {
+//                $filter->update(['published' => 0]);
+//            }
+//        }
 
         if ($redirect) {
             return ['redirect' => route('admin.catalog.catalogEdit', [$catalog->id])];
