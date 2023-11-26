@@ -134,4 +134,5 @@
                 <button type="submit" class="btn btn-primary">Сохранить</button>
             </div>
         </div>
+    </div>
 </form>

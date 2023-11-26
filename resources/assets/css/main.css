@@ -1,2 +1,4 @@
-@import "./styles.css";
+/*@import "./styles.css";*/
+@import "../bootstrap/css/bootstrap.min.css";
 @import "./custom.css";
+@import "./temp.css";

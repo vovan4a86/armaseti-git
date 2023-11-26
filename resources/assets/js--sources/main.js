@@ -1,15 +1,34 @@
-import 'focus-visible';
-import './plugins';
-import './modules';
-import { utils } from './modules/utility';
-import { scrollTop } from './modules/scrollTop';
-import { maskedInputs } from './modules/inputMask';
+// import 'focus-visible';
+// import './plugins';
+// import './modules';
+// import { utils } from './modules/utility';
+// import { scrollTop } from './modules/scrollTop';
+// import { maskedInputs } from './modules/inputMask';
+//
+// utils();
+//
+// scrollTop({ trigger: '.scrolltop' });
+//
+// maskedInputs({
+//   phoneSelector: 'input[name="phone"]',
+//   emailSelector: 'input[name="email"]'
+// });
 
-utils();
+import $ from 'jquery';
+import {sendAjax} from "./modules/customFront";
 
-scrollTop({ trigger: '.scrolltop' });
+$('.btns button').click(function (e) {
+    e.preventDefault();
 
-maskedInputs({
-  phoneSelector: 'input[name="phone"]',
-  emailSelector: 'input[name="email"]'
-});
+    const form = $('#filter-form')
+
+    const data = form.serialize();
+    const url = form.attr('action');
+
+    sendAjax(url, data, function(json) {
+        if(json.success) {
+            console.log(json.items);
+        }
+    })
+
+})

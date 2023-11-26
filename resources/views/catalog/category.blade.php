@@ -1,39 +1,54 @@
-@extends('template')
+@extends('template_test')
 @section('content')
     <main>
-        <section class="catalog-view">
-            <div class="catalog-view__container container">
-                @include('blocks.bread')
-                <div class="catalog-view__heading">
-                    <div class="page-title oh">
-                        <span data-aos="fade-down" data-aos-duration="900">{{ $h1 }}</span>
-                    </div>
-                </div>
-                @if(isset($children) && count($children))
-                    <div class="catalog-view__grid">
-                        @foreach($children as $child)
-                            <div class="catalog-view__item" data-aos="fade-down" data-aos-duration="900"
-                             data-aos-delay="{{ $loop->index > 0 ? $loop->index * 50 + 150 : 150}}">
-                            <div class="card">
-                                @if($child->image)
-                                <img class="card__pic lazy"
-                                     src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=="
-                                     data-src="{{ $child->thumb(2) }}" width="250" height="208" alt="{{ $child->name }}"/>
-                                @endif
-                                <div class="card__body">
-                                    <a class="card__title" href="{{ $child->url }}" title="{{ $child->name }}">{{ $child->name }}</a>
-                                    <div class="card__txt">
-                                        {!! $child->announce !!}
-                                    </div>
+        <div class="container">
+            @include('blocks.bread')
+            <div class="row">
+                <div class="col-sm-3">
+                    <h4>Фильтр:</h4>
+                    <form class="filters" id="filter-form" action="{{ $category->url }}">
+                        @if($filters_list)
+                            @foreach($filters_list as $name => $items)
+                                <div class="filter">
+                                    <div class="filter-name">{{ $name }}</div>
+                                    @foreach($items['values'] as $val)
+                                        <label>
+                                            <input type="checkbox" name="{{ $items['translit'] }}[]" value="{{ $val }}">
+                                            <span class="filter-label-name">{{ $val }}</span>
+                                        </label>
+                                    @endforeach
                                 </div>
-                            </div>
+                            @endforeach
+                        @endif
+                        <div class="btns">
+                            <button type="submit" class="btn btn-success">Применить</button>
                         </div>
-                        @endforeach
+                    </form>
+                </div>
+                <div class="col-sm-9">
+                    <div class="categories">
+                        @if(count($children))
+                            <ul class="categories-list">
+                                @foreach($children as $child)
+                                    <li>
+                                        <a href="{{ $child->url }}">{{ $child->name }}</a>
+                                    </li>
+                                @endforeach
+                            </ul>
+                        @endif
                     </div>
-                @endif
+                    <h1>{{ $category->h1 }}</h1>
+                    @if(count($products))
+                        <ul class="products">
+                            @foreach($products as $product)
+                                <li>{{ $product->name }}</li>
+                            @endforeach
+                        </ul>
+                    @else
+                        <p>Пусто</p>
+                    @endif
+                </div>
             </div>
-        </section>
-        @include('blocks.features')
-        @include('blocks.content_view')
+        </div>
     </main>
 @endsection

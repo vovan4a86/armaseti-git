@@ -6,7 +6,9 @@ use Doctrine\DBAL\Query\QueryBuilder;
 use Fanky\Admin\Models\Catalog;
 use Fanky\Admin\Models\Page;
 use Fanky\Admin\Models\Product;
+use Fanky\Admin\Models\ProductChar;
 use Fanky\Admin\Settings;
+use Fanky\Admin\Text;
 use Fanky\Auth\Auth;
 use SEOMeta;
 use Request;
@@ -23,8 +25,8 @@ class CatalogController extends Controller
 
         $bread = $page->getBread();
         $page->h1 = $page->getH1();
-        $page->setSeo();
-        $page = $this->add_region_seo($page);
+//        $page->setSeo();
+//        $page = $this->add_region_seo($page);
 
         $categories = Catalog::public()->whereParentId(0)->orderBy('order')->get();
 
@@ -36,7 +38,6 @@ class CatalogController extends Controller
                 'title' => $page->title,
                 'bread' => $bread,
                 'categories' => $categories,
-                'top_view' => $page->getTopView()
             ]
         );
     }
@@ -87,7 +88,47 @@ class CatalogController extends Controller
             View::share('admin_edit_link', route('admin.catalog.catalogEdit', [$category->id]));
         }
 
-        $view = $category->products()->count() ? 'catalog.sub_category' : 'catalog.category';
+//        $view = $category->products()->count() ? 'catalog.sub_category' : 'catalog.category';
+        $view = 'catalog.category';
+
+        if (count($category->children)) {
+            $cat_children_ids = $category->getRecurseChildrenIds();
+            $cat_children_ids[] = $category->id;
+
+            $products = Product::whereIn('catalog_id', $cat_children_ids)
+                ->public()
+                ->get();
+        } else {
+            $cat_children_ids[] = $category->id;
+            $products = $category->public_products;
+        }
+
+        $filters_list = [];
+        $all_filters = $category->getRecurseFilterList();
+//        dd($all_filters);
+
+        foreach ($all_filters as $filter) {
+            if ($filter->published) {
+                $values = ProductChar::where('name', $filter->name)
+                    ->whereIn('catalog_id', $cat_children_ids)
+                    ->select('value')
+                    ->distinct()
+                    ->pluck('value')
+                    ->all();
+                natsort($values);
+                $filters_list[$filter->name] = [
+                    'translit' => Text::translit($filter->name),
+                    'values' => $values
+                ];
+            }
+        }
+//        dd($filters_list);
+
+        if (request()->ajax()) {
+            $data = request()->all();
+            \Debugbar::log($data);
+            return ['success' => true, 'items' => '1'];
+        }
 
         $data = [
             'bread' => $bread,
@@ -96,8 +137,8 @@ class CatalogController extends Controller
             'h1' => $category->getH1(),
             'text' => $category->text,
             'children' => $category->public_children,
-            'products' => $category->products,
-            'top_view' => $category->getCatalogTopView()
+            'products' => $products,
+            'filters_list' => $filters_list
         ];
 
         return view($view, $data);
