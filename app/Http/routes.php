@@ -27,6 +27,10 @@ Route::group(
         Route::post('update-catalog-filter', 'AjaxController@postUpdateCatalogFilter')
             ->name('update-catalog-filter');
 
+        Route::post('compare', 'AjaxController@postCompare')->name('compare');
+        Route::post('favorite', 'AjaxController@postFavorite')->name('favorite');
+
+
     }
 );
 

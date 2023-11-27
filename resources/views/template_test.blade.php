@@ -26,7 +26,23 @@
 {!! Settings::get('counters') !!}
 
 <header>
-    <h1 class="text-center">Header</h1>
+    <div class="row">
+        <div class="col-sm-6">
+            <h1 class="text-center">Header</h1>
+        </div>
+        <div class="col-sm-3">
+            <div class="compare-block">
+                <span>Сравнение: </span>
+                <span class="compare">0</span>
+            </div>
+        </div>
+        <div class="col-sm-3">
+            <div class="favorite-block">
+                <span>Избранное: </span>
+                <span class="favorite">{{ count($favorites) }}</span>
+            </div>
+        </div>
+    </div>
 </header>
 <hr>
 

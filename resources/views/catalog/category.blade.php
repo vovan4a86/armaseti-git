@@ -41,7 +41,7 @@
                     @if(count($products))
                         <ul class="products">
                             @foreach($products as $product)
-                                <li>{{ $product->name }}</li>
+                                @include('catalog.product_item')
                             @endforeach
                         </ul>
                     @else

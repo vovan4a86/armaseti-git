@@ -27,8 +27,21 @@ $('.btns button').click(function (e) {
 
     sendAjax(url, data, function(json) {
         if(json.success) {
-            console.log(json.items);
+            $('.products').empty();
+            $('.products').append(json.items);
         }
     })
+})
 
+$('.favorite-link').click(function (e) {
+    e.preventDefault();
+
+    const url = $(this).attr('href');
+    const id = $(this).closest('li').data('id');
+
+    sendAjax(url, {id}, function(json) {
+        if(json.success) {
+            $('.favorite-block .favorite').text(json.count);
+        }
+    })
 })

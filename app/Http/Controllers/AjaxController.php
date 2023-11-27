@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers;
 
 use Carbon\Carbon;
@@ -515,12 +516,48 @@ class AjaxController extends Controller
     {
         $id = request()->get('id');
 
-        if (!$id) return ['success' => false, 'msg' => 'Ошибка, нет id'];
+        if (!$id) {
+            return ['success' => false, 'msg' => 'Ошибка, нет id'];
+        }
 
         $item = CatalogFilter::where('id', $id)->first();
-        if($item->published == 1) $item->update(['published' => 0]);
-        else $item->update(['published' => 1]);
+        if ($item->published == 1) {
+            $item->update(['published' => 0]);
+        } else {
+            $item->update(['published' => 1]);
+        }
 
         return ['success' => true, 'msg' => 'Успешно обновлено!'];
+    }
+
+    public function postFavorite()
+    {
+        $id = \request()->get('id');
+
+        if (!$id) {
+            return ['success' => false, 'msg' => 'Нет ID'];
+        }
+
+        $favorites = \Session::get('favorites', []);
+
+        if (count($favorites) == 0) {
+            \Session::push('favorites', $id);
+        } else {
+            if (!in_array($id, $favorites)) {
+                \Session::push('favorites', $id);
+            } else {
+                foreach($favorites as $key => $item){
+                    if ($item == $id){
+                        unset($favorites[$key]);
+                    }
+                }
+                \Session::forget('favorites');
+                \Session::put('favorites', $favorites);
+            }
+        }
+
+
+
+        return ['success' => true, 'count' => count(\Session::get('favorites'))];
     }
 }

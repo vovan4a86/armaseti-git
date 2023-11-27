@@ -127,7 +127,22 @@ class CatalogController extends Controller
         if (request()->ajax()) {
             $data = request()->all();
             \Debugbar::log($data);
-            return ['success' => true, 'items' => '1'];
+
+            $found_ids_query = ProductChar::whereIn('catalog_id', $cat_children_ids);
+
+            $found_ids = $found_ids_query->select('product_id')->distinct()->pluck('product_id')->all();
+            foreach ($data as $name => $values) {
+                $found_ids_query = ProductChar::whereIn('product_id', $found_ids)
+                    ->whereIn('value', $values);
+                $found_ids = $found_ids_query->select('product_id')->distinct()->pluck('product_id')->all();
+            }
+            $products = Product::whereIn('id', $found_ids)->get('name');
+            $items = [];
+            foreach ($products as $product) {
+                $items[] = view('catalog.product_item', ['product' => $product])->render();
+            }
+
+            return ['success' => true, 'items' => $items];
         }
 
         $data = [
@@ -138,7 +153,8 @@ class CatalogController extends Controller
             'text' => $category->text,
             'children' => $category->public_children,
             'products' => $products,
-            'filters_list' => $filters_list
+            'filters_list' => $filters_list,
+            'favorites' => \Session::get('favorites', [])
         ];
 
         return view($view, $data);

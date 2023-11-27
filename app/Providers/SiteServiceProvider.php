@@ -20,7 +20,7 @@ class SiteServiceProvider extends ServiceProvider
     {
         // пререндер для шаблона
         View::composer(
-            ['template'],
+            ['template_test'],
             function (\Illuminate\View\View $view) {
                 $header_menu = Cache::get('header_menu', collect());
                 if (!count($header_menu)) {
@@ -58,13 +58,16 @@ class SiteServiceProvider extends ServiceProvider
                     $current_city = City::whereAlias($city_alias)->first();
                 }
 
+                $favorites = session('favorites', []);
+
                 $view->with(
                     compact(
                         [
                             'header_menu',
                             'mobile_menu',
                             'footer_menu',
-                            'current_city'
+                            'current_city',
+                            'favorites'
                         ]
                     )
                 );

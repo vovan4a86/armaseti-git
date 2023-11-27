@@ -56,7 +56,20 @@ jquery__WEBPACK_IMPORTED_MODULE_0___default()('.btns button').click(function (e)
   var url = form.attr('action');
   (0,_modules_customFront__WEBPACK_IMPORTED_MODULE_1__.sendAjax)(url, data, function (json) {
     if (json.success) {
-      console.log(json.items);
+      jquery__WEBPACK_IMPORTED_MODULE_0___default()('.products').empty();
+      jquery__WEBPACK_IMPORTED_MODULE_0___default()('.products').append(json.items);
+    }
+  });
+});
+jquery__WEBPACK_IMPORTED_MODULE_0___default()('.favorite-link').click(function (e) {
+  e.preventDefault();
+  var url = jquery__WEBPACK_IMPORTED_MODULE_0___default()(this).attr('href');
+  var id = jquery__WEBPACK_IMPORTED_MODULE_0___default()(this).closest('li').data('id');
+  (0,_modules_customFront__WEBPACK_IMPORTED_MODULE_1__.sendAjax)(url, {
+    id: id
+  }, function (json) {
+    if (json.success) {
+      jquery__WEBPACK_IMPORTED_MODULE_0___default()('.favorite-block .favorite').text(json.count);
     }
   });
 });
