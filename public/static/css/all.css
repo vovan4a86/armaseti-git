@@ -107,5 +107,18 @@ ul {
 .btns {
     margin-top: 20px;
 }
+
+.card-header span {
+    font-weight: bold;
+}
+
+.card-header a {
+    color: red;
+}
+
+.card-body {
+    margin-top: 20px;
+}
+
 /*@import "./styles.css";*/
 

@@ -63,6 +63,7 @@ jquery__WEBPACK_IMPORTED_MODULE_0___default()('.btns button').click(function (e)
 });
 jquery__WEBPACK_IMPORTED_MODULE_0___default()('.favorite-link').click(function (e) {
   e.preventDefault();
+  var elem = jquery__WEBPACK_IMPORTED_MODULE_0___default()(this);
   var url = jquery__WEBPACK_IMPORTED_MODULE_0___default()(this).attr('href');
   var id = jquery__WEBPACK_IMPORTED_MODULE_0___default()(this).closest('li').data('id');
   (0,_modules_customFront__WEBPACK_IMPORTED_MODULE_1__.sendAjax)(url, {
@@ -70,6 +71,48 @@ jquery__WEBPACK_IMPORTED_MODULE_0___default()('.favorite-link').click(function (
   }, function (json) {
     if (json.success) {
       jquery__WEBPACK_IMPORTED_MODULE_0___default()('.favorite-block .favorite').text(json.count);
+      if (json.add) {
+        jquery__WEBPACK_IMPORTED_MODULE_0___default()(elem).text('В избранном');
+      } else {
+        jquery__WEBPACK_IMPORTED_MODULE_0___default()(elem).text('В избранное');
+      }
+    }
+  });
+});
+jquery__WEBPACK_IMPORTED_MODULE_0___default()('.compare-link').click(function (e) {
+  e.preventDefault();
+  var elem = jquery__WEBPACK_IMPORTED_MODULE_0___default()(this);
+  var url = jquery__WEBPACK_IMPORTED_MODULE_0___default()(this).attr('href');
+  var id = jquery__WEBPACK_IMPORTED_MODULE_0___default()(this).closest('li').data('id');
+  (0,_modules_customFront__WEBPACK_IMPORTED_MODULE_1__.sendAjax)(url, {
+    id: id
+  }, function (json) {
+    if (json.success) {
+      jquery__WEBPACK_IMPORTED_MODULE_0___default()('.compare-block .compare').text(json.count);
+      if (json.add) {
+        jquery__WEBPACK_IMPORTED_MODULE_0___default()(elem).text('В сравнении');
+      } else {
+        jquery__WEBPACK_IMPORTED_MODULE_0___default()(elem).text('Сравнить');
+      }
+    }
+  });
+});
+jquery__WEBPACK_IMPORTED_MODULE_0___default()('.compare-delete').click(function (e) {
+  e.preventDefault();
+  var url = jquery__WEBPACK_IMPORTED_MODULE_0___default()(this).attr('href');
+  var card = jquery__WEBPACK_IMPORTED_MODULE_0___default()(this).closest('.card');
+  var id = card.data('id');
+  (0,_modules_customFront__WEBPACK_IMPORTED_MODULE_1__.sendAjax)(url, {
+    id: id
+  }, function (json) {
+    if (json.success) {
+      jquery__WEBPACK_IMPORTED_MODULE_0___default()('.compare-block .compare').text(json.count);
+      card.fadeOut(300, function () {
+        jquery__WEBPACK_IMPORTED_MODULE_0___default()(this).remove();
+        if (json.count === 0) {
+          jquery__WEBPACK_IMPORTED_MODULE_0___default()('.compare.row').append('<p>Пусто</p>');
+        }
+      });
     }
   });
 });

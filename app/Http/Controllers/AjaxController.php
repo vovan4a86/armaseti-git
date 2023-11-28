@@ -530,7 +530,7 @@ class AjaxController extends Controller
         return ['success' => true, 'msg' => 'Успешно обновлено!'];
     }
 
-    public function postFavorite()
+    public function postFavorite(): array
     {
         $id = \request()->get('id');
 
@@ -540,6 +540,7 @@ class AjaxController extends Controller
 
         $favorites = \Session::get('favorites', []);
 
+        $add = true;
         if (count($favorites) == 0) {
             \Session::push('favorites', $id);
         } else {
@@ -553,11 +554,61 @@ class AjaxController extends Controller
                 }
                 \Session::forget('favorites');
                 \Session::put('favorites', $favorites);
+                $add = false;
             }
         }
 
+        return ['success' => true, 'count' => count(\Session::get('favorites')), 'add' => $add];
+    }
 
+    public function postCompare(): array
+    {
+        $id = \request()->get('id');
 
-        return ['success' => true, 'count' => count(\Session::get('favorites'))];
+        if (!$id) {
+            return ['success' => false, 'msg' => 'Нет ID'];
+        }
+
+        $compare = \Session::get('compare', []);
+
+        $add = true;
+        if (count($compare) == 0) {
+            \Session::push('compare', $id);
+        } else {
+            if (!in_array($id, $compare)) {
+                \Session::push('compare', $id);
+            } else {
+                foreach($compare as $key => $item){
+                    if ($item == $id){
+                        unset($compare[$key]);
+                    }
+                }
+                \Session::forget('compare');
+                \Session::put('compare', $compare);
+                $add = false;
+            }
+        }
+
+        return ['success' => true, 'count' => count(\Session::get('compare')), 'add' => $add];
+    }
+
+    public function postCompareDelete()
+    {
+        $id = \request()->get('id');
+
+        if (!$id) {
+            return ['success' => false, 'msg' => 'Нет ID'];
+        }
+
+        $compare = \Session::get('compare', []);
+        foreach($compare as $key => $item){
+            if ($item == $id){
+                unset($compare[$key]);
+            }
+        }
+        \Session::forget('compare');
+        \Session::put('compare', $compare);
+
+        return ['success' => true, 'count' => count(\Session::get('compare'))];
     }
 }

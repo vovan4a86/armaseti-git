@@ -59,6 +59,7 @@ class SiteServiceProvider extends ServiceProvider
                 }
 
                 $favorites = session('favorites', []);
+                $compare = session('compare', []);
 
                 $view->with(
                     compact(
@@ -67,7 +68,8 @@ class SiteServiceProvider extends ServiceProvider
                             'mobile_menu',
                             'footer_menu',
                             'current_city',
-                            'favorites'
+                            'favorites',
+                            'compare'
                         ]
                     )
                 );

@@ -28,9 +28,8 @@ Route::group(
             ->name('update-catalog-filter');
 
         Route::post('compare', 'AjaxController@postCompare')->name('compare');
+        Route::post('compare-delete', 'AjaxController@postCompareDelete')->name('compare-delete');
         Route::post('favorite', 'AjaxController@postFavorite')->name('favorite');
-
-
     }
 );
 
@@ -81,6 +80,7 @@ Route::group(
         Route::any('policy', ['as' => 'policy', 'uses' => 'PageController@policy']);
 
         Route::any('catalog', ['as' => 'catalog.index', 'uses' => 'CatalogController@index']);
+        Route::any('catalog/compare', ['as' => 'catalog.compare', 'uses' => 'CatalogController@compare']);
 
         Route::any('catalog/{alias}', ['as' => 'catalog.view', 'uses' => 'CatalogController@view'])
             ->where('alias', '([A-Za-z0-9\-\/_]+)');

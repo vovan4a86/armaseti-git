@@ -105,7 +105,6 @@ class CatalogController extends Controller
 
         $filters_list = [];
         $all_filters = $category->getRecurseFilterList();
-//        dd($all_filters);
 
         foreach ($all_filters as $filter) {
             if ($filter->published) {
@@ -122,7 +121,6 @@ class CatalogController extends Controller
                 ];
             }
         }
-//        dd($filters_list);
 
         if (request()->ajax()) {
             $data = request()->all();
@@ -154,7 +152,8 @@ class CatalogController extends Controller
             'children' => $category->public_children,
             'products' => $products,
             'filters_list' => $filters_list,
-            'favorites' => \Session::get('favorites', [])
+            'favorites' => \Session::get('favorites', []),
+            'compare' => \Session::get('compare', [])
         ];
 
         return view($view, $data);
@@ -272,6 +271,17 @@ class CatalogController extends Controller
                 'description' => 'Поиск',
             ]
         );
+    }
+
+    public function compare()
+    {
+        $items_ids = \Session::get('compare');
+
+        $items = Product::whereIn('id', $items_ids)->get();
+
+        return view('catalog.compare', [
+            'items' => $items
+        ]);
     }
 
 }

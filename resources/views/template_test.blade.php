@@ -32,14 +32,14 @@
         </div>
         <div class="col-sm-3">
             <div class="compare-block">
-                <span>Сравнение: </span>
-                <span class="compare">0</span>
+                <a href="{{ route('catalog.compare') }}"><span>Сравнение: </span></a>
+                <span class="compare">{{ isset($compare) ? count($compare) : 0 }}</span>
             </div>
         </div>
         <div class="col-sm-3">
             <div class="favorite-block">
                 <span>Избранное: </span>
-                <span class="favorite">{{ count($favorites) }}</span>
+                <span class="favorite">{{ isset($favorites) ? count($favorites) : 0 }}</span>
             </div>
         </div>
     </div>
