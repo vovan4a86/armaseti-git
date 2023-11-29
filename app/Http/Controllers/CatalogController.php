@@ -277,9 +277,32 @@ class CatalogController extends Controller
     {
         $items_ids = \Session::get('compare');
 
-        $items = Product::whereIn('id', $items_ids)->get();
+        $items = Product::whereIn('id', $items_ids)->with(['chars'])->get();
+
+        $compare_names = ProductChar::whereIn('product_id', $items_ids)->groupBy('name')->get();
+//        dd($compare_names);
+
+        $get_diffs = request()->get('diff');
+
+        if($get_diffs) {
+            $diffs = [];
+            foreach ($compare_names as $char) {
+                $compare_val = null;
+                foreach ($items as $i => $item) {
+                    if ($i == 0) {
+                        $compare_val = $item->getCharByName($char->name);
+                    } else {
+                        if ($compare_val != $item->getCharByName($char->name)) {
+                            $diffs[] = $char;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
 
         return view('catalog.compare', [
+            'compare_names' => $get_diffs ? $diffs : $compare_names,
             'items' => $items
         ]);
     }

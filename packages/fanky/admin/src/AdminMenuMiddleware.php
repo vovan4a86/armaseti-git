@@ -37,8 +37,8 @@ class AdminMenuMiddleware {
 			$menu->add('Региональность', ['route' => 'admin.cities', 'icon' => 'fa-globe'])
 				->active('/admin/cities/*');
 
-//			$menu->add('Партнеры', ['route' => 'admin.partners', 'icon' => 'fa-handshake-o'])
-//				->active('/admin/partners/*');
+			$menu->add('Покупатели', ['route' => 'admin.customers', 'icon' => 'fa-handshake-o'])
+				->active('/admin/customers/*');
 
 //			$menu->add('Галереи', ['route' => 'admin.gallery', 'icon' => 'fa-image'])
 //				->active('/admin/gallery/*');

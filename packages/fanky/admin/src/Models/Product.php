@@ -332,4 +332,13 @@ class Product extends Model
         return number_format($this->price, 2, ',', '.');
     }
 
+    public function getCharByName($name)
+    {
+        $ch = $this->chars()->where('name', $name)->first('value');
+        if ($ch) {
+            return $ch->value;
+        }
+        return null;
+    }
+
 }

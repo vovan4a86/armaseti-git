@@ -671,6 +671,19 @@ function search(frm, e) {
 	});
 }
 
+function addCustomerToFavorite(elem) {
+	const url = '/admin/customers/add-to-favorite';
+	const id = $(elem).closest('tr').attr('data-id');
+	// const value = $(elem).attr('checked') ? 1 : 0;
+	// alert(value);
+
+	sendAjax(url, {id}, function(json) {
+		if(json.success) {
+			console.log('add to favorite');
+		}
+	})
+}
+
 $('.catalog-list__pages').on('change', function (e) {
 	this.form.submit();
 });

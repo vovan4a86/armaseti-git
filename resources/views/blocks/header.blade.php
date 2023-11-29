@@ -52,7 +52,7 @@
                         </button>
                     </div>
                 </div>
-                @if(count($header_menu))
+                @if(isset($header_menu) && count($header_menu))
                     <div class="header__bottom">
                         <div class="header__nav">
                             <nav class="nav" itemscope itemtype="https://schema.org/SiteNavigationElement"

@@ -231,7 +231,24 @@ Route::group(['namespace' => 'Fanky\Admin\Controllers', 'prefix' => 'admin', 'as
             ->name('.delImage');
 	});
 
-	Route::group(['as' => '.settings', 'prefix' => 'settings'], function () {
+    Route::group(['as' => '.customers', 'prefix' => 'customers'], function () {
+        $controller = 'AdminCustomersController@';
+        Route::get('/', $controller . 'getIndex');
+
+        Route::get('edit/{id?}', $controller . 'getEdit')
+            ->name('.edit');
+
+        Route::post('save', $controller . 'postSave')
+            ->name('.save');
+
+        Route::post('delete/{id}', $controller . 'postDelete')
+            ->name('.delete');
+
+        Route::post('add-to-favorite', $controller . 'postAddToFavorite')
+            ->name('.add-to-favorite');
+    });
+
+    Route::group(['as' => '.settings', 'prefix' => 'settings'], function () {
 		$controller = 'AdminSettingsController@';
 		Route::get('/', $controller . 'getIndex');
 
