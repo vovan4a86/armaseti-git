@@ -65,6 +65,12 @@ return [
 			'driver' => 'errorlog',
 			'level' => 'debug',
 		],
+
+		'parser' => [
+			'driver' => 'single',
+            'path' => storage_path('logs/parser.log'),
+			'level' => 'debug',
+		],
 	],
 
 ];

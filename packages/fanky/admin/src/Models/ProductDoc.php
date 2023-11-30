@@ -23,21 +23,21 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @method static \Illuminate\Database\Eloquent\Builder|\Fanky\Admin\Models\ProductImage newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|\Fanky\Admin\Models\ProductImage query()
  */
-class ProductChar extends Model {
+class ProductDoc extends Model {
 
-	protected $table = 'product_chars';
+    use HasFile;
 
-	protected $guarded = ['id'];
+    protected $table = 'product_docs';
+
+    const UPLOAD_URL = '/uploads/products-docs/';
+    const DOC_ICON = '/adminlte/doc_icon.png';
+
+    protected $guarded = ['id'];
 
 	public $timestamps = false;
 
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
-    }
-
-    public function catalog(): BelongsTo
-    {
-        return $this->belongsTo(Catalog::class);
     }
 }

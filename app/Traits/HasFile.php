@@ -12,20 +12,10 @@ use Illuminate\Http\UploadedFile ;
 
 
 trait HasFile{
-	public $file_field = 'spec_file';
-
-	public function deleteSpecFile($upload_url = null) {
-		if(!$this->{$this->file_field}) return;
-
-		if(!$upload_url){
-			$upload_url = self::UPLOAD_SPEC_URL;
-		}
-
-		@unlink(public_path($upload_url . $this->{$this->file_field}));
-	}
+	public $file_field = 'file';
 
 	public function getFileSrcAttribute() {
-		return $this->{$this->file_field} ? url(self::UPLOAD_SPEC_URL . $this->{$this->file_field}) : null;
+		return $this->{$this->file_field} ? url(self::UPLOAD_URL . $this->{$this->file_field}) : null;
 	}
 
     /**
@@ -86,9 +76,9 @@ trait HasFile{
 	 * @param UploadedFile $file
 	 * @return string
 	 */
-	public static function uploadFile(UploadedFile $file, $name): string {
-		$file_name = $name . '.' . Str::lower($file->getClientOriginalExtension());
-        $file->move(public_path(self::UPLOAD_SPEC_URL), $file_name);
-		return $file_name;
-	}
+    public static function uploadFile(UploadedFile $file): string {
+        $file_name = md5(uniqid(rand(), true)) . '_' . time() . '.' . Str::lower($file->getClientOriginalExtension());
+        $file->move(public_path(self::UPLOAD_URL), $file_name);
+        return $file_name;
+    }
 }

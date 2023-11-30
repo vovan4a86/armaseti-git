@@ -59,6 +59,9 @@ Route::group(['namespace' => 'Fanky\Admin\Controllers', 'prefix' => 'admin', 'as
 		$controller  = 'AdminCatalogController@';
 		Route::get('/', [AdminCatalogController::class, 'getIndex']);
 
+        Route::get('get-catalogs/{id?}', $controller . 'getGetCatalogs')
+            ->name('.get_catalogs');
+
 		Route::get('products/{id?}', $controller . 'getProducts')
 			->name('.products');
 
@@ -107,8 +110,23 @@ Route::group(['namespace' => 'Fanky\Admin\Controllers', 'prefix' => 'admin', 'as
 		Route::post('product-image-order', $controller . 'postProductImageOrder')
 			->name('.productImageOrder');
 
-		Route::get('get-catalogs/{id?}', $controller . 'getGetCatalogs')
-			->name('.get_catalogs');
+        Route::post('product-delete-char/{id}', $controller . 'postProductDeleteChar')
+            ->name('.product-delete-char');
+
+        Route::post('product-add-doc/{id}', $controller . 'postProductAddDoc')
+            ->name('.product-add-doc');
+
+        Route::post('product-del-doc/{id}', $controller . 'postProductDelDoc')
+            ->name('.product-del-doc');
+
+        Route::post('product-edit-doc/{id}', $controller . 'postProductEditDoc')
+            ->name('.product-edit-doc');
+
+        Route::post('product-save-doc/{id}', $controller . 'postProductSaveDoc')
+            ->name('.product-save-doc');
+
+        Route::post('product-update-order-doc', $controller . 'postProductUpdateOrderDoc')
+            ->name('.product-update-order-doc');
 	});
 
     Route::group(['as' => '.news', 'prefix' => 'news'], function () {
@@ -243,6 +261,9 @@ Route::group(['namespace' => 'Fanky\Admin\Controllers', 'prefix' => 'admin', 'as
 
         Route::post('delete/{id}', $controller . 'postDelete')
             ->name('.delete');
+
+        Route::post('favorites', $controller . 'postGetFavorites')
+            ->name('.favorites');
 
         Route::post('add-to-favorite', $controller . 'postAddToFavorite')
             ->name('.add-to-favorite');

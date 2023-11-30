@@ -1,46 +1,32 @@
-<div class="tab-pane" id="tab_related">
-    @if(!$product->id)
-        <div>Добавление файлов доступно только после сохранения товара</div>
-    @else
-        <div class="form-group row">
-            <div class="col-md-4">
-                <label for="doc-file">Файл</label>
-                <input id="doc-file" type="file" name="file" value=""
-                       class="form-control"
-                       onchange="return docAttache(this, event)">
-            </div>
-            <div class="col-md-4">
-                <label for="article-image">Название</label>
-                <input name="doc_name" type="text" placeholder="Название для отображения" class="form-control">
-            </div>
-            <div class="col-md-4" style="line-height: 5.6;">
-                <a href="{{ route('admin.catalog.add_doc', $product->id) }}"
-                   onclick="addDoc(this, event)" class="btn btn-primary add-rel">
-                    Добавить документ</a>
-            </div>
-        </div>
+<input id="product-doc" type="hidden" name="document" value="ИКОНКА ФАЙЛА">
+@if ($product->id)
+    <div class="form-group">
+        <label class="btn btn-success">
+            <input id="doc_upload" type="file" multiple
+                   data-url="{{ route('admin.catalog.product-add-doc', $product->id) }}"
+                   accept=".pdf"
+                   style="display:none;" onchange="productDocUpload(this, event)">
+            Загрузить файлы
+        </label>
+        <p>Файлы: .pdf</p>
+    </div>
 
-        <hr>
+    <div class="docs_list">
+        @foreach ($product->docs as $doc)
+            @include('admin::catalog.tabs.doc_row', ['doc' => $doc])
+        @endforeach
+    </div>
 
-        <table class="table table-hover table-condensed" id="doc_list">
-            <thead>
-            @if(count($product->docs))
-                <tr>
-                    <th>Иконка</th>
-                    <th>Размер</th>
-                    <th>Действие</th>
-                    <th>Название</th>
-                    <th></th>
-                </tr>
-            @endif
-            </thead>
-            <tbody>
-            @foreach ($product->docs as $doc)
-                @include('admin::catalog.tabs.doc_row', ['doc' => $doc])
-            @endforeach
-            </tbody>
-        </table>
-
-
-    @endif
-</div>
+    <script type="text/javascript">
+        $(".docs_list").sortable({
+            update: function () {
+                let url = "{{ route('admin.catalog.product-update-order-doc') }}";
+                let data = {};
+                data.sorted = $('.docs_list').sortable("toArray", {attribute: 'data-id'});
+                sendAjax(url, data);
+            },
+        }).disableSelection();
+    </script>
+@else
+    <p class="text-yellow">Документы можно будет загрузить после сохранения товара!</p>
+@endif

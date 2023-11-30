@@ -175,6 +175,24 @@ trait ParseFunctions {
         }
     }
 
+    public function downloadPdfFile($url, $uploadPath, $fileName): bool {
+        $safeUrl = str_replace(' ', '%20', $url);
+
+        $this->info('Загрузка файла PDF: ' . $safeUrl);
+        $file = file_get_contents($safeUrl);
+        if (!is_dir(public_path($uploadPath))) {
+            mkdir(public_path($uploadPath), 0777, true);
+        }
+        try {
+            file_put_contents(public_path($uploadPath . $fileName), $file);
+            return true;
+        } catch (\Exception $e) {
+            $this->warn('Ошибка загрузки файла: ' . $e->getMessage());
+            return false;
+        }
+
+    }
+
     public function downloadSvgFile($url, $uploadPath, $fileName): bool {
         $safeUrl = str_replace(' ', '%20', $url);
 
@@ -320,9 +338,8 @@ trait ParseFunctions {
     public function getUpdatedTextWithNewImages(string $text, array $imgSrc, array $imgArr): string {
         if ($text == null) return '';
         if (count($imgArr) == 0) return $text;
-        $res = str_replace($imgSrc, $imgArr, $text);
 
-        return $res;
+        return str_replace($imgSrc, $imgArr, $text);
     }
 
     //чтобы найти название файла на русском для последующей замены

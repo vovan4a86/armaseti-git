@@ -23,6 +23,8 @@
                     <button class="btn btn-info" type="submit">Поиск</button>
                     <a href="{{ route('admin.customers') }}" class="btn btn-danger"
                        type="button">Сброс</a>
+                    <a href="{{ route('admin.customers', ['favorites' => 1]) }}" class="btn btn-success"
+                       type="button">Избранное</a>
                   </span>
             </div>
         </form>

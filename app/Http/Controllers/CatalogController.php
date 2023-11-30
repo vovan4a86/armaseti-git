@@ -124,7 +124,6 @@ class CatalogController extends Controller
 
         if (request()->ajax()) {
             $data = request()->all();
-            \Debugbar::log($data);
 
             $found_ids_query = ProductChar::whereIn('catalog_id', $cat_children_ids);
 
@@ -152,8 +151,6 @@ class CatalogController extends Controller
             'children' => $category->public_children,
             'products' => $products,
             'filters_list' => $filters_list,
-            'favorites' => \Session::get('favorites', []),
-            'compare' => \Session::get('compare', [])
         ];
 
         return view($view, $data);

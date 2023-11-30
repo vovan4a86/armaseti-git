@@ -318,69 +318,81 @@ $(document).ready(function () {
     });
 });
 
-function addDoc(elem, e) {
-    e.preventDefault();
-    var dataForm = new FormData();
-
-    var sendUrl = $(elem).attr('href');
-    var name = $('input[name=doc_name]');
-    var file = $('#doc-file');
-
-    if (!name.val()) {
-        alert('Введите название');
-        return;
-    }
-
-    dataForm.append('name', name.val());
-    dataForm.append('file', file[0].files[0]);
-
-    sendAjaxWithFile(sendUrl, dataForm, function (json) {
-        if (typeof json.errors != 'undefined') {
-            // applyFormValidate(form, json.errors);
-            var errMsg = [];
-            for (var key in json.errors) {
-                errMsg.push(json.errors[key]);
-            }
-            $(elem).after(autoHideMsg('red', urldecode(errMsg.join(' '))));
+function productDocUpload(elem, e){
+    var url = $(elem).data('url');
+    files = e.target.files;
+    var data = new FormData();
+    $.each(files, function(key, value)
+    {
+        if(value['size'] > max_file_size){
+            alert('Слишком большой размер файла. Максимальный размер 10Мб');
+        } else {
+            data.append('docs[]', value);
         }
-        if (typeof json.row != 'undefined') {
-            $('#doc_list tbody').append(json.row);
-            name.val('');
-            file.val('');
+    });
+    $(elem).val('');
+
+    sendFiles(url, data, function(json){
+        if (typeof json.html != 'undefined') {
+            $('.docs_list').append(urldecode(json.html));
         }
     });
 }
 
-function delDoc(elem, e) {
-    e.preventDefault();
-    if (!confirm('Точно удалить этот документ?')) return;
+function productDocDel(elem){
+    if (!confirm('Удалить документ?')) return false;
     var url = $(elem).attr('href');
-    var row = $(elem).closest('tr');
+    sendAjax(url, {}, function(json){
+        if (typeof json.msg != 'undefined') alert(urldecode(json.msg));
+        if (typeof json.success != 'undefined' && json.success == true) {
+            $(elem).closest('.images_item').fadeOut(300, function(){ $(this).remove(); });
+        }
+    });
+    return false;
+}
 
-    sendAjax(url, {}, function (json) {
-        if (typeof json.success != 'undefined') {
-            $(row).fadeOut(300, function () {
-                $(this).remove();
-            });
+function productDocEdit(elem, e){
+    e.preventDefault();
+    var url = $(elem).attr('href');
+    popupAjax(url);
+}
+
+function productDocDataSave(form, e){
+    e.preventDefault();
+    var url = $(form).attr('action');
+    var data = $(form).serialize();
+    sendAjax(url, data, function(json){
+        if (typeof json.success != 'undefined' && json.success === true) {
+            popupClose();
+            location.href = json.redirect;
         }
     });
 }
 
-function addProductParam(link, e) {
+function addProductChar(link, e) {
     e.preventDefault();
-    var conteiner = $(link).prev();
-    var row = conteiner.find('.row:last');
-    $newRow = $(document.createElement('div'));
-    $newRow.addClass('row row-params');
+    let container = $(link).prev();
+    let row = container.find('.row:last');
+     let $newRow = $(document.createElement('div'));
+    $newRow.addClass('row row-chars');
     $newRow.html(row.html());
     row.before($newRow);
 }
 
-function delProductParam(elem, e) {
+function delProductChar(elem, e) {
     e.preventDefault();
-    if (!confirm('Удалить параметр?')) return false;
-    $(elem).closest('.row').fadeOut(300, function () {
-        $(this).remove();
-    });
+    if (!confirm('Удалить характеристику?')) return false;
+    const url = $(elem).attr('href');
+    sendAjax(url, {}, function (json) {
+        if(json.success) {
+            $(elem).closest('.row').fadeOut(300, function () {
+                $(this).remove();
+            });
+            $(elem).closest('form').find('[type=submit]').after(autoHideMsg('green', urldecode(json.msg)));
+        } else {
+            $(elem).closest('form').find('[type=submit]').after(autoHideMsg('red', urldecode(json.msg)));
+        }
+    })
+
 }
 

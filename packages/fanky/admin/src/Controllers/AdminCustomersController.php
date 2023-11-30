@@ -1,4 +1,5 @@
 <?php
+
 namespace Fanky\Admin\Controllers;
 
 use Fanky\Admin\Models\Customer;
@@ -13,19 +14,33 @@ class AdminCustomersController extends AdminController
     public function getIndex()
     {
         $q = request()->get('q');
+        $f = request()->get('favorites');
 
-        if (!$q) {
-            $customers = Pagination::init(Customer::orderBy('created_at', 'desc'), 30)->get();
-        } else {
-            $query = Customer::where('name', 'LIKE', '%' . $q . '%')
-                ->orWhere('email', 'LIKE', '%' . $q . '%')
-                ->orWhere('phone', 'LIKE', '%' . $q . '%')
-                ->orWhere('company', 'LIKE', '%' . $q . '%')
-                ->orWhere('inn', 'LIKE', '%' . $q . '%')
+        if ($f) {
+            $query = Customer::where('is_favorite', 1)
                 ->orderBy('created_at', 'desc');
-            $customers = Pagination::init($query, 30)->get();
+        } else {
+            if (!$q) {
+                $query = Customer::orderBy('created_at', 'desc');
+            } else {
+                $query = Customer::where('name', 'LIKE', '%' . $q . '%')
+                    ->orWhere('email', 'LIKE', '%' . $q . '%')
+                    ->orWhere('phone', 'LIKE', '%' . $q . '%')
+                    ->orWhere('company', 'LIKE', '%' . $q . '%')
+                    ->orWhere('inn', 'LIKE', '%' . $q . '%')
+                    ->orderBy('created_at', 'desc');
+            }
         }
+        $customers = Pagination::init($query, 30)->get();
 
+        return view('admin::customers.main', ['customers' => $customers]);
+    }
+
+    public function getFavorites()
+    {
+        $query = Customer::where('is_favorite', 1)
+            ->orderBy('created_at', 'desc');
+        $customers = Pagination::init($query, 30)->get();
 
         return view('admin::customers.main', ['customers' => $customers]);
     }
@@ -113,7 +128,9 @@ class AdminCustomersController extends AdminController
     {
         $id = request()->get('id');
 
-        if(!$id) return ['success' => false, 'msg' => 'ID не передан'];
+        if (!$id) {
+            return ['success' => false, 'msg' => 'ID не передан'];
+        }
 
         $customer = Customer::find($id);
 
@@ -125,6 +142,5 @@ class AdminCustomersController extends AdminController
         }
 
         return ['success' => true];
-
     }
 }

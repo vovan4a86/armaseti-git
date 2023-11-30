@@ -4,6 +4,7 @@ namespace Fanky\Admin\Controllers;
 
 use Exception;
 use Fanky\Admin\Models\Page;
+use Fanky\Admin\Models\ProductChar;
 use Fanky\Admin\Models\ProductDoc;
 use Fanky\Admin\Pagination;
 use Request;
@@ -28,6 +29,23 @@ class AdminCatalogController extends AdminController
                 'catalogs' => $catalogs
             ]
         );
+    }
+
+    public function getGetCatalogs($id = 0): array
+    {
+        $catalogs = Catalog::whereParentId($id)->orderBy('order')->get();
+        $result = [];
+        foreach ($catalogs as $catalog) {
+            $has_children = (bool)$catalog->children()->count();
+            $result[] = [
+                'id' => $catalog->id,
+                'text' => $catalog->name,
+                'children' => $has_children,
+                'icon' => ($catalog->published) ? 'fa fa-eye text-green' : 'fa fa-eye-slash text-muted',
+            ];
+        }
+
+        return $result;
     }
 
     public function postProducts($catalog_id)
@@ -237,10 +255,12 @@ class AdminCatalogController extends AdminController
             $product->published = 1;
         }
         $catalogs = Catalog::getCatalogList();
+        $tab = request()->get('tab');
 
         $data = [
             'product' => $product,
             'catalogs' => $catalogs,
+            'tab' => $tab
         ];
         return view('admin::catalog.product_edit', $data);
     }
@@ -298,12 +318,39 @@ class AdminCatalogController extends AdminController
 
         // сохраняем страницу
         $product = Product::find($id);
+
+        //сохраняем Параметры
+        $chars_data = Request::get('chars', []);
+        $char_ids = array_get($chars_data, 'id', []);
+        $char_names = array_get($chars_data, 'name', []);
+        $char_values = array_get($chars_data, 'value', []);
+        $chars_list = [];
+        foreach ($char_ids as $key => $char_id) {
+            $chars_list[] = [
+                'id'	=> $char_id,
+                'catalog_id' => $product->catalog_id,
+                'product_id' => $product->id,
+                'name'	=> array_get($char_names, $key),
+                'translit' => Text::translit(array_get($char_names, $key)),
+                'value'	=> array_get($char_values, $key),
+            ];
+        }
+        array_pop($chars_list);
+
         if (!$product) {
             $data['order'] = Product::where('catalog_id', $data['catalog_id'])->max('order') + 1;
             $product = Product::create($data);
             $redirect = true;
         } else {
             $product->update($data);
+        }
+
+        foreach ($chars_list as $key => $char) {
+            $p = ProductChar::findOrNew(array_get($char, 'id'));
+            if(!$p->id) $redirect = false;
+            $char['product_id'] = $product->id;
+            $char['order'] = $key;
+            $p->fill($char)->save();
         }
 
         return $redirect
@@ -373,9 +420,6 @@ class AdminCatalogController extends AdminController
         return ['success' => true];
     }
 
-    /**
-     * @throws Exception
-     */
     public function postProductImageDelete($id): array
     {
         /** @var ProductImage $item */
@@ -386,69 +430,70 @@ class AdminCatalogController extends AdminController
         return ['success' => true];
     }
 
-    public function getGetCatalogs($id = 0): array
-    {
-        $catalogs = Catalog::whereParentId($id)->orderBy('order')->get();
-        $result = [];
-        foreach ($catalogs as $catalog) {
-            $has_children = (bool)$catalog->children()->count();
-            $result[] = [
-                'id' => $catalog->id,
-                'text' => $catalog->name,
-                'children' => $has_children,
-                'icon' => ($catalog->published) ? 'fa fa-eye text-green' : 'fa fa-eye-slash text-muted',
-            ];
-        }
+    public function postProductDeleteChar($id) {
+        $char = ProductChar::find($id);
+        if (!$char) return ['success' => false, 'msg' => 'Характеристика не найдена'];
 
-        return $result;
+        $char->delete();
+        return ['success' => true, 'msg' => 'Характеристика удалена'];
     }
 
-    public function postAddDoc($product_id): array
-    {
-        $product = Product::findOrFail($product_id);
-        $data = Request::except('file');
-        $file = Request::file('file');
-
-        $valid = Validator::make(
-            $data,
-            [
-                'name' => 'required',
-            ]
-        );
-
-        if ($file) {
-            $file_name = ProductDoc::uploadFile($file);
-            $data['file'] = $file_name;
+    //документы
+    public function postProductAddDoc($product_id): array {
+        $docs = Request::file('docs');
+        $items = [];
+        if ($docs) foreach ($docs as $doc) {
+            $file_name = ProductDoc::uploadFile($doc);
+            $order = ProductDoc::where('product_id', $product_id)
+                    ->max('order') + 1;
+            $item = ProductDoc::create([
+                                           'product_id' => $product_id,
+                                           'name' => 'Документ ' . $order,
+                                           'file' => $file_name,
+                                           'order' => $order
+                                       ]);
+            $items[] = $item;
         }
 
-        if ($valid->fails()) {
-            return ['errors' => $valid->messages()];
-        } else {
-            $data = array_map('trim', $data);
-            $data['product_id'] = $product->id;
-            $data['order'] = ProductDoc::whereProductId($product_id)->max('order') + 1;
-            $doc = ProductDoc::create($data);
-            $row = view('admin::catalog.tabs.doc_row', compact('doc'))->render();
-
-            return ['row' => $row];
+        $html = '';
+        foreach ($items as $item) {
+            $html .= view('admin::catalog.tabs.doc_row', ['doc' => $item]);
         }
+
+        return ['html' => $html];
     }
 
-    public function postDelDoc($doc_id): array
-    {
-        $related = ProductDoc::findOrFail($doc_id);
-        $related->delete();
+    public function postProductEditDoc($id) {
+        $doc = ProductDoc::findOrFail($id);
+        return view('admin::catalog.tabs.doc_edit', ['doc' => $doc]);
+    }
+
+    public function postProductSaveDoc($id) {
+        $doc = ProductDoc::findOrFail($id);
+        $data = Request::only('name');
+        $doc->name = $data['name'];
+        $doc->save();
+
+        return [
+            'success' => true,
+            'redirect' => route('admin.catalog.productEdit', ['id' => $doc->product_id, 'tab' => 'docs'])];
+    }
+
+    public function postProductDelDoc($id): array {
+        $item = ProductDoc::findOrFail($id);
+        $item->deleteSrcFile();
+        $item->delete();
 
         return ['success' => true];
     }
 
-    public function postDelSpec($id): array
-    {
-        $product = Product::findOrFail($id);
-        $product->deleteSpecFile();
-        $product->spec_file = null;
-        $product->save();
+    public function postProductUpdateOrderDoc(){
+        $sorted = Request::input('sorted', []);
+        foreach ($sorted as $order => $id) {
+            DB::table('product_docs')->where('id', $id)->update(array('order' => $order));
+        }
 
-        return ['success' => true, 'redirect' => route('admin.catalog.productEdit', $id)];
+        return ['success' => true];
     }
+
 }
