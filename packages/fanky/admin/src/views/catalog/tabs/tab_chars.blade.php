@@ -1,6 +1,6 @@
 <div class="chars">
     @foreach($product->chars as $char)
-        <div class="row row-chars">
+        <div class="row row-chars" data-id="{{ $char->id }}">
             {!! Form::hidden('chars[id][]', $char->id) !!}
             <div style="width: 50px;">
                 <i class="fa fa-ellipsis-v"></i>
@@ -31,7 +31,14 @@
 </div>
 <a href="#" onclick="addProductChar(this, event)">Добавить</a>
 <script type="text/javascript">
-    $(".chars").sortable().disableSelection();
+    $(".chars").sortable({
+        update: function () {
+            let url = "{{ route('admin.catalog.product-update-order-char') }}";
+            let data = {};
+            data.sorted = $('.chars').sortable("toArray", {attribute: 'data-id'});
+            sendAjax(url, data);
+        },
+    }).disableSelection();
 </script>
 <style>
     .chars .row{

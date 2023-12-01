@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Doctrine\DBAL\Query\QueryBuilder;
 use Fanky\Admin\Models\Catalog;
 use Fanky\Admin\Models\Page;
+use Fanky\Admin\Models\ParentCatalogFilter;
 use Fanky\Admin\Models\Product;
 use Fanky\Admin\Models\ProductChar;
 use Fanky\Admin\Settings;
@@ -103,23 +104,28 @@ class CatalogController extends Controller
             $products = $category->public_products;
         }
 
-        $filters_list = [];
-        $all_filters = $category->getRecurseFilterList();
+//        $all_filters = $category->getRecurseFilterList();
+        $root_category = $category->findRootCategory();
+        $all_filters = ParentCatalogFilter::where('catalog_id', $root_category->id)
+            ->public()
+            ->orderBy('order')
+            ->get();
 
+        $filters_list = [];
         foreach ($all_filters as $filter) {
-            if ($filter->published) {
-                $values = ProductChar::where('name', $filter->name)
-                    ->whereIn('catalog_id', $cat_children_ids)
-                    ->select('value')
-                    ->distinct()
-                    ->pluck('value')
-                    ->all();
-                natsort($values);
-                $filters_list[$filter->name] = [
-                    'translit' => Text::translit($filter->name),
-                    'values' => $values
-                ];
-            }
+//            if ($filter->published) {
+            $values = ProductChar::where('name', $filter->name)
+                ->whereIn('catalog_id', $cat_children_ids)
+                ->select('value')
+                ->distinct()
+                ->pluck('value')
+                ->all();
+            natsort($values);
+            $filters_list[$filter->name] = [
+                'translit' => Text::translit($filter->name),
+                'values' => $values
+            ];
+//            }
         }
 
         if (request()->ajax()) {
@@ -281,7 +287,7 @@ class CatalogController extends Controller
 
         $get_diffs = request()->get('diff');
 
-        if($get_diffs) {
+        if ($get_diffs) {
             $diffs = [];
             foreach ($compare_names as $char) {
                 $compare_val = null;
@@ -298,10 +304,13 @@ class CatalogController extends Controller
             }
         }
 
-        return view('catalog.compare', [
-            'compare_names' => $get_diffs ? $diffs : $compare_names,
-            'items' => $items
-        ]);
+        return view(
+            'catalog.compare',
+            [
+                'compare_names' => $get_diffs ? $diffs : $compare_names,
+                'items' => $items
+            ]
+        );
     }
 
 }

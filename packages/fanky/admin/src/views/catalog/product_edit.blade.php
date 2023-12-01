@@ -22,7 +22,8 @@
             <li class="{{ isset($tab) ? '' : 'active' }}"><a href="#tab_1" data-toggle="tab">Параметры</a></li>
             <li><a href="#tab_2" data-toggle="tab">Текст ({{ $product->text ? 1 : 0 }})</a></li>
             <li><a href="#tab_3" data-toggle="tab">Характеристики ({{ count($product->chars) }})</a></li>
-            <li class="{{ isset($tab) && $tab === 'docs' ? 'active' : '' }}"><a href="#tab_docs" data-toggle="tab">Документы ({{ count($product->docs) }})</a></li>
+            <li class="{{ isset($tab) && $tab === 'docs' ? 'active' : '' }}"><a href="#tab_docs" data-toggle="tab">Документы
+                    ({{ count($product->docs) }})</a></li>
             <li><a href="#tab_4" data-toggle="tab">Изображения ({{ count($product->images()->get()) }})</a></li>
             <li class="pull-right">
                 <a href="{{ route('admin.catalog.products', [$product->catalog_id]) }}"
@@ -49,7 +50,7 @@
                 <div style="display: flex; gap: 20px">
                     {!! Form::groupText('price', $product->price ?: 0, 'Цена') !!}
                     {!! Form::groupText('is_discount', $product->is_discount, 'Скидка') !!}
-{{--                    {!! Form::groupText('price', $product->product_count ?: 0, 'Наличие, шт') !!}--}}
+                    {{--                    {!! Form::groupText('price', $product->product_count ?: 0, 'Наличие, шт') !!}--}}
                 </div>
 
                 {!! Form::groupCheckbox('is_hit', 1, $product->is_hit, 'Хит') !!}
@@ -90,7 +91,7 @@
 
                     <div class="images_list">
                         @foreach ($product->images()->get() as $image)
-                            @include('admin::catalog.product_image', ['image' => $image, 'active' => $product->image])
+                            @include('admin::catalog.product_image', ['image' => $image, 'alias' => $product->catalog->alias])
                         @endforeach
                     </div>
                 @else
@@ -101,7 +102,9 @@
 
         <div class="box-footer">
             <button type="submit" class="btn btn-primary">Сохранить</button>
-            <a class="pull-right" href="{{ $product->parse_url }}" target="_blank"><i class="fa fa-external-link" style="vertical-align: middle"></i> Страница источника</a>
+            <a class="pull-right" href="{{ $product->parse_url }}" target="_blank">
+                <i class="fa fa-external-link" style="vertical-align: middle"></i> Страница источника
+            </a>
         </div>
     </div>
 </form>

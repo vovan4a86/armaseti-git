@@ -259,7 +259,7 @@ trait ParseFunctions {
      * @return Catalog
      */
     private function getCatalogByName(string $categoryName, int $parentId): Catalog {
-        $catalog = Catalog::whereName($categoryName)->first();
+        $catalog = Catalog::whereName($categoryName)->where('parent_id', $parentId)->first();
         if (!$catalog) {
             $catalog = Catalog::create([
                 'name' => $categoryName,

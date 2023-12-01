@@ -10,6 +10,7 @@ use Fanky\Admin\Models\City;
 use Fanky\Admin\Models\Feedback;
 use Fanky\Admin\Models\Order as Order;
 use Fanky\Admin\Models\Page;
+use Fanky\Admin\Models\ParentCatalogFilter;
 use Fanky\Admin\Models\Product;
 use Illuminate\Http\Request;
 use Mail;
@@ -512,6 +513,24 @@ class AjaxController extends Controller
         return ['success' => true];
     }
 
+//    public function postUpdateCatalogFilter()
+//    {
+//        $id = request()->get('id');
+//
+//        if (!$id) {
+//            return ['success' => false, 'msg' => 'Ошибка, нет id'];
+//        }
+//
+//        $item = CatalogFilter::where('id', $id)->first();
+//        if ($item->published == 1) {
+//            $item->update(['published' => 0]);
+//        } else {
+//            $item->update(['published' => 1]);
+//        }
+//
+//        return ['success' => true, 'msg' => 'Успешно обновлено!'];
+//    }
+
     public function postUpdateCatalogFilter()
     {
         $id = request()->get('id');
@@ -520,7 +539,7 @@ class AjaxController extends Controller
             return ['success' => false, 'msg' => 'Ошибка, нет id'];
         }
 
-        $item = CatalogFilter::where('id', $id)->first();
+        $item = ParentCatalogFilter::where('id', $id)->first();
         if ($item->published == 1) {
             $item->update(['published' => 0]);
         } else {

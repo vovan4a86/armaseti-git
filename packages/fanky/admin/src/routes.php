@@ -113,6 +113,12 @@ Route::group(['namespace' => 'Fanky\Admin\Controllers', 'prefix' => 'admin', 'as
         Route::post('product-delete-char/{id}', $controller . 'postProductDeleteChar')
             ->name('.product-delete-char');
 
+        Route::post('product-update-order-char', $controller . 'postProductUpdateOrderChar')
+            ->name('.product-update-order-char');
+
+        Route::post('product-update-order-filter', $controller . 'postProductUpdateOrderFilter')
+            ->name('.product-update-order-filter');
+
         Route::post('product-add-doc/{id}', $controller . 'postProductAddDoc')
             ->name('.product-add-doc');
 
@@ -127,6 +133,24 @@ Route::group(['namespace' => 'Fanky\Admin\Controllers', 'prefix' => 'admin', 'as
 
         Route::post('product-update-order-doc', $controller . 'postProductUpdateOrderDoc')
             ->name('.product-update-order-doc');
+
+        Route::get('search', $controller . 'search')
+            ->name('.search');
+
+        Route::post('move-products', [
+            'as' => '.move-products',
+            'uses' => $controller . 'postMoveProducts'
+        ]);
+
+        Route::post('delete-products', [
+            'as' => '.delete-products',
+            'uses' => $controller . 'postDeleteProducts'
+        ]);
+
+        Route::post('delete-products-image', [
+            'as' => '.delete-products-image',
+            'uses' => $controller . 'postDeleteProductsImage'
+        ]);
 	});
 
     Route::group(['as' => '.news', 'prefix' => 'news'], function () {

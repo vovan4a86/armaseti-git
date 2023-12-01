@@ -9,15 +9,18 @@
                     <form class="filters" id="filter-form" action="{{ $category->url }}">
                         @if($filters_list)
                             @foreach($filters_list as $name => $items)
-                                <div class="filter">
-                                    <div class="filter-name">{{ $name }}</div>
-                                    @foreach($items['values'] as $val)
-                                        <label>
-                                            <input type="checkbox" name="{{ $items['translit'] }}[]" value="{{ $val }}">
-                                            <span class="filter-label-name">{{ $val }}</span>
-                                        </label>
-                                    @endforeach
-                                </div>
+                                @if(count($items['values']))
+                                    <div class="filter">
+                                        <div class="filter-name">{{ $name }}</div>
+                                        @foreach($items['values'] as $val)
+                                            <label>
+                                                <input type="checkbox" name="{{ $items['translit'] }}[]"
+                                                       value="{{ $val }}">
+                                                <span class="filter-label-name">{{ $val }}</span>
+                                            </label>
+                                        @endforeach
+                                    </div>
+                                @endif
                             @endforeach
                         @endif
                         <div class="btns">

@@ -396,3 +396,99 @@ function delProductChar(elem, e) {
 
 }
 
+//mass products work
+function checkSelectProduct() {
+    var selected = $('input.js_select:checked');
+    if (selected.length) {
+        $('.js-move-btn').removeAttr('disabled');
+        $('.js-delete-btn').removeAttr('disabled');
+    } else {
+        $('.js-move-btn').attr('disabled', 'disabled');
+        $('.js-delete-btn').attr('disabled', 'disabled');
+    }
+}
+
+function checkSelectAll() {
+    $('input.js_select').prop('checked', true);
+    checkSelectProduct();
+}
+
+function checkDeselectAll() {
+    $('input.js_select').prop('checked', false);
+    checkSelectProduct();
+}
+
+function moveProducts(btn, e) {
+    e.preventDefault();
+    var url = '/admin/catalog/move-products';
+    var catalog_id = $('#moveDialog select').val();
+    var items = [];
+    var selected = $('input.js_select:checked');
+    $(selected).each(function (n, el) {
+        items.push($(el).val());
+        $(el).closest('tr').animate({'backgroundColor': '#fb6c6c'}, 300);
+    });
+    sendAjax(url, {catalog_id: catalog_id, items: items}, function (json) {
+        if (typeof json.success != 'undefined' && json.success == true) {
+            $('#moveDialog').modal('hide');
+            $(selected).each(function (n, el) {
+                // $("#row td").animate({'line-height':0},1000).remove();
+                // $(el).closest('tr').fadeOut(300, function(){ $(this).remove(); });
+                $(el).closest('tr').children('td, th')
+                    .animate({paddingBottom: 0, paddingTop: 0}, 300)
+                    .wrapInner('<div />')
+                    .children()
+                    .slideUp(function () {
+                        $(this).closest('tr').remove();
+                    });
+            })
+        }
+    })
+    $('#moveDialog').modal('hide');
+}
+
+function deleteProducts(btn, e) {
+    e.preventDefault();
+    if (!confirm('Действительно удалить выбранные товары?')) return
+    var url = '/admin/catalog/delete-products';
+    var items = [];
+    var selected = $('input.js_select:checked');
+    $(selected).each(function (n, el) {
+        items.push($(el).val());
+        $(el).closest('tr').animate({'backgroundColor': '#fb6c6c'}, 300);
+    });
+    sendAjax(url, {items: items}, function (json) {
+        if (typeof json.success != 'undefined' && json.success == true) {
+            $(selected).each(function (n, el) {
+                // $("#row td").animate({'line-height':0},1000).remove();
+                // $(el).closest('tr').fadeOut(300, function(){ $(this).remove(); });
+                $(el).closest('tr').children('td, th')
+                    .animate({paddingBottom: 0, paddingTop: 0}, 300)
+                    .wrapInner('<div />')
+                    .children()
+                    .slideUp(function () {
+                        $(this).closest('tr').remove();
+                    });
+            })
+        }
+    })
+}
+
+function deleteProductsImage(btn, e, catalogId) {
+    e.preventDefault();
+    if (!confirm('Действительно удалить изображения у выбранных товаров?')) return
+    var url = '/admin/catalog/delete-products-image';
+    var redirect = '/admin/catalog/products/' + catalogId;
+    var items = [];
+    var selected = $('input.js_select:checked');
+    $(selected).each(function (n, el) {
+        items.push($(el).val());
+        $(el).closest('tr').animate({'backgroundColor': '#ffc3c3'}, 300);
+    });
+    sendAjax(url, {items: items}, function (json) {
+        if (typeof json.success != 'undefined' && json.success === true) {
+            checkDeselectAll();
+            location.href = redirect;
+        }
+    })
+}

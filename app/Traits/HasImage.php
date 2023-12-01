@@ -31,31 +31,31 @@ trait HasImage{
 		@unlink(public_path($upload_url . $this->{$this->image_field}));
 	}
 
-	public function deleteTopView() {
-		@unlink(public_path(self::UPLOAD_URL . $this->top_view));
-	}
+	public function imageSrc($alias) {
+        return $this->{$this->image_field} ? url(self::UPLOAD_URL . $alias . '/'  . $this->{$this->image_field}) : null;
+    }
 
 	public function getImageSrcAttribute() {
-		return $this->{$this->image_field} ? url(self::UPLOAD_URL . $this->{$this->image_field}) : null;
+		return $this->{$this->image_field} ? url(self::getImagePathAttribute() . $this->{$this->image_field}) : null;
 	}
 
-	public function thumb($thumb) {
+	public function thumb($thumb, $alias = null) {
+	    if ($alias) $alias = $alias . '/';
 		if (!$this->{$this->image_field}) {
 			return null;
 		} else {
-			$file = public_path(self::UPLOAD_URL . $this->{$this->image_field});
+			$file = public_path(self::UPLOAD_URL . $alias . $this->{$this->image_field});
 			$file = str_replace(['\\\\', '//'], DIRECTORY_SEPARATOR, $file);
 			$file = str_replace(['\\', '/'], DIRECTORY_SEPARATOR, $file);
 
-			if (!is_file(public_path(Thumb::url(self::UPLOAD_URL . $this->{$this->image_field}, $thumb)))) {
+			if (!is_file(public_path(Thumb::url(self::UPLOAD_URL . $alias . $this->{$this->image_field}, $thumb)))) {
 				if (!is_file($file))
 					return null; //нет исходного файла
 				//создание миниатюры
-				Thumb::make(self::UPLOAD_URL . $this->{$this->image_field}, self::$thumbs);
-
+				Thumb::make(self::UPLOAD_URL . $alias . $this->{$this->image_field}, self::$thumbs);
 			}
 
-			return url(Thumb::url(self::UPLOAD_URL . $this->{$this->image_field}, $thumb));
+			return url(Thumb::url(self::UPLOAD_URL . $alias . $this->{$this->image_field}, $thumb));
 		};
 	}
 

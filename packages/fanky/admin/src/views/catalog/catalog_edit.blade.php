@@ -113,17 +113,37 @@
             @if($catalog->parent_id == 0)
                 <div class="tab-pane" id="tab_3">
                     @if(count($catalogFiltersList))
-                        <div style="display: flex; flex-direction: column;">
+                        <div style="display: flex; flex-direction: column;" class="catalog_filters">
                             @foreach($catalogFiltersList as $item)
-                                <div class="form-group">
-                                    <input type="checkbox" name="filters[]" id="f_{{ $item->id }}"
-                                           value="{{ $item->id }}" {{ $item->published ? 'checked' : '' }}
-                                           onclick="updateCatalogFilter(this)">
-                                    <label for="f_{{ $item->id }}" style="margin-right: 10px;">{{ $item->name }}</label>
+                                <div class="filter" data-id="{{ $item->id }}">
+                                    <div style="width: 50px;">
+                                        <i class="fa fa-ellipsis-v"></i>
+                                        <i class="fa fa-ellipsis-v"></i>
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="checkbox" name="filters[]" id="f_{{ $item->id }}"
+                                               value="{{ $item->id }}" {{ $item->published ? 'checked' : '' }}
+                                               onclick="updateCatalogFilter(this)">
+                                        <label for="f_{{ $item->id }}" style="margin-right: 10px;">{{ $item->name }}</label>
+                                    </div>
                                 </div>
-
                             @endforeach
                         </div>
+                        <script type="text/javascript">
+                            $(".catalog_filters").sortable({
+                                update: function () {
+                                    let url = "{{ route('admin.catalog.product-update-order-filter') }}";
+                                    let data = {};
+                                    data.sorted = $('.catalog_filters').sortable("toArray", {attribute: 'data-id'});
+                                    sendAjax(url, data);
+                                },
+                            }).disableSelection();
+                        </script>
+                        <style>
+                            .filter {
+                                display: flex;
+                            }
+                        </style>
                     @else
                         <p>Нет фильтров</p>
                     @endif

@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Collection;
+use phpDocumentor\Reflection\Types\Self_;
 use SiteHelper;
 use URL;
 
@@ -73,6 +74,8 @@ class Catalog extends Model
     private $_disableEventUpdatePublished;
     protected $guarded = ['id'];
 
+    private $cur_id;
+
     protected $casts = [
         'settings' => 'array',
         'children_ids' => 'array',
@@ -83,15 +86,9 @@ class Catalog extends Model
     const UPLOAD_VIDEO_ICON = '/adminlte/video.png';
     const TOP_VIEW_DEFAULT = '/static/images/common/top-view--product.jpg';
 
-
     public static $thumbs = [
         1 => '100x100|fit', //admin
         2 => '353x210|fit', //list
-    ];
-
-    public static $thumbs_top_view = [
-        1 => '100x100', //admin
-        2 => '1920x311', //top view
     ];
 
     public static function boot()
@@ -292,13 +289,20 @@ class Catalog extends Model
         return $catalogs;
     }
 
-    public function findRootCategory($catalog_id)
+    public function findRootCategory($catalog_id = null)
     {
-        $cur_cat = Catalog::find($catalog_id);
-        if ($cur_cat->parent_id !== 0) {
-            $this->findRootCategory($cur_cat->parent_id);
+        if (!$catalog_id) {
+            $catalog_id = $this->parent_id;
+            if ($catalog_id == 0) return $this;
         }
-        return $cur_cat;
+
+        $this->cur_cat = Catalog::find($catalog_id);
+
+        if ($this->cur_cat->parent_id !== 0) {
+            $catalog_id = $this->cur_cat->parent_id;
+            $this->findRootCategory($catalog_id);
+        }
+        return $this->cur_cat;
     }
 
     public static function getByPath($path): ?Catalog
@@ -489,22 +493,13 @@ class Catalog extends Model
             ->orderBy('order');
     }
 
+    public function getImagePathAttribute(): string
+    {
+        return self::UPLOAD_URL . $this->alias . '/';
+    }
+
     public function getImageSrcAttribute(): string
     {
         return self::UPLOAD_URL . $this->image;
-    }
-
-    public function getBackgroundType(): int
-    {
-        if (!$this->background) {
-            return 0;
-        }
-        $array = explode('.', $this->background);
-        $ext = array_pop($array);
-        if ($ext == 'mp4') {
-            return 2;
-        }
-
-        return 1;
     }
 }
