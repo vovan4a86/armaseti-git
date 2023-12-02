@@ -51,9 +51,21 @@ class ParseProducts extends Command
 //        $this->parseProduct($catalog, 'Задвижка чугунная фланцевая 30ч39р (хол.) Китай Ру-16 Ду-65', 'https://gremir.ru/zadvizhki/zadvizhki-chugunnye-flantsevye/kitaj-30ch39r/analog-mzv/53750/');
 //        exit();
 
-        foreach ($this->catalogList() as $catName => $catUrl) {
-            $this->parseCatalog($catName, $catUrl);
-        }
+//        $this->parseCatalog(
+//            'Задвижки с электроприводом',
+//            'https://gremir.ru/zadvizhki/klinovye-s-elektroprivodom-el-privodom/',
+//            2
+//        );
+
+        $this->parseCatalog(
+            'Задвижки 30ч39р Завод им. Гаджиева',
+            'https://gremir.ru/zadvizhki/zadvizhki-chugunnye-flantsevye/zavod-im-gadzhieva/',
+            14
+        );
+//
+//        foreach ($this->catalogList() as $catName => $catUrl) {
+//            $this->parseCatalog($catName, $catUrl);
+//        }
 
         $this->info('The command was successful!');
     }
@@ -123,6 +135,7 @@ class ParseProducts extends Command
                 $pre_text = $this->getUpdatedTextWithNewImages($text_image, $imgSrc, $imgArr);
             }
 
+            //описание
             if ($catalog_crawler->filter('.category-desc')->count() > 0) {
                 $text = $catalog_crawler->filter('.category-desc')->html();
 
@@ -134,6 +147,7 @@ class ParseProducts extends Command
                 $catalog->save();
             }
 
+            //документация
             if ($catalog_crawler->filter('.product-documentation')->count() > 0) {
                 $catalog_crawler->filter('.docs__item')->each(
                     function (Crawler $item, $i) use ($catalog) {
@@ -143,7 +157,6 @@ class ParseProducts extends Command
                         $url_full_file_name = array_pop($arr);
 
                         if (str_ends_with($url_full_file_name, 'pdf')) {
-
                             if (!is_file(public_path(CatalogDoc::UPLOAD_URL . $url_full_file_name))) {
                                 $this->downloadPdfFile($url, CatalogDoc::UPLOAD_URL, $url_full_file_name);
                             }
@@ -163,111 +176,84 @@ class ParseProducts extends Command
 
             if ($catalog_crawler->filter('.sub-links')->count() > 0) {
                 $catalog_crawler->filter('.sub-links li')
-//                    ->reduce(function (Crawler $a, $i) {
-//                        return ($i == 0);
-//                    })
                     ->each(
                         function (Crawler $item, $i) use ($catalog, $catalog_crawler) {
                             $url = $this->baseUrl . $item->filter('a')->attr('href');
                             $name = trim($item->filter('.cat-name')->text());
 
                             //зациклились подразделы
-                            if($url != 'https://gremir.ru/zadvizhki/klinovye-s-elektroprivodom-el-privodom/stalnye-30s941nzh/') {
+                            if ($url == 'https://gremir.ru/zadvizhki/stalnye-flancevye/30s941nzh/') {
+                                $catalog_crawler->filter('.prod-list.prod-list-top tr')
+                                    ->each(
+                                        function (Crawler $list_item, $i) use ($catalog) {
+                                            $name = trim($list_item->filter('.list2-title')->text());
+                                            $url = $this->baseUrl . $list_item->filter('.list2-title')->attr('href');
+
+                                            // если товар уже парсили, обновим цену/наличие и дальше
+                                            $product = Product::where('parse_url', $url)->first();
+                                            if (!$product) {
+                                                $this->parseProduct($catalog, $name, $url);
+                                            } else {
+                                                //изображения
+                                                $this->updateProduct($product, $url);
+                                            }
+                                        }
+                                    );
+                            } else {
                                 $this->parseCatalog($name, $url, $catalog->id);
                             }
-// else {
-//                                $catalog_crawler->filter('.prod-list.prod-list-top tr')
-//                                    ->each(
-//                                        function (Crawler $list_item, $i) use ($catalog) {
-//                                            $data = [];
-//
-//                                            $name = trim($list_item->filter('.list2-title')->text());
-//                                            $url = $this->baseUrl . $list_item->filter('.list2-title')->attr('href');
-//
-//                                            $price_text = trim($list_item->filter('.td-price span')->text());
-//                                            if ($price_text == 'по запросу') {
-//                                                $data['price'] = 'по запросу';
-//                                            } else {
-//                                                $data['price'] = preg_replace("/[^0-9]/", '', $price_text); // цена
-//                                            }
-//
-//                                            // если товар уже парсили, обновим цену/наличие и дальше
-//                                            $product = Product::where('parse_url', $url)->first();
-//                                            if ($product) {
-//                                                $product->update($data);
-//                                            } else {
-//                                                $this->parseProduct($catalog, $name, $url);
-//                                            }
-//                                        }
-//                                    );
-
-//                                //проход по следующим страницам
-//                                if ($catalog_crawler->filter('.menu-h')->count() > 0) {
-//                                    $last_li_class = $catalog_crawler->filter('.menu-h li a')->last()->attr('class');
-//                                    if ($last_li_class == 'inline-link') {
-//                                        $url = $this->baseUrl . $catalog_crawler->filter('.menu-h li a')->last()->attr('href');
-//                                        $this->parseCatalogNextPage($url, $catalog);
-//                                    }
-//                                }
-//                            }
-
                         }
                     );
             } else {
                 if ($parent != 0) {
                     //парсим список товаров в разделе
-//                    $catalog_crawler->filter('.prod-list.prod-list-top tr')
-//                        //парсим определенное количество товаров
-////                        ->reduce(
-////                            function (Crawler $a, $i) {
-////                                return ($i < 1);
-////                            }
-////                        )
-//                        ->each(
-//                            function (Crawler $list_item, $i) use ($catalog) {
-//                                $data = [];
-//
-//                                $name = trim($list_item->filter('.list2-title')->text());
-//                                $url = $this->baseUrl . $list_item->filter('.list2-title')->attr('href');
-//
-////                                if ($list_item->filter('.product-count--outstock')->count() > 0) {
-////                                    $data['product_count'] = 'Под заказ'; // наличие
-////                                } elseif ($list_item->filter('.product-count--instock')->count() > 0) {
-////                                    $product_count_text = $list_item->filter('.product-count--instock .nowrap')->text();
-////                                    $data['product_count'] = preg_replace(
-////                                        "/[^0-9]/",
-////                                        '',
-////                                        $product_count_text
-////                                    ); // наличие
-////                                } else {
-////                                    $data['product_count'] = null;
-////                                }
-//
+                    $catalog_crawler->filter('.prod-list.prod-list-top tr')
+                        ->each(
+                            function (Crawler $list_item, $i) use ($catalog) {
+                                $data = [];
+
+                                $name = trim($list_item->filter('.list2-title')->text());
+                                $url = $this->baseUrl . $list_item->filter('.list2-title')->attr('href');
+
+//                                if ($list_item->filter('.product-count--outstock')->count() > 0) {
+//                                    $data['product_count'] = 'Под заказ'; // наличие
+//                                } elseif ($list_item->filter('.product-count--instock')->count() > 0) {
+//                                    $product_count_text = $list_item->filter('.product-count--instock .nowrap')->text();
+//                                    $data['product_count'] = preg_replace(
+//                                        "/[^0-9]/",
+//                                        '',
+//                                        $product_count_text
+//                                    ); // наличие
+//                                } else {
+//                                    $data['product_count'] = null;
+//                                }
+
 //                                $price_text = trim($list_item->filter('.td-price span')->text());
 //                                if ($price_text == 'по запросу') {
-//                                    $data['price'] = 'по запросу';
+//                                    $data['price'] = '0';
 //                                } else {
 //                                    $data['price'] = preg_replace("/[^0-9]/", '', $price_text); // цена
 //                                }
-//
-//                                // если товар уже парсили, обновим цену/наличие и дальше
-//                                $product = Product::where('parse_url', $url)->first();
-//                                if ($product) {
-//                                    $product->update($data);
-//                                } else {
-//                                    $this->parseProduct($catalog, $name, $url);
-//                                }
-//                            }
-//                        );
 
-                    //проход по следующим страницам
-//                    if ($catalog_crawler->filter('.menu-h')->count() > 0) {
-//                        $last_li_class = $catalog_crawler->filter('.menu-h li a')->last()->attr('class');
-//                        if ($last_li_class == 'inline-link') {
-//                            $url = $this->baseUrl . $catalog_crawler->filter('.menu-h li a')->last()->attr('href');
-//                            $this->parseCatalogNextPage($url, $catalog);
-//                        }
-//                    }
+                                // если товар уже парсили, обновим цену/наличие и дальше
+                                $product = Product::where('parse_url', $url)->first();
+                                if (!$product) {
+                                    $this->parseProduct($catalog, $name, $url);
+                                } else {
+                                    //изображения
+                                    $this->updateProduct($product, $url, $catalog);
+                                }
+                            }
+                        );
+
+//                    проход по следующим страницам
+                    if ($catalog_crawler->filter('.menu-h')->count() > 0) {
+                        $last_li_class = $catalog_crawler->filter('.menu-h li a')->last()->attr('class');
+                        if ($last_li_class == 'inline-link') {
+                            $url = $this->baseUrl . $catalog_crawler->filter('.menu-h li a')->last()->attr('href');
+                            $this->parseCatalogNextPage($url, $catalog);
+                        }
+                    }
                 }
             }
         } catch (\Exception $e) {
@@ -276,6 +262,7 @@ class ParseProducts extends Command
 
             Log::channel('parser')->error($e->getMessage());
             Log::channel('parser')->error($e->getTraceAsString());
+            exit();
         }
     }
 
@@ -291,36 +278,11 @@ class ParseProducts extends Command
             $catalog_crawler->filter('.prod-list.prod-list-top tr')
                 ->each(
                     function (Crawler $list_item, $i) use ($catalog) {
-                        $data = [];
-
                         $name = trim($list_item->filter('.list2-title')->text());
                         $url = $this->baseUrl . $list_item->filter('.list2-title')->attr('href');
 
-                        if ($list_item->filter('.product-count--outstock')->count() > 0) {
-                            $data['product_count'] = 'Под заказ'; // наличие
-                        } elseif ($list_item->filter('.product-count--instock')->count() > 0) {
-                            $product_count_text = $list_item->filter('.product-count--instock .nowrap')->text();
-                            $data['product_count'] = preg_replace(
-                                "/[^0-9]/",
-                                '',
-                                $product_count_text
-                            ); // наличие
-                        } else {
-                            $data['product_count'] = null;
-                        }
-
-                        $price_text = trim($list_item->filter('.td-price span')->text());
-                        if ($price_text == 'по запросу') {
-                            $data['price'] = 'по запросу';
-                        } else {
-                            $data['price'] = preg_replace("/[^0-9]/", '', $price_text); // цена
-                        }
-
-                        // если товар уже парсили, обновим цену/наличие и дальше
                         $product = Product::where('parse_url', $url)->first();
-                        if ($product) {
-                            $product->update($data);
-                        } else {
+                        if (!$product) {
                             $this->parseProduct($catalog, $name, $url);
                         }
                     }
@@ -340,12 +302,13 @@ class ParseProducts extends Command
 
             Log::channel('parser')->error($e->getMessage());
             Log::channel('parser')->error($e->getTraceAsString());
+            exit();
         }
     }
 
     public function parseProduct(Catalog $catalog, $name, $url)
     {
-        $this->info('Парсим товар: ' . $name . ' (' . $url . ')');
+        $this->info('Новый товар: ' . $name . ' (' . $url . ')');
 
         try {
             $res = $this->client->get($url);
@@ -415,7 +378,6 @@ class ParseProducts extends Command
             }
 
             $product = Product::create($data);
-            $product_id = $product->id;
 
             //характеристики
             if ($product_crawler->filter('#product-features')->count() > 0) {
@@ -513,24 +475,118 @@ class ParseProducts extends Command
             }
 
             //документы
+            if ($product_crawler->filter('.product-documentation')->count() > 0) {
+                $product_crawler->filter('.docs__item')->each(
+                    function (Crawler $item, $i) use ($product, $catalog) {
+                        $name = trim($item->filter('.docs__link')->text());
+                        $url = $this->baseUrl . $item->filter('.docs__link')->attr('href');
+                        $arr = explode('/', $url);
+                        $url_full_file_name = array_pop($arr);
+
+                        if (str_ends_with($url, 'pdf')) {
+                            if (!is_file(
+                                public_path(ProductDoc::UPLOAD_URL . $catalog->alias . '/' . $url_full_file_name)
+                            )) {
+                                $this->downloadPdfFile(
+                                    $url,
+                                    ProductDoc::UPLOAD_URL . $catalog->alias . '/',
+                                    $url_full_file_name
+                                );
+                            }
+
+                            ProductDoc::create(
+                                [
+                                    'product_id' => $product->id,
+                                    'name' => $name,
+                                    'file' => $url_full_file_name,
+                                    'order' => $i
+                                ]
+                            );
+                        }
+                    }
+                );
+            }
+        } catch (\Exception $e) {
+            $this->error('Ошибка parseProduct: ' . $e->getMessage());
+            $this->error($e->getTraceAsString());
+
+            Log::channel('parser')->error($e->getMessage());
+            Log::channel('parser')->error($e->getTraceAsString());
+            exit();
+        }
+    }
+
+    public function updateProduct(Product $product, $url, $catalog)
+    {
+        $this->info('Обновляем товар: ' . $product->name);
+
+        try {
+            $res = $this->client->get($url);
+            $html = $res->getBody()->getContents();
+            $product_crawler = new Crawler($html); //products page from url
+
+            //изображения
+//            if ($product_crawler->filter('.imgs')->count() > 0) {
+//                // 1 изображение
+//                if ($product_crawler->filter('.imgs .image')->count() == 1) {
+//                    $url_raw = null;
+//                    if ($product_crawler->filter('.imgs .image a')->count() > 0) {
+//                        $url_raw = $product_crawler->filter('.imgs .image a')->attr('href');
+//                    } elseif ($product_crawler->filter('.imgs .image img')->count() > 0) {
+//                        $url_raw = $product_crawler->filter('.imgs .image img')->first()->attr('src');
+//                    }
+//
+//                    if ($url_raw) {
+//                        $url = $this->baseUrl . $url_raw;
+//                        $url_arr = explode('.', $url_raw);
+//                        $ext = array_pop($url_arr);
+//                        $file_name = $product->article . '.' . $ext;
+//                        $this->uploadProductImage($url, $file_name, $product->id, $product->catalog->alias);
+//                    }
+//                }
+//
+//                // больше 1 изображения
+//                if ($product_crawler->filter('.imgs .more-images .image')->count() > 1) {
+//                    $product_crawler->filter('.imgs .more-images .image')->each(
+//                        function (Crawler $image, $i) use ($product) {
+//                            $url_raw = $image->filter('a')->attr('href');
+//                            $url = $this->baseUrl . $url_raw;
+//                            $url_arr = explode('.', $url_raw);
+//                            $ext = array_pop($url_arr);
+//                            $file_name = $product->article . '_' . ($i + 1) . '.' . $ext;
+//                            $this->uploadProductImage($url, $file_name, $product->id, $product->catalog->alias);
+//                        }
+//                    );
+//                }
+//            }
+
+            $product->update(['catalog_id' => $catalog->id]);
+
+            //документы
 //            if ($product_crawler->filter('.product-documentation')->count() > 0) {
 //                $product_crawler->filter('.docs__item')->each(
-//                    function (Crawler $item, $i) use ($product_id, $catalog) {
+//                    function (Crawler $item, $i) use ($product, $catalog) {
 //                        $name = trim($item->filter('.docs__link')->text());
 //                        $url = $this->baseUrl . $item->filter('.docs__link')->attr('href');
+//                        $arr = explode('/', $url);
+//                        $url_full_file_name = array_pop($arr);
 //
 //                        if (str_ends_with($url, 'pdf')) {
-//                            $file_name = Text::translit($name) . '.pdf';
-//
-//                            if (!is_file(public_path(ProductDoc::UPLOAD_URL . $file_name))) {
-//                                $this->downloadPdfFile($url, ProductDoc::UPLOAD_URL, $file_name);
+//                            if (!is_file(
+//                                public_path(ProductDoc::UPLOAD_URL . $catalog->alias . '/' . $url_full_file_name)
+//                            )) {
+//                                $this->downloadPdfFile(
+//                                    $url,
+//                                    ProductDoc::UPLOAD_URL . $catalog->alias . '/',
+//                                    $url_full_file_name
+//                                );
 //                            }
 //
 //                            ProductDoc::create(
 //                                [
-//                                    'product_id' => $product_id,
+//                                    'product_id' => $product->id,
 //                                    'name' => $name,
-//                                    'file' => $file_name,
+//                                    'file' => $url_full_file_name,
 //                                    'order' => $i
 //                                ]
 //                            );
@@ -538,12 +594,14 @@ class ParseProducts extends Command
 //                    }
 //                );
 //            }
+
         } catch (\Exception $e) {
             $this->error('Ошибка parseProduct: ' . $e->getMessage());
             $this->error($e->getTraceAsString());
 
             Log::channel('parser')->error($e->getMessage());
             Log::channel('parser')->error($e->getTraceAsString());
+            exit();
         }
     }
 
@@ -552,7 +610,7 @@ class ParseProducts extends Command
         if (!is_file(public_path(ProductImage::UPLOAD_URL . $catalog_alias . '/' . $file_name))) {
             $this->downloadJpgFile($url, ProductImage::UPLOAD_URL . $catalog_alias . '/', $file_name);
         }
-        $img = ProductImage::where('image', $file_name)->first();
+        $img = ProductImage::where('product_id', $product_id)->where('image', $file_name)->first();
         if (!$img) {
             ProductImage::create(
                 [

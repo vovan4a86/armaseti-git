@@ -17,9 +17,8 @@
 <div class="box box-solid">
     <div class="box-body">
         <div class="panel-heading clearfix">
-            <h4 class="panel-title pull-left" style="padding-top: 7.5px;">Товары</h4>
             <a href="{{ route('admin.catalog.productEdit', ['catalog' => $catalog->id]) }}"
-               class="btn btn-sm btn-primary"
+               class="btn btn-sm btn-success"
                onclick="return catalogContent(this)">Добавить товар</a>
             @if(count($products))
                     <button class="btn btn-primary btn-sm" onclick="checkSelectAll()">Выделить всё</button>
@@ -41,8 +40,8 @@
                 <form>
                     <label> Показывать по:</label>
                     <select name="per_page" class="form-control input-sm" onchange="this.form.submit();">
-                        @foreach([50,100,150,300,500] as $i)
-                            <option value="{{ $i }}" {{ session('per_page', 50) == $i? 'selected': '' }}>{{ $i }}</option>
+                        @foreach([30,50,100,150,300,500] as $i)
+                            <option value="{{ $i }}" {{ session('per_page', 30) == $i? 'selected': '' }}>{{ $i }}</option>
                         @endforeach
                     </select>
                 </form>

@@ -18,6 +18,10 @@ trait HasFile{
 		return $this->{$this->file_field} ? url(self::UPLOAD_URL . $this->{$this->file_field}) : null;
 	}
 
+    public function fileSrc($alias) {
+        return $this->{$this->file_field} ? url(self::UPLOAD_URL . $alias . '/'  . $this->{$this->file_field}) : null;
+    }
+
     /**
      * Converts bytes into human readable file size.
      *
@@ -63,7 +67,7 @@ trait HasFile{
     }
 
     public function getFileSizeAttribute() {
-        $fileUrl = public_path(self::UPLOAD_SPEC_URL . $this->{$this->file_field});
+        $fileUrl = public_path(self::UPLOAD_URL . $this->{$this->file_field});
         if(file_exists($fileUrl)) {
             $size = filesize($fileUrl);
             return $this->fileSizeConvert($size);
