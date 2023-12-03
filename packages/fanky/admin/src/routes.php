@@ -119,6 +119,7 @@ Route::group(['namespace' => 'Fanky\Admin\Controllers', 'prefix' => 'admin', 'as
         Route::post('product-update-order-filter', $controller . 'postProductUpdateOrderFilter')
             ->name('.product-update-order-filter');
 
+        //product doc
         Route::post('product-add-doc/{id}', $controller . 'postProductAddDoc')
             ->name('.product-add-doc');
 
@@ -134,9 +135,27 @@ Route::group(['namespace' => 'Fanky\Admin\Controllers', 'prefix' => 'admin', 'as
         Route::post('product-update-order-doc', $controller . 'postProductUpdateOrderDoc')
             ->name('.product-update-order-doc');
 
+        //catalog doc
+        Route::post('catalog-add-doc/{id}', $controller . 'postCatalogAddDoc')
+            ->name('.catalog-add-doc');
+
+        Route::post('catalog-del-doc/{id}', $controller . 'postCatalogDelDoc')
+            ->name('.catalog-del-doc');
+
+        Route::post('catalog-edit-doc/{id}', $controller . 'postCatalogEditDoc')
+            ->name('.catalog-edit-doc');
+
+        Route::post('catalog-save-doc/{id}', $controller . 'postCatalogSaveDoc')
+            ->name('.catalog-save-doc');
+
+        Route::post('catalog-update-order-doc', $controller . 'postCatalogUpdateOrderDoc')
+            ->name('.catalog-update-order-doc');
+
+        //search
         Route::get('search', $controller . 'search')
             ->name('.search');
 
+        //mass
         Route::post('move-products', [
             'as' => '.move-products',
             'uses' => $controller . 'postMoveProducts'

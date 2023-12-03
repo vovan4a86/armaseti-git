@@ -22,6 +22,8 @@
         <ul class="nav nav-tabs">
             <li class="active"><a href="#tab_1" data-toggle="tab">Параметры</a></li>
             <li><a href="#tab_2" data-toggle="tab">Тексты</a></li>
+            <li class="{{ isset($tab) && $tab === 'docs' ? 'active' : '' }}"><a href="#tab_docs" data-toggle="tab">Документы
+                    ({{ count($catalog->docs) }})</a></li>
 
             @if($catalog->parent_id == 0)
                 <li><a href="#tab_3" data-toggle="tab">Фильтры раздела</a></li>
@@ -106,8 +108,11 @@
             </div>
 
             <div class="tab-pane" id="tab_2">
-                {{--                {!! Form::groupRichtext('announce', $catalog->announce, 'Анонс', ['rows' => 3]) !!}--}}
                 {!! Form::groupRichtext('text', $catalog->text, 'Основной текст') !!}
+            </div>
+
+            <div class="tab-pane {{ isset($tab) && $tab === 'docs' ? 'active' : '' }}" id="tab_docs">
+                @include('admin::catalog.tabs_catalog.tab_docs')
             </div>
 
             @if($catalog->parent_id == 0)

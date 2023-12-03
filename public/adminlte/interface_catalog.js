@@ -318,6 +318,58 @@ $(document).ready(function () {
     });
 });
 
+//doc catalog
+function catalogDocUpload(elem, e){
+    var url = $(elem).data('url');
+    files = e.target.files;
+    var data = new FormData();
+    $.each(files, function(key, value)
+    {
+        if(value['size'] > max_file_size){
+            alert('Слишком большой размер файла. Максимальный размер 10Мб');
+        } else {
+            data.append('docs[]', value);
+        }
+    });
+    $(elem).val('');
+
+    sendFiles(url, data, function(json){
+        if (typeof json.html != 'undefined') {
+            $('.docs_list').append(urldecode(json.html));
+        }
+    });
+}
+
+function catalogDocDel(elem){
+    if (!confirm('Удалить документ?')) return false;
+    var url = $(elem).attr('href');
+    sendAjax(url, {}, function(json){
+        if (typeof json.msg != 'undefined') alert(urldecode(json.msg));
+        if (typeof json.success != 'undefined' && json.success == true) {
+            $(elem).closest('.images_item').fadeOut(300, function(){ $(this).remove(); });
+        }
+    });
+    return false;
+}
+
+function catalogDocEdit(elem, e){
+    e.preventDefault();
+    var url = $(elem).attr('href');
+    popupAjax(url);
+}
+
+function catalogDocDataSave(form, e){
+    e.preventDefault();
+    var url = $(form).attr('action');
+    var data = $(form).serialize();
+    sendAjax(url, data, function(json){
+        if (typeof json.success != 'undefined' && json.success === true) {
+            popupClose();
+            location.href = json.redirect;
+        }
+    });
+}
+
 function productDocUpload(elem, e){
     var url = $(elem).data('url');
     files = e.target.files;
@@ -339,6 +391,7 @@ function productDocUpload(elem, e){
     });
 }
 
+//doc product
 function productDocDel(elem){
     if (!confirm('Удалить документ?')) return false;
     var url = $(elem).attr('href');

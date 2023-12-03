@@ -155,6 +155,11 @@ class Catalog extends Model
         return $this->hasMany(Product::class, 'catalog_id');
     }
 
+    public function docs(): HasMany
+    {
+        return $this->hasMany(CatalogDoc::class);
+    }
+
     public function public_products()
     {
         return $this->hasMany('Fanky\Admin\Models\Product', 'catalog_id')

@@ -2,15 +2,10 @@
 
 use Carbon\Carbon;
 use Fanky\Admin\Models\Catalog;
-use Fanky\Admin\Models\CatalogTest;
-use Fanky\Admin\Models\Filter;
-use Fanky\Admin\Models\NewProduct;
-use Fanky\Admin\Models\Param;
 use Fanky\Admin\Models\Product;
 use Fanky\Admin\Models\ProductImage;
 use Fanky\Admin\Text;
 use GuzzleHttp\Cookie\CookieJar;
-use SVG\SVG;
 use Symfony\Component\DomCrawler\Crawler;
 
 trait ParseFunctions {

@@ -3,6 +3,7 @@
 namespace Fanky\Admin\Controllers;
 
 use Exception;
+use Fanky\Admin\Models\CatalogDoc;
 use Fanky\Admin\Models\CatalogFilter;
 use Fanky\Admin\Models\Page;
 use Fanky\Admin\Models\ParentCatalogFilter;
@@ -583,9 +584,76 @@ class AdminCatalogController extends AdminController
         );
     }
 
+    //документы каталога
+    public function postCatalogAddDoc($catalog_id): array
+    {
+        $docs = Request::file('docs');
+        $items = [];
+        if ($docs) {
+            foreach ($docs as $doc) {
+                $file_name = CatalogDoc::uploadFile($doc);
+                $order = CatalogDoc::where('catalog_id', $catalog_id)
+                        ->max('order') + 1;
+                $item = CatalogDoc::create(
+                    [
+                        'catalog_id' => $catalog_id,
+                        'name' => 'Документ ' . $order,
+                        'file' => $file_name,
+                        'order' => $order
+                    ]
+                );
+                $items[] = $item;
+            }
+        }
+
+        $html = '';
+        foreach ($items as $item) {
+            $html .= view('admin::catalog.tabs_catalog.doc_row', ['doc' => $item]);
+        }
+
+        return ['html' => $html];
+    }
+
+    public function postCatalogEditDoc($id)
+    {
+        $doc = CatalogDoc::findOrFail($id);
+        return view('admin::catalog.tabs_catalog.doc_edit', ['doc' => $doc]);
+    }
+
+    public function postCatalogSaveDoc($id)
+    {
+        $doc = CatalogDoc::findOrFail($id);
+        $data = Request::only('name');
+        $doc->name = $data['name'];
+        $doc->save();
+
+        return [
+            'success' => true,
+            'redirect' => route('admin.catalog.catalogEdit', ['id' => $doc->catalog_id, 'tab' => 'docs'])
+        ];
+    }
+
+    public function postCatalogDelDoc($id): array
+    {
+        $item = CatalogDoc::findOrFail($id);
+        $item->deleteSrcFile();
+        $item->delete();
+
+        return ['success' => true];
+    }
+
+    public function postCatalogUpdateOrderDoc()
+    {
+        $sorted = Request::input('sorted', []);
+        foreach ($sorted as $order => $id) {
+            DB::table('catalog_docs')->where('id', $id)->update(array('order' => $order));
+        }
+
+        return ['success' => true];
+    }
 
 
-    //документы
+    //документы товара
     public function postProductAddDoc($product_id): array
     {
         $docs = Request::file('docs');
