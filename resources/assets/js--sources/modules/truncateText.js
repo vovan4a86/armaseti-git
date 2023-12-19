@@ -12,11 +12,16 @@ export const truncateText = ({ el, maxlength }) => {
 };
 
 truncateText({
-  el: '.s-catalog__text',
-  maxlength: 90
+  el: '.s-card__title',
+  maxlength: 34
 });
 
 truncateText({
-  el: '.s-newses__body p',
-  maxlength: 110
+  el: '.prod-card__title',
+  maxlength: 40
+});
+
+truncateText({
+  el: '.news-card__title',
+  maxlength: 60
 });

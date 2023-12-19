@@ -45,6 +45,18 @@ class ParseProducts extends Command
 
     public function handle()
     {
+//        $this->parseCatalog('Тройники стальные оцинкованные', 'https://gremir.ru/troyniki-gost-17376/troyniki-stalnye-ocinkovannyei-gost-17376/', 487);
+//        $this->parseCatalog('Фитинги для труб из сшитого полиэтилена', 'https://gremir.ru/fitingi/fitingi-dlya-pe-x/', 638);
+//        $this->parseCustomCatalog(
+//            'Кольца уплотнительные Тайтон для ВЧШГ',
+//            'https://gremir.ru/fasonnye-chasti/kolca-uplotnitelnye-tajton-dlya-vchshg/',
+//            528
+//        );
+//        $this->parseCustomCatalog(
+//            'Муфты ПЭ для асбестоцементных труб',
+//            'https://gremir.ru/fitingi/polietilen-pe-i-pe100/fitingi-pe-dlya-asbestocementnyh-trub/mufty-pe-dlya-asbestocementnyh-trub/',
+//            752
+//        );
 //        $this->test_product_list();
 //        $this->test_product();
 //        $catalog = Catalog::find(2);
@@ -79,7 +91,7 @@ class ParseProducts extends Command
         $this->info('The command was successful!');
     }
 
-    public function catalogList()
+    public function catalogList(): array
     {
         return [
 //            'Заглушки' => 'https://gremir.ru/zaglushki-stalnye/',
@@ -91,10 +103,10 @@ class ParseProducts extends Command
 //            'Краны' => 'https://gremir.ru/krany-sharovye/',
 //            'Крепеж' => 'https://gremir.ru/krepezh/',
 //            'Отводы' => 'https://gremir.ru/otvody-krutoizognutye-gost-17375/',
-            'Переходы' => 'https://gremir.ru/perehody-gost-17378/',
-//            'Тройники' => 'https://gremir.ru/troyniki-gost-17376/',
+//            'Переходы' => 'https://gremir.ru/perehody-gost-17378/',
+//            'Тройники' => 'https://gremir.ru/troyniki-gost-17376/', //Тройники сталь 12х18н10т - есть ссылка уводящая на трубы!
 //            'Уплотнения и прокладки' => 'https://gremir.ru/prokladki/',
-//            'Фасонные части' => 'https://gremir.ru/fasonnye-chasti/',
+//            'Фасонные части' => 'https://gremir.ru/fasonnye-chasti/', //зацикливание Кольца уплотнительные Тайтон для ВЧШГ [ФОТКИ ЧИСТЫЕ !!!!!!!!!!!!]
 //            'Фильтры' => 'https://gremir.ru/filtry/',
 //            'Фитинги' => 'https://gremir.ru/fitingi/',
 //            'Фланцы' => 'https://gremir.ru/flantsy/',
@@ -170,24 +182,30 @@ class ParseProducts extends Command
                         $url_full_file_name = array_pop($arr);
 
                         if (str_ends_with($url_full_file_name, 'pdf')) {
-                                if (!is_file(public_path(CatalogDoc::UPLOAD_URL . $catalog->alias . '/' . $url_full_file_name))) {
-                                    $this->downloadPdfFile($url, CatalogDoc::UPLOAD_URL . $catalog->alias . '/', $url_full_file_name);
-                                }
-
-                                $catalog_doc = CatalogDoc::where('catalog_id', $catalog->id)
-                                    ->where('file', $url_full_file_name)->first();
-
-                                if (!$catalog_doc) {
-                                    CatalogDoc::create(
-                                        [
-                                            'catalog_id' => $catalog->id,
-                                            'name' => $name,
-                                            'file' => $url_full_file_name,
-                                            'order' => $i
-                                        ]
-                                    );
-                                }
+                            if (!is_file(
+                                public_path(CatalogDoc::UPLOAD_URL . $catalog->alias . '/' . $url_full_file_name)
+                            )) {
+                                $this->downloadPdfFile(
+                                    $url,
+                                    CatalogDoc::UPLOAD_URL . $catalog->alias . '/',
+                                    $url_full_file_name
+                                );
                             }
+
+                            $catalog_doc = CatalogDoc::where('catalog_id', $catalog->id)
+                                ->where('file', $url_full_file_name)->first();
+
+                            if (!$catalog_doc) {
+                                CatalogDoc::create(
+                                    [
+                                        'catalog_id' => $catalog->id,
+                                        'name' => $name,
+                                        'file' => $url_full_file_name,
+                                        'order' => $i
+                                    ]
+                                );
+                            }
+                        }
                     }
                 );
             }
@@ -200,7 +218,21 @@ class ParseProducts extends Command
                             $name = trim($item->filter('.cat-name')->text());
 
                             //зациклились подразделы
-                            if ($url == 'https://gremir.ru/zadvizhki/stalnye-flancevye/30s941nzh/') {
+                            if (in_array($name, [
+                                'Трубы нержавеющие',
+                                'Трубы полипропиленовые',
+                                'Трубы SML',
+                                'Трубы опорные SML',
+                                'Трубы полиэтиленовые',
+                                'Трубы НПВХ',
+                                'Трубы клеевые НПВХ',
+                                'Трубы канализационные',
+                                'Трубы ЧК',
+                                'Трубы из сшитого полиэтилена',
+                                'Трубы асбестоцементные'
+                                ]
+                            )) {
+                                $this->alert('Skip! ' . $name);
 //                                $catalog_crawler->filter('.prod-list.prod-list-top tr')
 //                                    ->each(
 //                                        function (Crawler $list_item, $i) use ($catalog) {
@@ -274,6 +306,139 @@ class ParseProducts extends Command
                     }
                 }
             }
+        } catch (\Exception $e) {
+            $this->error('Ошибка parseCatalog: ' . $e->getMessage());
+            $this->error($e->getTraceAsString());
+
+            Log::channel('parser')->error($e->getMessage());
+            Log::channel('parser')->error($e->getTraceAsString());
+            exit();
+        }
+    }
+
+    public function parseCustomCatalog($categoryName, $categoryUrl, $parent = 0)
+    {
+        $this->info('Парсим раздел: ' . $categoryName);
+        $this->info('Url раздела: ' . $categoryUrl);
+        $catalog = $this->getCatalogByName($categoryName, $parent);
+
+        try {
+            $res = $this->client->get($categoryUrl);
+            $html = $res->getBody()->getContents();
+            $catalog_crawler = new Crawler($html);
+
+            try {
+                //изображение перед описанием раздела (https://gremir.ru/zaglushki-stalnye/category_1687/)
+                $uploadCatalogTextImagesPath = '/uploads/catalogs-content/';
+                $pre_text = null;
+                if ($catalog_crawler->filter('.page-main__detail')->count() > 0) {
+                    $text_image = $catalog_crawler->filter('.page-main__detail')->html();
+
+                    $i = $catalog_crawler->filter('.detail__image-wrapper img')->count();
+                    $imgSrc = [];
+                    $imgArr = [];
+                    if ($i > 0) {
+                        $catalog_crawler->filter('.detail__image-wrapper img')
+                            ->each(
+                                function (Crawler $image, $i) use ($uploadCatalogTextImagesPath, &$imgSrc, &$imgArr) {
+                                    $url = $image->attr('src');
+                                    $arr = explode('/', $url);
+                                    $file_name = array_pop($arr);
+                                    $file_name = str_replace('%20', '_', $file_name);
+
+                                    if ($this->checkIsImageJpg($file_name)) {
+                                        if (!is_file(public_path($uploadCatalogTextImagesPath . $file_name))) {
+                                            $this->downloadJpgFile($url, $uploadCatalogTextImagesPath, $file_name);
+                                        }
+
+                                        $imgSrc[] = $url;
+                                        $imgArr[] = $uploadCatalogTextImagesPath . $file_name;
+                                    }
+                                }
+                            );
+                    }
+                    $pre_text = $this->getUpdatedTextWithNewImages($text_image, $imgSrc, $imgArr);
+                }
+            } catch (\Exception $e) {
+                $this->error('Ошибка получения изображения в описании раздела');
+            }
+
+            //описание
+            if ($catalog_crawler->filter('.category-desc')->count() > 0) {
+                $text = $catalog_crawler->filter('.category-desc')->html();
+
+                if ($pre_text) {
+                    $catalog->text = $pre_text . $text;
+                } else {
+                    $catalog->text = $text;
+                }
+                $catalog->save();
+            }
+
+            //документация
+            if ($catalog_crawler->filter('.product-documentation')->count() > 0) {
+                $catalog_crawler->filter('.docs__item')->each(
+                    function (Crawler $item, $i) use ($catalog) {
+                        $name = trim($item->filter('.docs__link')->text());
+                        $url = $this->baseUrl . $item->filter('.docs__link')->attr('href');
+                        $arr = explode('/', $url);
+                        $url_full_file_name = array_pop($arr);
+
+                        if (str_ends_with($url_full_file_name, 'pdf')) {
+                            if (!is_file(
+                                public_path(CatalogDoc::UPLOAD_URL . $catalog->alias . '/' . $url_full_file_name)
+                            )) {
+                                $this->downloadPdfFile(
+                                    $url,
+                                    CatalogDoc::UPLOAD_URL . $catalog->alias . '/',
+                                    $url_full_file_name
+                                );
+                            }
+
+                            $catalog_doc = CatalogDoc::where('catalog_id', $catalog->id)
+                                ->where('file', $url_full_file_name)->first();
+
+                            if (!$catalog_doc) {
+                                CatalogDoc::create(
+                                    [
+                                        'catalog_id' => $catalog->id,
+                                        'name' => $name,
+                                        'file' => $url_full_file_name,
+                                        'order' => $i
+                                    ]
+                                );
+                            }
+                        }
+                    }
+                );
+            }
+
+
+            //парсим список товаров в разделе
+            $catalog_crawler->filter('.prod-list.prod-list-top tr')
+                ->each(
+                    function (Crawler $list_item, $i) use ($catalog) {
+                        $data = [];
+
+                        $name = trim($list_item->filter('.list2-title')->text());
+                        $url = $this->baseUrl . $list_item->filter('.list2-title')->attr('href');
+
+                        $product = Product::where('parse_url', $url)->first();
+                        if (!$product) {
+                            $this->parseProduct($catalog, $name, $url);
+                        }
+                    }
+                );
+
+//                    проход по следующим страницам
+            if ($catalog_crawler->filter('.menu-h')->count() > 0) {
+                $last_li_class = $catalog_crawler->filter('.menu-h li a')->last()->attr('class');
+                if ($last_li_class == 'inline-link') {
+                    $url = $this->baseUrl . $catalog_crawler->filter('.menu-h li a')->last()->attr('href');
+                    $this->parseCatalogNextPage($url, $catalog);
+                }
+            }
+
         } catch (\Exception $e) {
             $this->error('Ошибка parseCatalog: ' . $e->getMessage());
             $this->error($e->getTraceAsString());
@@ -527,11 +692,10 @@ class ParseProducts extends Command
                                     );
                                 }
                             }
-                        } catch(\Exception $e) {
+                        } catch (\Exception $e) {
                             $this->error('Ошибка скачивания файла: ' . $e->getMessage());
                             $this->error($product->name . ' => id=' . $product->id);
                         }
-
                     }
                 );
             }

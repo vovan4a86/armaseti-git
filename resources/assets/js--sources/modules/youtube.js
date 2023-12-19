@@ -38,7 +38,7 @@ export const videos = () => {
         const max = Math.max(from, to);
         const min = Math.min(from, to);
         const step = (max - min) / count;
-        allAnimation.push({style, from, to, step, reverse: min === to});
+        allAnimation.push({ style, from, to, step, reverse: min === to });
       });
 
       const rafAnimation = () => {
@@ -70,7 +70,7 @@ export const videos = () => {
 
   const init = () => {
     const overlay = document.createElement('div');
-    overlay.className = 'videotube-popup-overlay';
+    overlay.className = 'videotube-modal-overlay';
     document.body.insertAdjacentElement('beforeend', overlay);
 
     const video = document.createElement('div');
@@ -88,8 +88,7 @@ export const videos = () => {
 
     const sizeVideo = () => {
       const sizeBlock =
-        sizeBlockList.find(item => item[0] < window.visualViewport.width) ||
-        sizeBlockList[sizeBlockList.length - 1];
+        sizeBlockList.find(item => item[0] < window.visualViewport.width) || sizeBlockList[sizeBlockList.length - 1];
 
       const iframe = document.getElementById('videotube-modal');
       iframe.width = sizeBlock[0];
@@ -144,35 +143,59 @@ export const videos = () => {
 
       const href = target.href;
       const search = href.includes('youtube');
-      let idVideo = search
-        ? href.match(/(\?|&)v=([^&]+)/)[2]
-        : href.match(/(\.be\/)([^&]+)/)[2];
 
-      if (idVideo.length === 0) return;
+      if (href.includes('youtube')) {
+        let idVideo = search ? href.match(/(\?|&)v=([^&]+)/)[2] : href.match(/(\.be\/)([^&]+)/)[2];
 
-      e.preventDefault();
+        if (idVideo.length === 0) return;
 
-      animation(overlay, {
-        start: [['display', 'block']],
-        anim: [['opacity', 0, 1]],
-        count: 20
-      });
+        e.preventDefault();
 
-      overlay.insertAdjacentHTML(
-        'beforeend',
-        `
-			<div id="videotube-modal-loading">Загрузка...</div>
-			<div id="videotube-modal-close">&#10006;</div>
-			<div id="videotube-modal-container">
-				<iframe src="https://youtube.com/embed/${idVideo}?autoplay=1"
-					frameborder="0"
-					id="videotube-modal"
-					allowfullscreen
-					allow="autoplay">
-				</iframe>
-			</div>
-		`
-      );
+        animation(overlay, {
+          start: [['display', 'block']],
+          anim: [['opacity', 0, 1]],
+          count: 20
+        });
+
+        overlay.insertAdjacentHTML(
+          'beforeend',
+          `
+        <div id="videotube-modal-loading">Загрузка...</div>
+        <div id="videotube-modal-close">&#10006;</div>
+        <div id="videotube-modal-container">
+          <iframe src="https://youtube.com/embed/${idVideo}?autoplay=1"
+            frameborder="0"
+            id="videotube-modal"
+            allowfullscreen
+            allow="autoplay">
+          </iframe>
+        </div>
+      `
+        );
+      } else if (href.includes('rutube')) {
+        let idVideo = href.match(/[http|https]+:\/\/(?:www\.|)rutube\.ru\/video\/([a-zA-Z0-9_\-]+)\//)[1];
+
+        if (idVideo.length === 0) return;
+
+        e.preventDefault();
+
+        animation(overlay, {
+          start: [['display', 'block']],
+          anim: [['opacity', 0, 1]],
+          count: 20
+        });
+
+        overlay.insertAdjacentHTML(
+          'beforeend',
+          `
+        <div id="videotube-modal-loading">Загрузка...</div>
+        <div id="videotube-modal-close">&#10006;</div>
+        <div id="videotube-modal-container">
+          <iframe id="videotube-modal" src="https://rutube.ru/play/embed/${idVideo}" frameBorder="0" allow="clipboard-write; autoplay" webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe>  
+        </div>
+      `
+        );
+      }
 
       sizeVideo();
       sizeContainer();
@@ -184,5 +207,7 @@ export const videos = () => {
     document.addEventListener('click', openVideoTubeModal);
   };
 
-  init()
+  init();
 };
+
+videos();

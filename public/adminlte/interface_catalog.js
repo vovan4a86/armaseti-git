@@ -545,3 +545,33 @@ function deleteProductsImage(btn, e, catalogId) {
         }
     })
 }
+
+function toggleIsNew(elem){
+    const id = $(elem).closest('tr').data('id');
+    const url = '/admin/catalog/product-toggle-is-new/' + id;
+
+    sendAjax(url, {}, function(json) {
+       if(json.success) {
+           if(json.active) {
+               $(elem).prop('checked', 'checked')
+           } else {
+               $(elem).prop('checked', false)
+           }
+       }
+    });
+}
+
+function toggleIsHit(elem){
+    const id = $(elem).closest('tr').data('id');
+    const url = '/admin/catalog/product-toggle-is-hit/' + id;
+
+    sendAjax(url, {}, function(json) {
+       if(json.success) {
+           if(json.active) {
+               $(elem).prop('checked', 'checked')
+           } else {
+               $(elem).prop('checked', false)
+           }
+       }
+    });
+}

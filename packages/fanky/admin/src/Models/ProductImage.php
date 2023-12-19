@@ -37,10 +37,7 @@ class ProductImage extends Model {
 
 	public static $thumbs = [
 		1 => '100x100', //admin product
-		2 => '276x210', //catalog list
-		3 => '135x90', //thumb slider
-		4 => '616x453', //slider main image
-
+		2 => '277x181', //card slider
 	];
 
     public function product(): BelongsTo

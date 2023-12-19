@@ -53,6 +53,7 @@
                     {{--                    {!! Form::groupText('price', $product->product_count ?: 0, 'Наличие, шт') !!}--}}
                 </div>
 
+                {!! Form::groupCheckbox('is_new', 1, $product->is_new, 'Новинка') !!}
                 {!! Form::groupCheckbox('is_hit', 1, $product->is_hit, 'Хит') !!}
 
                 <hr>

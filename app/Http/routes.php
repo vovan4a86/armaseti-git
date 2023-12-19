@@ -79,7 +79,7 @@ Route::group(
 
         Route::any('policy', ['as' => 'policy', 'uses' => 'PageController@policy']);
 
-        Route::any('catalog', ['as' => 'catalog.index', 'uses' => 'CatalogController@index']);
+        Route::any('catalog', ['as' => 'catalog', 'uses' => 'CatalogController@index']);
         Route::any('catalog/compare', ['as' => 'catalog.compare', 'uses' => 'CatalogController@compare']);
 
         Route::any('catalog/{alias}', ['as' => 'catalog.view', 'uses' => 'CatalogController@view'])

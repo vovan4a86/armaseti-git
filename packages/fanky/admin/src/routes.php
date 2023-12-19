@@ -170,6 +170,14 @@ Route::group(['namespace' => 'Fanky\Admin\Controllers', 'prefix' => 'admin', 'as
             'as' => '.delete-products-image',
             'uses' => $controller . 'postDeleteProductsImage'
         ]);
+
+        //toggle products checkbox
+        Route::post('product-toggle-is-new/{id}', $controller . 'postProductToggleIsNew')
+            ->name('.product-toggle-is-new');
+
+        Route::post('product-toggle-is-hit/{id}', $controller . 'postProductToggleIsHit')
+            ->name('.product-toggle-is-hit');
+
 	});
 
     Route::group(['as' => '.news', 'prefix' => 'news'], function () {

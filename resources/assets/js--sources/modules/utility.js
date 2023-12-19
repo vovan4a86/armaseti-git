@@ -11,3 +11,6 @@ export const utils = () => {
   $(blocks).on('dragstart', () => false);
   // $(blocks).on('contextmenu', () => false);
 };
+
+preloader();
+utils();

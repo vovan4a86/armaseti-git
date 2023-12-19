@@ -13,20 +13,19 @@
     <meta name="application-name" content="name">
     <meta name="cmsmagazine" content="18db2cabdd3bf9ea4cbca88401295164">
     <meta name="author" content="Fanky.ru">
-    <meta name="msapplication-TileColor" content="#ffc40d">
+    <meta name="msapplication-TileColor" content="#2b5797">
     <meta name="msapplication-config" content="/static/images/favicon/browserconfig.xml">
     <meta name="theme-color" content="#ffffff">
     <meta property="og:type" content="website">
-    <meta property="og:site_name" content="Люкскрафт">
+    <meta property="og:site_name" content="Армасети">
     <meta property="og:image" content="/static/images/favicon/apple-touch-icon.png">
     {!! OpenGraph::generate() !!}
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <link href="/static/fonts/Inter-Light.woff2" rel="preload" as="font" type="font/woff2" crossorigin="anonymous">
-    <link href="/static/fonts/Inter-Regular.woff2" rel="preload" as="font" type="font/woff2" crossorigin="anonymous">
-    <link href="/static/fonts/Inter-Medium.woff2" rel="preload" as="font" type="font/woff2" crossorigin="anonymous">
-    <link href="/static/fonts/Inter-SemiBold.woff2" rel="preload" as="font" type="font/woff2" crossorigin="anonymous">
-    <link href="/static/fonts/Cormorant-Regular.woff2" rel="preload" as="font" type="font/woff2" crossorigin="anonymous">
+    <link href="/static/fonts/Geologica-Light.woff2" rel="preload" as="font" type="font/woff2" crossorigin="anonymous">
+    <link href="/static/fonts/Geologica-Regular.woff2" rel="preload" as="font" type="font/woff2" crossorigin="anonymous">
+    <link href="/static/fonts/Geologica-Medium.woff2" rel="preload" as="font" type="font/woff2" crossorigin="anonymous">
+    <link href="/static/fonts/Geologica-SemiBold.woff2" rel="preload" as="font" type="font/woff2" crossorigin="anonymous">
 
     <link rel="stylesheet" type="text/css" href="{{ mix('static/css/all.css') }}" media="all">
     <script src="{{ mix('static/js/all.js') }}" defer></script>
@@ -35,7 +34,7 @@
     @if(isset($canonical))
         <link rel="canonical" href="{{ $canonical }}"/>
     @endif
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+{{--    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>--}}
 
 {{--    @if(Route::is('contacts'))--}}
 {{--        <script src="https://api-maps.yandex.ru/2.1/?lang=ru_RU"></script>--}}

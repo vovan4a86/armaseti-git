@@ -5,48 +5,17 @@ export const closeBtn =
 
 Fancybox.bind('[data-fancybox]', {
   closeButton: 'outside',
-  hideClass: 'fancybox-zoomOut',
+  showClass: 'f-fadeIn',
+  hideClass: 'f-fadeOut',
   infinite: false
 });
 
 Fancybox.bind('[data-popup]', {
   mainClass: 'popup--custom',
   template: { closeButton: closeBtn },
-  hideClass: 'fancybox-zoomOut',
+  showClass: 'f-fadeIn',
+  hideClass: 'f-fadeOut',
   hideScrollbar: false
-});
-
-Fancybox.bind('[data-request]', {
-  mainClass: 'popup--custom',
-  template: { closeButton: closeBtn },
-  hideClass: 'fancybox-zoomOut',
-  hideScrollbar: false,
-  on: {
-    reveal: (e, trigger) => {
-      const popup = e.$container;
-      const label = trigger.label;
-
-      if (popup && label) {
-        const popupLabel = popup.querySelector('.popup__label');
-        const popupName = popup.querySelector('.popup__name');
-
-        popupLabel.textContent = label;
-        popupName.value = label;
-      }
-    },
-    close: (e, trigger) => {
-      const popup = e.$container;
-      const label = trigger.label;
-
-      if (popup && label) {
-        const popupLabel = popup.querySelector('.popup__label');
-        const popupName = popup.querySelector('.popup__name');
-
-        popupLabel.textContent = '';
-        popupName.value = '';
-      }
-    }
-  }
 });
 
 Fancybox.bind('[data-cities]', {
@@ -54,31 +23,16 @@ Fancybox.bind('[data-cities]', {
   template: { closeButton: closeBtn }
 });
 
-export const showSuccessDialog = ({ title, body }) => {
-  Fancybox.show([{ src: '#is-done', type: 'inline' }], {
+export const showSuccessRequestDialog = () => {
+  Fancybox.show([{ src: '#request-done', type: 'inline' }], {
     mainClass: 'popup--custom popup--complete',
     template: { closeButton: closeBtn },
-    hideClass: 'fancybox-zoomOut',
-    on: {
-      reveal: (e, trigger) => {
-        const popup = e.$container;
-
-        if (popup) {
-          const popupTitle = popup.querySelector('[data-custom-title]');
-          const popupBody = popup.querySelector('[data-custom-label]');
-
-          popupTitle.textContent = title;
-          popupBody.textContent = body;
-        }
-      }
-    }
+    showClass: 'f-fadeIn',
+    hideClass: 'f-fadeOut'
   });
 };
 
-// в свой модуль, импортируешь функцию вызова «спасибо» → вызываешь on success
-// import { showSuccessDialog } from 'путь до компонента'
+// в свой модуль форм, импортируешь функцию вызова «спасибо» → вызываешь on success
+// import { showSuccessRequestDialog } from 'путь до компонента'
 // вызываешь где нужно
-// showSuccessDialog({
-//   title: 'Успешно!',
-//   body: 'Настраиваемое тело сообщения'
-// });
+// showSuccessRequestDialog();

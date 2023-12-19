@@ -55,7 +55,7 @@ class AdminCatalogController extends AdminController
     {
         $per_page = Request::get('per_page');
         if (!$per_page) {
-            $per_page = session('per_page', 50);
+            $per_page = session('per_page', 30);
         }
         $catalog = Catalog::findOrFail($catalog_id);
 
@@ -324,6 +324,9 @@ class AdminCatalogController extends AdminController
         if (!array_get($data, 'h1')) {
             $data['h1'] = $data['name'];
         }
+        if (!array_get($data, 'is_new')) {
+            $data['is_new'] = 0;
+        }
 
         $rules = [
             'name' => 'required'
@@ -570,7 +573,7 @@ class AdminCatalogController extends AdminController
             $products = Product::query()->where(function ($query) use ($q) {
                 $query->orWhere('name', 'LIKE', '%' . $q . '%');
                 $query->orWhere('article', 'LIKE', '%' . $q . '%');
-            })->with('catalog')->paginate(50)->appends(['q' => $q]);
+            })->with('catalog')->paginate(30)->appends(['q' => $q]);
         }
         $catalogs = Catalog::orderBy('order')->get();
         $catalog_list = Catalog::getCatalogList();
@@ -582,6 +585,35 @@ class AdminCatalogController extends AdminController
             'admin::catalog.main',
             compact('content', 'catalogs')
         );
+    }
+
+    //toggle products checkbox
+    public function postProductToggleIsNew($id): array
+    {
+        $product = Product::find($id);
+        if(!$product) return ['success' => false];
+
+        if($product->is_new) {
+            $product->update(['is_new' => 0]);
+        } else {
+            $product->update(['is_new' => 1]);
+        }
+
+        return ['success' => true, 'active' => $product->is_new];
+    }
+
+    public function postProductToggleIsHit($id): array
+    {
+        $product = Product::find($id);
+        if(!$product) return ['success' => false];
+
+        if($product->is_hit) {
+            $product->update(['is_hit' => 0]);
+        } else {
+            $product->update(['is_hit' => 1]);
+        }
+
+        return ['success' => true, 'active' => $product->is_hit];
     }
 
     //документы каталога

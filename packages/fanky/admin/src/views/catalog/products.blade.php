@@ -66,6 +66,8 @@
                     <th width="40"></th>
                     <th width="100">Изображение</th>
                     <th>Название</th>
+                    <th width="90" style="text-align: center">Новинка</th>
+                    <th width="90" style="text-align: center">Хит</th>
                     <th>Артикул</th>
                     <th width="60" style="text-align: center">Цена</th>
                     <th width="130">Сортировка</th>
@@ -93,6 +95,14 @@
                                style="{{ $item->published != 1 ? 'text-decoration:line-through;' : '' }}">
                                 {{ $item->name }}
                             </a>
+                        </td>
+                        <td style="text-align: center">
+                            <input type="checkbox" {{ $item->is_new ? 'checked' : null }}
+                            onclick="toggleIsNew(this)">
+                        </td>
+                        <td style="text-align: center">
+                            <input type="checkbox" {{ $item->is_hit ? 'checked' : null }}
+                            onclick="toggleIsHit(this)">
                         </td>
                         <td>{{ $item->article }}</td>
                         <td style="text-align: center">{{ $item->price }}</td>

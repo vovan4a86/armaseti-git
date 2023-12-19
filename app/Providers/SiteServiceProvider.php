@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use Cache;
+use Fanky\Admin\Models\Catalog;
 use Fanky\Admin\Models\City;
 use Illuminate\Support\ServiceProvider;
 use View;
@@ -20,7 +21,7 @@ class SiteServiceProvider extends ServiceProvider
     {
         // пререндер для шаблона
         View::composer(
-            ['template_test'],
+            ['template'],
             function (\Illuminate\View\View $view) {
                 $header_menu = Cache::get('header_menu', collect());
                 if (!count($header_menu)) {
@@ -30,6 +31,17 @@ class SiteServiceProvider extends ServiceProvider
                         ->orderBy('order')
                         ->get();
                     Cache::add('header_menu', $header_menu, now()->addMinutes(60));
+                }
+
+                $catalog_menu = Cache::get('catalog_menu', collect());
+                if (!count($catalog_menu)) {
+                    $catalog_menu = Catalog::query()
+                        ->public()
+                        ->where('parent_id', 0)
+                        ->orderBy('order')
+                        ->with(['public_children'])
+                        ->get();
+                    Cache::add('catalog_menu', $catalog_menu, now()->addMinutes(60));
                 }
 
                 $mobile_menu = Cache::get('mobile_menu', collect());
@@ -65,11 +77,36 @@ class SiteServiceProvider extends ServiceProvider
                     compact(
                         [
                             'header_menu',
+                            'catalog_menu',
                             'mobile_menu',
                             'footer_menu',
                             'current_city',
                             'favorites',
                             'compare'
+                        ]
+                    )
+                );
+            }
+        );
+
+        View::composer(
+            ['blocks.aside'],
+            function (\Illuminate\View\View $view) {
+                $catalog_menu = Cache::get('catalog_menu', collect());
+                if (!count($catalog_menu)) {
+                    $catalog_menu = Catalog::query()
+                        ->public()
+                        ->where('parent_id', 0)
+                        ->orderBy('order')
+                        ->with(['public_children'])
+                        ->get();
+                    Cache::add('catalog_menu', $catalog_menu, now()->addMinutes(60));
+                }
+
+                $view->with(
+                    compact(
+                        [
+                            'catalog_menu',
                         ]
                     )
                 );

@@ -5,22 +5,21 @@ export const scrollTop = ({ trigger }) => {
 
   const manageTrigger = () => {
     if (scrollTop) {
-      window.scrollY >= 300 ? scrollTop.classList.add('is-active') : scrollTop.classList.remove('is-active');
-
-      optimizedHandler();
-
-      scrollTop.addEventListener('click', () => {
-        window.scroll({
-          top: 0,
-          behavior: 'smooth'
-        });
-      });
+      scrollTop.classList.toggle('is-active', window.scrollY >= 300);
     }
+  };
+
+  const scrollToTop = () => {
+    window.scroll({
+      top: 0,
+      behavior: 'smooth'
+    });
   };
 
   const optimizedHandler = setThrottling(manageTrigger, 100);
 
-  optimizedHandler();
-
+  scrollTop?.addEventListener('click', scrollToTop);
   window.addEventListener('scroll', optimizedHandler);
 };
+
+scrollTop({ trigger: '.scrolltop' });
