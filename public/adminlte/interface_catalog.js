@@ -1,63 +1,58 @@
-var newsImage = null;
+let catalogImage = null;
+let catalogIcon = null;
 
-function newsImageAttache(elem, e) {
+function catalogImageAttache(elem, e) {
     $.each(e.target.files, function (key, file) {
         if (file['size'] > max_file_size) {
-            alert('Слишком большой размер файла. Максимальный размер 2Мб');
+            alert('Слишком большой размер файла. Максимальный размер 10Мб');
         } else {
-            newsImage = file;
+            catalogImage = file;
             renderImage(file, function (imgSrc) {
-                var item = '<img class="img-polaroid" src="' + imgSrc + '" height="100" data-image="' + imgSrc + '" onclick="return popupImage($(this).data(\'image\'))">';
-                $('#article-image-block').html(item);
+                let item = '<img class="img-polaroid" src="' + imgSrc + '" height="100" data-image="' + imgSrc + '" onclick="return popupImage($(this).data(\'image\'))" alt="">';
+                $('#catalog-image-block').html(item);
             });
         }
     });
     $(elem).val('');
 }
 
-var specFile = null;
-
-function specAttache(elem, e) {
+function catalogIconAttache(elem, e) {
     $.each(e.target.files, function (key, file) {
         if (file['size'] > max_file_size) {
-            alert('Слишком большой размер файла. Максимальный размер 2Мб');
+            alert('Слишком большой размер файла. Максимальный размер 10Мб');
         } else {
-            specFile = file;
-            renderImage(file, function () {
-                var item = '<img class="img-polaroid" src="/adminlte/doc_icon.png" height="50" width="50" data-image="/adminlte/doc_icon.png" onclick="return popupImage($(this).data(\'image\'))">';
-                $('#product-doc-block').html(item);
-            });
-        }
-    });
-    // $(elem).val('');
-}
-
-var topView = null;
-function topViewAttache(elem, e){
-    $.each(e.target.files, function(key, file)
-    {
-        if(file['size'] > max_file_size){
-            alert('Слишком большой размер файла. Максимальный размер 2Мб');
-        } else {
-            topView = file;
+            catalogIcon = file;
             renderImage(file, function (imgSrc) {
-                var item = '<img class="img-polaroid" src="' + imgSrc + '" height="100" data-image="' + imgSrc + '" onclick="return popupImage($(this).data(\'image\'))">';
-                $('#top-view').html(item);
+                let item = '<img class="img-polaroid" src="' + imgSrc + '" height="100" data-image="' + imgSrc + '" onclick="return popupImage($(this).data(\'image\'))" alt="">';
+                $('#catalog-icon-block').html(item);
             });
         }
     });
     $(elem).val('');
 }
 
-function topViewDel(elem) {
+function catalogImageDel(elem) {
     if (!confirm('Удалить изображение?')) return false;
-    var url = $(elem).attr('href');
+    let url = $(elem).attr('href');
     sendAjax(url, {}, function (json) {
         if (typeof json.msg != 'undefined') alert(urldecode(json.msg));
         if (typeof json.success != 'undefined' && json.success === true) {
-            const empty = '<p class="text-yellow">Изображение не загружено.</p>';
-            $(elem).closest('#top-view').fadeOut(300, function () {
-                $(this).html(empty);
+            $(elem).closest('#catalog-image-block').fadeOut(300, function () {
+                $(this).empty();
+            });
+        }
+    });
+    return false;
+}
+
+function catalogIconDel(elem) {
+    if (!confirm('Удалить иконку?')) return false;
+    let url = $(elem).attr('href');
+    sendAjax(url, {}, function (json) {
+        if (typeof json.msg != 'undefined') alert(urldecode(json.msg));
+        if (typeof json.success != 'undefined' && json.success === true) {
+            $(elem).closest('#catalog-icon-block').fadeOut(300, function () {
+                $(this).empty();
             });
         }
     });
@@ -84,16 +79,16 @@ function catalogContent(elem) {
 }
 
 function catalogSave(form, e) {
-    var url = $(form).attr('action');
-    var data = new FormData();
+    const url = $(form).attr('action');
+    let data = new FormData();
     $.each($(form).serializeArray(), function (key, value) {
         data.append(value.name, value.value);
     });
-    if (newsImage) {
-        data.append('image', newsImage);
+    if (catalogImage) {
+        data.append('image', catalogImage);
     }
-    if (topView) {
-        data.append('top_view', topView);
+    if (catalogIcon) {
+        data.append('icon', catalogIcon);
     }
     sendFiles(url, data, function (json) {
         if (typeof json.row != 'undefined') {
@@ -114,8 +109,8 @@ function catalogSave(form, e) {
         if (typeof json.redirect != 'undefined') document.location.href = urldecode(json.redirect);
         if (typeof json.msg != 'undefined') $(form).find('[type=submit]').after(autoHideMsg('green', urldecode(json.msg)));
         if (typeof json.success != 'undefined' && json.success === true) {
-            newsImage = null;
-            topView = null;
+            catalogImage = null;
+            catalogIcon = null;
         }
     });
     return false;
@@ -218,20 +213,6 @@ function productImageDel(elem) {
         if (typeof json.success != 'undefined' && json.success === true) {
             $(elem).closest('.images_item').fadeOut(300, function () {
                 $(this).remove();
-            });
-        }
-    });
-    return false;
-}
-
-function catalogImageDel(elem) {
-    if (!confirm('Удалить изображение?')) return false;
-    var url = $(elem).attr('href');
-    sendAjax(url, {}, function (json) {
-        if (typeof json.msg != 'undefined') alert(urldecode(json.msg));
-        if (typeof json.success != 'undefined' && json.success === true) {
-            $(elem).closest('#article-image-block').fadeOut(300, function () {
-                $(this).empty();
             });
         }
     });

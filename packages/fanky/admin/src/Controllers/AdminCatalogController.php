@@ -176,6 +176,7 @@ class AdminCatalogController extends AdminController
         }
 
         $image = Request::file('image');
+        $icon = Request::file('icon');
 
         // валидация данных
         $validator = Validator::make(
@@ -187,16 +188,23 @@ class AdminCatalogController extends AdminController
         }
 
         $catalog = Catalog::find($id);
+        $redirect = false;
+
 
         // Загружаем изображение
         if ($image) {
             $file_name = Catalog::uploadImage($image);
             $data['image'] = $file_name;
+            $redirect = true;
+        }
+        // Загружаем иконку
+        if ($icon) {
+            $file_name = Catalog::uploadIcon($icon);
+            $data['menu_icon'] = $file_name;
+            $redirect = true;
         }
 
-        $redirect = false;
         // сохраняем страницу
-
         if (!$catalog) {
             $data['order'] = Catalog::where('parent_id', $data['parent_id'])->max('order') + 1;
             $catalog = Catalog::create($data);
@@ -236,19 +244,6 @@ class AdminCatalogController extends AdminController
         return ['success' => true];
     }
 
-    public function postTopViewDel($id): array
-    {
-        $catalog = Catalog::find($id);
-        if (!$catalog) {
-            return ['errors' => 'catalog not found'];
-        }
-
-        $catalog->deleteTopView();
-        $catalog->update(['top_view' => null]);
-
-        return ['success' => true];
-    }
-
 
     /**
      * @throws Exception
@@ -270,6 +265,19 @@ class AdminCatalogController extends AdminController
 
         $catalog->deleteImage();
         $catalog->update(['image' => null]);
+
+        return ['success' => true];
+    }
+
+    public function postCatalogIconDelete($id): array
+    {
+        $catalog = Catalog::find($id);
+        if (!$catalog) {
+            return ['errors' => 'catalog_not_found'];
+        }
+
+        $catalog->deleteIcon();
+        $catalog->update(['menu_icon' => null]);
 
         return ['success' => true];
     }

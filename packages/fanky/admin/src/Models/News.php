@@ -70,15 +70,19 @@ class News extends Model {
 	protected $guarded = ['id'];
 
 	const UPLOAD_URL = '/uploads/news/';
-    const NO_IMAGE = '/adminlte/no_image.png';
+    const NO_IMAGE = '/adminlte/no-photo.jpg';
 
 	public static $thumbs = [
-		1 => '100x50', //admin
-		2 => '356x263|fit', //list
+		1 => '100x100|fit', //admin
+		2 => '431x255|fit', //list
 	];
 
 	public function scopePublic($query) {
 		return $query->where('published', 1);
+	}
+
+	public function scopeOnMain($query) {
+		return $query->where('on_main', 1);
 	}
 
 	public function getUrlAttribute($value): string

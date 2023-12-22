@@ -98,6 +98,7 @@ class Page extends Model
     public static $hasImageField = [];
 
     public static $excludeTextField = [
+        '/',
         'news',
         'reviews',
         'contacts',

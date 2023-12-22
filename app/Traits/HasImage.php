@@ -14,6 +14,7 @@ use Thumb;
 
 trait HasImage{
 	public $image_field = 'image';
+	public $icon_field = 'menu_icon';
 
 	public function deleteImage($thumbs = null, $upload_url = null) {
 		if(!$this->{$this->image_field}) return;
@@ -31,13 +32,26 @@ trait HasImage{
 		@unlink(public_path($upload_url . $this->{$this->image_field}));
 	}
 
+	public function deleteIcon($upload_url = null) {
+		if(!$this->{$this->icon_field}) return;
+		if(!$upload_url){
+			$upload_url = self::UPLOAD_URL;
+		}
+
+		@unlink(public_path($upload_url . $this->{$this->icon_field}));
+	}
+
 	public function imageSrc($alias) {
         return $this->{$this->image_field} ? url(self::UPLOAD_URL . $alias . '/'  . $this->{$this->image_field}) : null;
     }
 
-	public function getImageSrcAttribute() {
-		return $this->{$this->image_field} ? url(self::getImagePathAttribute() . $this->{$this->image_field}) : null;
-	}
+//	public function getImageSrcAttribute() {
+//		return $this->{$this->image_field} ? url(self::getImagePathAttribute() . $this->{$this->image_field}) : null;
+//	}
+//
+//	public function getIconSrcAttribute() {
+//		return $this->{$this->icon_field} ? url(self::getImagePathAttribute() . $this->{$this->icon_field}) : null;
+//	}
 
 	public function thumb($thumb, $alias = null) {
 	    if ($alias) $alias = $alias . '/';

@@ -49,31 +49,6 @@
                 {!! Form::groupText('og_title', $catalog->og_title, 'OpenGraph title') !!}
                 {!! Form::groupText('og_description', $catalog->og_description, 'OpenGraph description') !!}
 
-                <div class="row">
-                    <div class="form-group col-xs-3" style="display: flex; column-gap: 30px;">
-                        <div>
-                            <label for="article-image">Изображение раздела</label>
-                            <input id="article-image" type="file" name="image" value=""
-                                   onchange="return newsImageAttache(this, event)">
-                            <div id="article-image-block">
-                                @if ($catalog->image)
-                                    <img class="img-polaroid"
-                                         src="{{ $catalog->image_src }}" height="100"
-                                         data-image="{{ $catalog->image_src }}"
-                                         onclick="return popupImage($(this).data('image'))" alt="">
-                                    <a class="images_del"
-                                       href="{{ route('admin.catalog.catalogImageDel', [$catalog->id]) }}"
-                                       onclick="return catalogImageDel(this)">
-                                        <span class="glyphicon glyphicon-trash text-red"></span>
-                                    </a>
-                                @else
-                                    <p class="text-yellow">Изображение не загружено.</p>
-                                @endif
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
                 <div class="box box-primary box-solid">
                     <div class="box-header with-border">
                         <span class="box-title">Шаблон автооптимизации для товаров (см. Настройки)</span>
@@ -96,15 +71,70 @@
                             <li>{lower_name} - название товара в нижнем регистре</li>
                             <li>{article} - поле товара - Артикул</li>
                             <li>{price} - поле товара - Цена</li>
-                            <li>{length} - поле товара - Длина</li>
-                            <li>{width} - поле товара - Ширина</li>
-                            <li>{height} - поле товара - Высота</li>
                         </ul>
                     </div>
                 </div>
 
                 {!! Form::hidden('published', 0) !!}
                 {!! Form::groupCheckbox('published', 1, $catalog->published, 'Показывать раздел') !!}
+                @if ($catalog->parent_id == 0)
+                    {!! Form::hidden('on_main', 0) !!}
+                    {!! Form::groupCheckbox('on_main', 1, $catalog->on_main, 'Показывать на главной странице') !!}
+
+                    <div class="row">
+                        <div class="form-group col-xs-3" style="display: flex; column-gap: 30px;">
+                            <div class="catalog-image">
+                                <label for="catalog-image">Изображение раздела
+                                    <i class="fa fa-question-circle fa-quest"></i>
+                                    <img class="question1" src="/adminlte/questions/catalog_img.png" alt="question_1">
+                                </label>
+                                <input id="catalog-image" type="file" name="image" value=""
+                                       onchange="return catalogImageAttache(this, event)">
+                                <div id="catalog-image-block">
+                                    @if ($catalog->image)
+                                        <img class="img-polaroid"
+                                             src="{{ $catalog->image_src }}" height="100"
+                                             data-image="{{ $catalog->image_src }}"
+                                             onclick="return popupImage($(this).data('image'))" alt="">
+                                        <a class="images_del"
+                                           href="{{ route('admin.catalog.catalogImageDel', [$catalog->id]) }}"
+                                           onclick="return catalogImageDel(this)">
+                                            <span class="glyphicon glyphicon-trash text-red"></span>
+                                        </a>
+                                    @else
+                                        <p class="text-yellow">Изображение не загружено.</p>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group col-xs-3" style="display: flex; column-gap: 30px;">
+                            <div class="catalog-image">
+                                <label for="catalog-icon">Иконка в меню сайдбара
+                                    <i class="fa fa-question-circle fa-quest"></i>
+                                    <img class="question2" src="/adminlte/questions/catalog_side.png" alt="question_2">
+                                </label>
+                                <input id="catalog-icon" type="file" name="icon" value=""
+                                       onchange="return catalogIconAttache(this, event)">
+                                <div id="catalog-icon-block">
+                                    @if ($catalog->menu_icon)
+                                        <img class="img-polaroid"
+                                             src="{{ $catalog->icon_src }}" height="100"
+                                             data-image="{{ $catalog->icon_src }}"
+                                             onclick="return popupImage($(this).data('image'))" alt="">
+                                        <a class="images_del"
+                                           href="{{ route('admin.catalog.catalogIconDel', [$catalog->id]) }}"
+                                           onclick="return catalogIconDel(this)">
+                                            <span class="glyphicon glyphicon-trash text-red"></span>
+                                        </a>
+                                    @else
+                                        <p class="text-yellow">Иконка не загружена.</p>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                @endif
             </div>
 
             <div class="tab-pane" id="tab_2">

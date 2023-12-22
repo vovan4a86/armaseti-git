@@ -1,13 +1,8 @@
 <?php namespace Fanky\Admin\Controllers;
 
-use Fanky\Admin\Models\NewsTag;
-use Fanky\Admin\Settings;
-use Illuminate\Support\Str;
 use Request;
 use Validator;
 use Text;
-use Thumb;
-use Image;
 use Fanky\Admin\Models\News;
 
 class AdminNewsController extends AdminController {
@@ -30,12 +25,18 @@ class AdminNewsController extends AdminController {
 
 	public function postSave() {
 		$id = Request::input('id');
-		$data = Request::only(['date', 'name', 'announce', 'text', 'published', 'alias', 'title', 'keywords', 'description', 'on_top']);
+		$data = Request::only([
+            'date', 'name',
+            'announce', 'text',
+            'published', 'alias',
+            'title', 'keywords',
+            'description', 'on_main']);
 		$image = Request::file('image');
 
 		if (!array_get($data, 'alias')) $data['alias'] = Text::translit($data['name']);
 		if (!array_get($data, 'title')) $data['title'] = $data['name'];
 		if (!array_get($data, 'published')) $data['published'] = 0;
+		if (!array_get($data, 'on_main')) $data['on_main'] = 0;
 
 		// валидация данных
 		$validator = Validator::make(

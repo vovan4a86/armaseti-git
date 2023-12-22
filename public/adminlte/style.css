@@ -272,3 +272,36 @@ html, body{
 .modal-dialog{
   min-width: 650px !important;
 }
+
+.catalog-image label i {
+  position: relative;
+}
+
+.fa-quest {
+  cursor: pointer;
+  color: green;
+}
+
+.question1 {
+  display: none;
+  border: 1px solid green;
+  position: absolute;
+  top: -230px;
+  right: -150px;
+}
+
+.question2 {
+  display: none;
+  border: 1px solid green;
+  position: absolute;
+  top: -230px;
+  right: -150px;
+}
+
+.fa-quest:hover + img {
+  display: block;
+}
+
+table tbody.news-body td {
+  vertical-align: middle;
+}

@@ -374,16 +374,21 @@ class Catalog extends Model
             ->pluck('id')->all();
     }
 
-    public function getRecurseProductsCount()
+    public function getRecurseProductsCount(): string
     {
-//		$count = Cache::remember('product_count_' . $this->id, env('CACHE_TIME'), function () {
-//			$ids = $this->getRecurseChildrenIds();
-//			return Product::whereIn('catalog_id', $ids)->public()->count();
-//		});
-//		return $count;
+        return Cache::remember('product_count_' . $this->id, env('CACHE_TIME', 60), function () {
+            $ids = $this->getRecurseChildrenIds();
+            return Product::whereIn('catalog_id', $ids)->public()->count();
+        });
+    }
 
-        $ids = $this->getRecurseChildrenIds();
-        return Product::whereIn('catalog_id', $ids)->public()->count();
+    public function getRecurseProductsCountWithEnd(): string
+    {
+		$count = Cache::remember('product_count_' . $this->id, env('CACHE_TIME', 60), function () {
+			$ids = $this->getRecurseChildrenIds();
+			return Product::whereIn('catalog_id', $ids)->public()->count();
+		});
+		return $count . ' ' . SiteHelper::getNumEnding($count, ['товар', 'товара', 'товаров']);
     }
 
     public function getH1(): string
@@ -506,5 +511,10 @@ class Catalog extends Model
     public function getImageSrcAttribute(): string
     {
         return self::UPLOAD_URL . $this->image;
+    }
+
+    public function getIconSrcAttribute(): string
+    {
+        return self::UPLOAD_URL . $this->menu_icon;
     }
 }

@@ -64,7 +64,7 @@
                 <div class="header__logo">
                     <img class="logo" src="/static/images/common/logo.svg" width="60" height="36" alt="Армасети">
                 </div>
-                <div class="header__label">Доставка от 3-х дней</div>
+                <div class="header__label">Доставка от 3-х дней</div>
             </div>
             <div class="header__features">
                 <div class="header__feat">
@@ -76,13 +76,13 @@
                 <div class="header__feat">
                     <div class="b-feat">
                         <span class="b-feat__icon iconify" data-icon="iconoir:delivery-truck" data-width="22"></span>
-                        <span class="b-feat__label">Экспорт из Китая</span>
+                        <span class="b-feat__label">Экспорт из Китая</span>
                     </div>
                 </div>
                 <div class="header__feat">
                     <div class="b-feat">
                         <span class="b-feat__icon iconify" data-icon="circum:boxes" data-width="22"></span>
-                        <span class="b-feat__label">Большие складские запасы</span>
+                        <span class="b-feat__label">Большие складские запасы</span>
                     </div>
                 </div>
             </div>

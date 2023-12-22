@@ -174,7 +174,7 @@ class SiteHelper {
 		}
 	}
 
-		public static function generateSitemap() {
+    public static function generateSitemap() {
 		array_map("unlink", glob(public_path('/sitemaps/*.xml')));
 		self::generateFederalSitemap();
 //		self::generateRegionSitemap();

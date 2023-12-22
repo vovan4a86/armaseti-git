@@ -83,6 +83,9 @@ Route::group(['namespace' => 'Fanky\Admin\Controllers', 'prefix' => 'admin', 'as
         Route::post('catalog-image-delete/{id}', $controller . 'postCatalogImageDelete')
             ->name('.catalogImageDel');
 
+        Route::post('catalog-icon-delete/{id}', $controller . 'postCatalogIconDelete')
+            ->name('.catalogIconDel');
+
         Route::post('top-view-del/{id}', $controller . 'postTopViewDel')
             ->name('.top-view-del');
 
