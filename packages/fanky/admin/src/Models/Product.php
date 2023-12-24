@@ -107,7 +107,7 @@ class Product extends Model
     protected $guarded = ['id'];
 
     const UPLOAD_PATH = '/public/uploads/products/';
-    const UPLOAD_URL = '/uploads/products/';
+    const UPLOAD_URL = '/uploads/products_test/';
 
     const NO_IMAGE = "/adminlte/no_image.png";
 

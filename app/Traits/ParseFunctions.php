@@ -154,10 +154,12 @@ trait ParseFunctions {
         return false;
     }
 
+    //filename дб с разрешением
     public function downloadJpgFile($url, $uploadPath, $fileName): bool {
         $safeUrl = str_replace(' ', '%20', $url);
         $this->info('Загрузка изображения: ' . $safeUrl);
         $file = file_get_contents($safeUrl);
+
         if (!is_dir(public_path($uploadPath))) {
             mkdir(public_path($uploadPath), 0777, true);
         }
@@ -170,11 +172,12 @@ trait ParseFunctions {
         }
     }
 
+    //filename дб с разрешением
     public function downloadPdfFile($url, $uploadPath, $fileName): bool {
         $safeUrl = str_replace(' ', '%20', $url);
-
         $this->info('Загрузка файла PDF: ' . $safeUrl);
         $file = file_get_contents($safeUrl);
+
         if (!is_dir(public_path($uploadPath))) {
             mkdir(public_path($uploadPath), 0777, true);
         }
@@ -200,6 +203,34 @@ trait ParseFunctions {
             return true;
         } catch (\Exception $e) {
             $this->warn('download svg error: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    //скачиваем webp и конвертируем в png
+    public function downloadWebpFileWithConvert($url, $uploadPath, $fileName): bool {
+        $safeUrl = str_replace(' ', '%20', $url);
+        $this->info('Загрузка .webp изображения: ' . $safeUrl);
+        $fileName .= '.png';
+
+        if (!is_dir(public_path($uploadPath))) {
+            mkdir(public_path($uploadPath), 0777, true);
+        }
+
+        try {
+            $file = imagecreatefromwebp($safeUrl);
+            if(!is_file(public_path($uploadPath . $fileName))) {
+                file_put_contents(public_path($uploadPath . $fileName), '');
+            }
+            $is_ok = imagepng($file, public_path($uploadPath . $fileName));
+            if ($is_ok) {
+                imagedestroy($file);
+                return true;
+            }
+            return false;
+
+        } catch (\Exception $e) {
+            $this->warn('Ошибка загрузки изображения: ' . $e->getMessage());
             return false;
         }
     }
@@ -309,6 +340,7 @@ trait ParseFunctions {
 
     }
 
+    //возвращает разрешение с точкой
     public function getExtensionFromSrc(string $url): string {
         $mark = strripos($url, '.');
         if ($mark) {
@@ -316,7 +348,6 @@ trait ParseFunctions {
         } else {
             return '.none';
         }
-
     }
 
     public function getTextWithNewImage(string $text, string $imgUrl): string {

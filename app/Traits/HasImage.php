@@ -70,7 +70,7 @@ trait HasImage{
 			}
 
 			return url(Thumb::url(self::UPLOAD_URL . $alias . $this->{$this->image_field}, $thumb));
-		};
+		}
 	}
 
 	/**

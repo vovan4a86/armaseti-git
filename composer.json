@@ -19,8 +19,9 @@
 		"phpspec/phpspec": "~6.3",
 		"lavary/laravel-menu": "^1.7",
 		"artesaos/seotools": "~0.18",
-		"laravel/helpers": "^1.2"
-	},
+		"laravel/helpers": "^1.2",
+      	"ext-gd": "*"
+    },
 	"require-dev": {
 		"filp/whoops": "~2.0",
 		"fzaninotto/faker": "~1.4",

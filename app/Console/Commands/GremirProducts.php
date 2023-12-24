@@ -19,7 +19,7 @@ use Illuminate\Support\Facades\Log;
 use League\CommonMark\Block\Element\Document;
 use Symfony\Component\DomCrawler\Crawler;
 
-class ParseProducts extends Command
+class GremirProducts extends Command
 {
     use ParseFunctions;
 

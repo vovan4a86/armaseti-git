@@ -87,7 +87,7 @@
                         </td>
                         <td>
                             @if ($img = $item->images()->first())
-                                <img src="{{ $img->thumb(1, $catalog->alias) }}" width="100">
+                                <img src="{{ $img->thumb(1, $catalog->alias) }}" width="100" alt="thumb">
                             @endif
                         </td>
                         <td><a href="{{ route('admin.catalog.productEdit', [$item->id]) }}"

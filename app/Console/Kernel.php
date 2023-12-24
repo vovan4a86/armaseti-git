@@ -2,9 +2,6 @@
 
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
-use Fanky\Crm\Models\Task;
-use Fanky\Crm\Mailer;
-use DB;
 
 class Kernel extends ConsoleKernel {
 
@@ -14,7 +11,11 @@ class Kernel extends ConsoleKernel {
 	 * @var array
 	 */
 	protected $commands = [
-		Commands\ParseProducts::class,
+		Commands\GremirProducts::class,
+		Commands\RidanProducts::class,
+		Commands\AdlProducts::class,
+		Commands\VandjordProducts::class,
+		Commands\WellMixProducts::class,
 		Commands\SitemapCommand::class,
 	];
 
