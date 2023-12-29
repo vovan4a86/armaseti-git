@@ -154,6 +154,16 @@ trait ParseFunctions {
         return false;
     }
 
+    public function checkIsFileDoc(string $str): bool {
+        $imgEnds = ['.pdf', '.doc', 'docx'];
+        foreach ($imgEnds as $ext) {
+            if (str_ends_with($str, $ext)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     //filename дб с разрешением
     public function downloadJpgFile($url, $uploadPath, $fileName): bool {
         $safeUrl = str_replace(' ', '%20', $url);

@@ -351,6 +351,7 @@ function catalogDocDataSave(form, e){
     });
 }
 
+//doc product
 function productDocUpload(elem, e){
     var url = $(elem).data('url');
     files = e.target.files;
@@ -372,7 +373,6 @@ function productDocUpload(elem, e){
     });
 }
 
-//doc product
 function productDocDel(elem){
     if (!confirm('Удалить документ?')) return false;
     var url = $(elem).attr('href');
@@ -403,6 +403,7 @@ function productDocDataSave(form, e){
     });
 }
 
+//char product
 function addProductChar(link, e) {
     e.preventDefault();
     let container = $(link).prev();

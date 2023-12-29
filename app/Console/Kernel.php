@@ -16,6 +16,8 @@ class Kernel extends ConsoleKernel {
 		Commands\AdlProducts::class,
 		Commands\VandjordProducts::class,
 		Commands\WellMixProducts::class,
+		Commands\AsteamaProducts::class,
+		Commands\RosmaProducts::class,
 		Commands\SitemapCommand::class,
 	];
 
