@@ -139,6 +139,15 @@ trait ParseFunctions {
         }
     }
 
+    //возвращает разрешение с точкой
+    public function getExtensionFromSrc(string $url): string {
+        $mark = strripos($url, '.');
+        if ($mark) {
+            return trim(substr($url, $mark));
+        } else {
+            return '.none';
+        }
+    }
 
     /**
      * @param string $str
@@ -348,16 +357,6 @@ trait ParseFunctions {
             return $name;
         }
 
-    }
-
-    //возвращает разрешение с точкой
-    public function getExtensionFromSrc(string $url): string {
-        $mark = strripos($url, '.');
-        if ($mark) {
-            return trim(substr($url, $mark));
-        } else {
-            return '.none';
-        }
     }
 
     public function getTextWithNewImage(string $text, string $imgUrl): string {

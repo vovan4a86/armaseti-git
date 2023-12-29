@@ -80,61 +80,61 @@
                 @if ($catalog->parent_id == 0)
                     {!! Form::hidden('on_main', 0) !!}
                     {!! Form::groupCheckbox('on_main', 1, $catalog->on_main, 'Показывать на главной странице') !!}
+                @endif
 
-                    <div class="row">
-                        <div class="form-group col-xs-3" style="display: flex; column-gap: 30px;">
-                            <div class="catalog-image">
-                                <label for="catalog-image">Изображение раздела
-                                    <i class="fa fa-question-circle fa-quest"></i>
-                                    <img class="question1" src="/adminlte/questions/catalog_img.png" alt="question_1">
-                                </label>
-                                <input id="catalog-image" type="file" name="image" value=""
-                                       onchange="return catalogImageAttache(this, event)">
-                                <div id="catalog-image-block">
-                                    @if ($catalog->image)
-                                        <img class="img-polaroid"
-                                             src="{{ $catalog->image_src }}" height="100"
-                                             data-image="{{ $catalog->image_src }}"
-                                             onclick="return popupImage($(this).data('image'))" alt="">
-                                        <a class="images_del"
-                                           href="{{ route('admin.catalog.catalogImageDel', [$catalog->id]) }}"
-                                           onclick="return catalogImageDel(this)">
-                                            <span class="glyphicon glyphicon-trash text-red"></span>
-                                        </a>
-                                    @else
-                                        <p class="text-yellow">Изображение не загружено.</p>
-                                    @endif
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="form-group col-xs-3" style="display: flex; column-gap: 30px;">
-                            <div class="catalog-image">
-                                <label for="catalog-icon">Иконка в меню сайдбара
-                                    <i class="fa fa-question-circle fa-quest"></i>
-                                    <img class="question2" src="/adminlte/questions/catalog_side.png" alt="question_2">
-                                </label>
-                                <input id="catalog-icon" type="file" name="icon" value=""
-                                       onchange="return catalogIconAttache(this, event)">
-                                <div id="catalog-icon-block">
-                                    @if ($catalog->menu_icon)
-                                        <img class="img-polaroid"
-                                             src="{{ $catalog->icon_src }}" height="100"
-                                             data-image="{{ $catalog->icon_src }}"
-                                             onclick="return popupImage($(this).data('image'))" alt="">
-                                        <a class="images_del"
-                                           href="{{ route('admin.catalog.catalogIconDel', [$catalog->id]) }}"
-                                           onclick="return catalogIconDel(this)">
-                                            <span class="glyphicon glyphicon-trash text-red"></span>
-                                        </a>
-                                    @else
-                                        <p class="text-yellow">Иконка не загружена.</p>
-                                    @endif
-                                </div>
+                <div class="row">
+                    <div class="form-group col-xs-3" style="display: flex; column-gap: 30px;">
+                        <div class="catalog-image">
+                            <label for="catalog-image">Изображение раздела
+                                <i class="fa fa-question-circle fa-quest"></i>
+                                <img class="question1" src="/adminlte/questions/catalog_img.png" alt="question_1">
+                            </label>
+                            <input id="catalog-image" type="file" name="image" value=""
+                                   onchange="return catalogImageAttache(this, event)">
+                            <div id="catalog-image-block">
+                                @if ($catalog->image)
+                                    <img class="img-polaroid"
+                                         src="{{ $catalog->image_src }}" height="100"
+                                         data-image="{{ $catalog->image_src }}"
+                                         onclick="return popupImage($(this).data('image'))" alt="">
+                                    <a class="images_del"
+                                       href="{{ route('admin.catalog.catalogImageDel', [$catalog->id]) }}"
+                                       onclick="return catalogImageDel(this)">
+                                        <span class="glyphicon glyphicon-trash text-red"></span>
+                                    </a>
+                                @else
+                                    <p class="text-yellow">Изображение не загружено.</p>
+                                @endif
                             </div>
                         </div>
                     </div>
-                @endif
+
+                    <div class="form-group col-xs-3" style="display: flex; column-gap: 30px;">
+                        <div class="catalog-image">
+                            <label for="catalog-icon">Иконка в меню сайдбара
+                                <i class="fa fa-question-circle fa-quest"></i>
+                                <img class="question2" src="/adminlte/questions/catalog_side.png" alt="question_2">
+                            </label>
+                            <input id="catalog-icon" type="file" name="icon" value=""
+                                   onchange="return catalogIconAttache(this, event)">
+                            <div id="catalog-icon-block">
+                                @if ($catalog->menu_icon)
+                                    <img class="img-polaroid"
+                                         src="{{ $catalog->icon_src }}" height="100"
+                                         data-image="{{ $catalog->icon_src }}"
+                                         onclick="return popupImage($(this).data('image'))" alt="">
+                                    <a class="images_del"
+                                       href="{{ route('admin.catalog.catalogIconDel', [$catalog->id]) }}"
+                                       onclick="return catalogIconDel(this)">
+                                        <span class="glyphicon glyphicon-trash text-red"></span>
+                                    </a>
+                                @else
+                                    <p class="text-yellow">Иконка не загружена.</p>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div class="tab-pane" id="tab_2">
@@ -159,7 +159,8 @@
                                         <input type="checkbox" name="filters[]" id="f_{{ $item->id }}"
                                                value="{{ $item->id }}" {{ $item->published ? 'checked' : '' }}
                                                onclick="updateCatalogFilter(this)">
-                                        <label for="f_{{ $item->id }}" style="margin-right: 10px;">{{ $item->name }}</label>
+                                        <label for="f_{{ $item->id }}"
+                                               style="margin-right: 10px;">{{ $item->name }}</label>
                                     </div>
                                 </div>
                             @endforeach

@@ -88,6 +88,8 @@
                         <td>
                             @if ($img = $item->images()->first())
                                 <img src="{{ $img->thumb(1, $catalog->alias) }}" width="100" alt="thumb">
+                            @else
+                                <img src="{{ \Fanky\Admin\Models\Catalog::UPLOAD_URL . $item->catalog->image }}" width="100" alt="thumb">
                             @endif
                         </td>
                         <td><a href="{{ route('admin.catalog.productEdit', [$item->id]) }}"
