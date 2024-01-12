@@ -32,7 +32,8 @@
                                                 <ul class="b-menu__sub-2 faded">
                                                     @foreach($children->public_children as $grand)
                                                         <li class="b-menu__sub-2-item">
-                                                            <a class="b-menu__sub-2-link" href="{{ $grand->url }}">{{ $grand->name }}</a>
+                                                            <a class="b-menu__sub-2-link"
+                                                               href="{{ $grand->url }}">{{ $grand->name }}</a>
                                                         </li>
                                                     @endforeach
                                                 </ul>
@@ -46,30 +47,33 @@
                 </ul>
             </nav>
         </div>
-        <div class="layout__item">
-            <div class="b-updated">Каталог обновлён 09.10.2023</div>
-        </div>
-        <div class="layout__item">
-            <div class="aside-action lazy" data-bg="/static/images/common/aside-action-bg.jpg">
-                <div class="aside-action__title">Подбор оборудования</div>
-                <div class="aside-action__text">Отправьте запрос и мы сделаем для вас подбор оборудования и расценку
-                    в течении 2х часов
-                </div>
-                <div class="aside-action__row">
-                    <a class="h-link" href="tel:+73432260976" title="+7 (343) 226-09-76">
-                        <svg class="svg-sprite-icon icon-phone" width="1em" height="1em">
-                            <use xlink:href="/static/images/sprite/symbol/sprite.svg#phone"></use>
-                        </svg>
-                        <span class="h-link__label">+7 (343) 226-09-76</span>
-                    </a>
-                </div>
-                <div class="aside-action__row">
-                    <button class="btn btn--accent btn-reset" type="button" data-popup="data-popup" data-src="#request"
-                            aria-label="Оставить заявку">
-                        <span class="btn__label">Оставить заявку</span>
-                    </button>
+        @if($date = Settings::get('aside_update_catalog'))
+            <div class="layout__item">
+                <div class="b-updated">Каталог обновлён {{ $date }}</div>
+            </div>
+        @endif
+        @if($aside_banner = Settings::get('aside_banner'))
+            <div class="layout__item">
+                <div class="aside-action lazy" data-bg="/static/images/common/aside-action-bg.jpg">
+                    <div class="aside-action__title">{{ $aside_banner['title'] }}</div>
+                    <div class="aside-action__text">{{ $aside_banner['text'] }}</div>
+                    <div class="aside-action__row">
+                        <a class="h-link" href="tel:{{ preg_replace('/[^\d+]/', '', $aside_banner['phone']) }}" title="{{ $aside_banner['phone'] }}">
+                            <svg class="svg-sprite-icon icon-phone" width="1em" height="1em">
+                                <use xlink:href="/static/images/sprite/symbol/sprite.svg#phone"></use>
+                            </svg>
+                            <span class="h-link__label">{{ $aside_banner['phone'] }}</span>
+                        </a>
+                    </div>
+                    <div class="aside-action__row">
+                        <button class="btn btn--accent btn-reset" type="button" data-popup="data-popup"
+                                data-src="#request"
+                                aria-label="Оставить заявку">
+                            <span class="btn__label">Оставить заявку</span>
+                        </button>
+                    </div>
                 </div>
             </div>
-        </div>
+        @endif
     </aside>
 @endif

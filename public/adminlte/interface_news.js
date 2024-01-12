@@ -1,3 +1,4 @@
+
 var newsImage = null;
 function newsImageAttache(elem, e){
     $.each(e.target.files, function(key, file)
@@ -81,14 +82,14 @@ function newsImageDel(el, e){
     });
 }
 
-function productImageUpload(elem, e){
+function newsImageUpload(elem, e){
     var url = $(elem).data('url');
     files = e.target.files;
     var data = new FormData();
     $.each(files, function(key, value)
     {
         if(value['size'] > max_file_size){
-            alert('Слишком большой размер файла. Максимальный размер 2Мб');
+            alert('Слишком большой размер файла. Максимальный размер 10Мб');
         } else {
             data.append('images[]', value);
         }
@@ -114,17 +115,6 @@ function delImg(elem, e) {
     sendAjax(url, {}, function(json){
         if(typeof json.success != 'undefined'){
             $(row).fadeOut(300, function(){ $(this).remove(); });
-        }
-    });
-}
-
-function reviewImageDel(el, e) {
-    e.preventDefault();
-    if (!confirm('Удалить изображение?')) return false;
-    var url = $(el).attr('href');
-    sendAjax(url, {}, function (json) {
-        if (json.success === true) {
-            $(el).closest('#article-image-block').html('');
         }
     });
 }
@@ -156,9 +146,3 @@ function galleryImageDataSave(form, e){
         }
     });
 }
-
-$(document).ready(function () {
-    if($('#tag_name')){
-        init_autocomplete($('#tag_name'));
-    }
-});

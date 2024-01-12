@@ -26,8 +26,9 @@
 						<tr>
 							<th width="100">Дата</th>
 							<th width="100">Изображение</th>
-							<th width="100">На главной</th>
+							<th width="100">Тип</th>
 							<th>Название</th>
+							<th>Сбоку</th>
 							<th width="50"></th>
 						</tr>
 					</thead>
@@ -37,16 +38,26 @@
 								<td>{{ $item->dateFormat() }}</td>
 								<td style="text-align: center;">
 									@if($item->image)
-									<img src="{{ $item->thumb(1) }}" alt="{{ $item->name }}"></td>
-								@else
-									<img src="{{ \Fanky\Admin\Models\News::NO_IMAGE }}" alt="Не загружено" title="Не загружено" width="100"></td>
-								@endif
+										<img src="{{ $item->thumb(1) }}" alt="{{ $item->name }}">
+									@else
+										<img src="{{ \Fanky\Admin\Models\News::NO_IMAGE }}" alt="Не загружено" title="Не загружено" width="100">
+									@endif
+								</td>
 								<td style="text-align: center">
-									@if($item->on_main)
-										<i class="fa fa-check"></i>
+									@if($item->type == 'Новость')
+										<span style="color: blue">{{ $item->type }}</span>
+									@elseif($item->type == 'Статья')
+										<span style="color: red">{{ $item->type }}</span>
+									@else
+										<span style="color: white; background: red">{{ $item->type }}</span>
 									@endif
 								</td>
 								<td><a href="{{ route('admin.news.edit', [$item->id]) }}">{{ $item->name }}</a></td>
+								<td>
+									@if($item->aside)
+										<i class="fa fa-check"></i>
+									@endif
+								</td>
 								<td>
 									<a class="glyphicon glyphicon-trash" href="{{ route('admin.news.delete', [$item->id]) }}"
 									   style="font-size:20px; color:red;" title="Удалить" onclick="return newsDel(this)"></a>

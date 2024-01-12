@@ -20,7 +20,46 @@ Fancybox.bind('[data-popup]', {
 
 Fancybox.bind('[data-cities]', {
   mainClass: 'popup--custom popup--ajax',
-  template: { closeButton: closeBtn }
+  template: { closeButton: closeBtn },
+  showClass: 'f-fadeIn',
+  hideClass: 'f-fadeOut'
+});
+
+Fancybox.bind('[data-product-popup]', {
+  mainClass: 'popup--custom popup--order',
+  template: { closeButton: closeBtn },
+  showClass: 'f-fadeIn',
+  hideClass: 'f-fadeOut',
+  hideScrollbar: false,
+  on: {
+    reveal: (e, trigger) => {
+      const popup = e.$container;
+      const label = trigger.label;
+
+      if (popup && label) {
+        const popupLabel = popup.querySelector('.popup__label');
+        if (popupLabel) popupLabel.textContent = label;
+      }
+    },
+    close: (e, trigger) => {
+      const popup = e.$container;
+      const label = trigger.label;
+
+      if (popup && label) {
+        const popupLabel = popup.querySelector('.popup__label');
+        if (popupLabel) popupLabel.textContent = '';
+      }
+    }
+  }
+});
+
+const closePopupButtons = document.querySelectorAll('[data-close-popup]');
+
+closePopupButtons?.forEach(btn => {
+  btn.addEventListener('click', e => {
+    e.preventDefault();
+    Fancybox.close();
+  });
 });
 
 export const showSuccessRequestDialog = () => {

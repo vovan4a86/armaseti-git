@@ -15,3 +15,6 @@ import './counter';
 import './sliders';
 import './fileUpload';
 import './cookie';
+import './filter';
+import './priceSlider';
+import './customFront';

@@ -86,9 +86,6 @@ Route::group(['namespace' => 'Fanky\Admin\Controllers', 'prefix' => 'admin', 'as
         Route::post('catalog-icon-delete/{id}', $controller . 'postCatalogIconDelete')
             ->name('.catalogIconDel');
 
-        Route::post('top-view-del/{id}', $controller . 'postTopViewDel')
-            ->name('.top-view-del');
-
 		Route::get('product-edit/{id?}', $controller . 'getProductEdit')
 			->name('.productEdit');
 
@@ -198,6 +195,15 @@ Route::group(['namespace' => 'Fanky\Admin\Controllers', 'prefix' => 'admin', 'as
 
         Route::post('delete-image/{id}', $controller . 'postDeleteImage')
             ->name('.delete-image');
+
+        Route::post('news-image-upload/{id}', $controller . 'postNewsImageUpload')
+            ->name('.newsImageUpload');
+
+        Route::post('news-image-delete/{id}', $controller . 'postNewsImageDelete')
+            ->name('.newsImageDel');
+
+        Route::post('news-image-order', $controller . 'postNewsImageOrder')
+            ->name('.newsImageOrder');
     });
 
     Route::group(['as' => '.handbook', 'prefix' => 'handbook'], function () {

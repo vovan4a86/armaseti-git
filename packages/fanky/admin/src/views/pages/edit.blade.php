@@ -72,27 +72,6 @@
                     </div>
                 @endif
 
-                @if($page->id !== 1)
-                    <div class="form-group">
-                        <label for="article-image">Фон внутренней шапки (1920x311)</label>
-                        <input id="article-image" type="file" name="top_view" value=""
-                               onchange="return topViewAttache(this, event)" accept=".jpg, .jpeg, .png">
-                        <div id="top-view">
-                            @if ($page->top_view)
-                                <img class="img-polaroid" src="{{ $page->top_view(1) }}" height="100"
-                                     data-image="{{ $page->top_view(1) }}"
-                                     onclick="return popupImage($(this).data('image'))" alt="">
-                                <a class="images_del" href="{{ route('admin.pages.top-view-del', [$page->id]) }}"
-                                   onclick="return topViewDel(this)">
-                                    <span class="glyphicon glyphicon-trash text-red"></span>
-                                </a>
-                            @else
-                                <p class="text-yellow">Изображение не загружено.</p>
-                            @endif
-                        </div>
-                    </div>
-                @endif
-
                 @if($page->id == 1)
                     {!! Form::hidden('parent_id', 0) !!}
                 @else

@@ -7,6 +7,7 @@ use App\Traits\HasSeo;
 use App\Traits\OgGenerate;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Thumb;
 use Carbon\Carbon;
@@ -74,12 +75,19 @@ class News extends Model {
 
 	public static $thumbs = [
 		1 => '100x100|fit', //admin
-		2 => '431x255|fit', //list
+		2 => '380x260|fit', //list
+		3 => '790x360|fit', //item
 	];
 
 	public function scopePublic($query) {
 		return $query->where('published', 1);
 	}
+
+    public function images(): HasMany
+    {
+        return $this->hasMany(NewsImage::class, 'news_id')
+            ->orderBy('order');
+    }
 
 	public function scopeOnMain($query) {
 		return $query->where('on_main', 1);
@@ -122,6 +130,14 @@ class News extends Model {
 
 		return $items;
 	}
+
+    public function getAnnounce(): ?string
+    {
+        if($this->text) {
+            return mb_strimwidth(strip_tags($this->text), 0, 70, '...');
+        }
+        return '...';
+    }
 
 	/**
 	 * @return Carbon

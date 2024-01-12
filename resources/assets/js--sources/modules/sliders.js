@@ -9,6 +9,7 @@ export const cardsSlider = ({ sliders, sliderPagination }) => {
     const pagination = sliderContainer.querySelector(sliderPagination);
 
     new Swiper(sliderContainer, {
+      slidesPerView: 1,
       modules: [Pagination, Autoplay],
       speed: 600,
       grabCursor: true,
@@ -29,4 +30,9 @@ export const cardsSlider = ({ sliders, sliderPagination }) => {
 cardsSlider({
   sliders: '[data-card-slider]',
   sliderPagination: '[data-card-pagination]'
+});
+
+cardsSlider({
+  sliders: '[data-prod-slider]',
+  sliderPagination: '[data-prod-pagination]'
 });

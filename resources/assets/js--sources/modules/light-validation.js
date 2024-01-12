@@ -3,7 +3,7 @@ import $ from 'jquery';
 const lightValidation = () => {
   const forms = $('form');
 
-  forms.on('click', 'button', function (e) {
+  forms.on('click', 'button[type="submit"]', function (e) {
     const isEmpty = field => $.trim(field.val()) === '';
 
     const form = $(this).closest('form');

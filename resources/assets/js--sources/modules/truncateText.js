@@ -25,3 +25,28 @@ truncateText({
   el: '.news-card__title',
   maxlength: 60
 });
+
+truncateText({
+  el: '.cart-item__title',
+  maxlength: 40
+});
+
+truncateText({
+  el: '.a-newses__title',
+  maxlength: 70
+});
+
+truncateText({
+  el: '.a-newses__text',
+  maxlength: 75
+});
+
+truncateText({
+  el: '.card__title',
+  maxlength: 70
+});
+
+truncateText({
+  el: '.card__text',
+  maxlength: 75
+});

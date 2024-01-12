@@ -1,33 +1,37 @@
 @extends('template')
 @section('content')
-    <main>
-        <section class="s-newses">
-            <div class="s-newses__container container">
-                @include('blocks.bread')
-                <div class="s-newses__heading">
-                    <div class="page-title oh">
-                        <span data-aos="fade-down" data-aos-duration="900">{{ $h1 }}</span>
-                    </div>
-                </div>
-                @if(isset($items) && count($items))
-                    <div class="s-newses__grid">
-                        @foreach($items as $item)
-                            <div class="s-newses__item" data-aos="fade-down" data-aos-duration="900" data-aos-delay="{{ $loop->index > 0 ? $loop->index * 50 : 0}}">
-                                @if($item->image)
-                                    <img class="s-newses__pic lazy"
-                                         src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=="
-                                         data-src="{{ $item->thumb(2) }}" width="356" height="263" alt="{{ $item->name }}"/>
-                                @endif
-                                <a class="s-newses__title" href="{{ $item->url }}"
-                                   title="{{ $item->name }}">{{ $item->name }}</a>
-                                <div class="s-newses__body">
-                                    <p>{{ $item->announce }}</p>
-                                </div>
+    @include('blocks.bread')
+    <div class="news-layout">
+        <div class="news-layout__container container">
+            <div class="news-layout__grid">
+                <!--main._main-->
+                <main class="news-layout__main">
+                    <section class="newses">
+                        <div class="newses__title">Новости</div>
+                        @if(count($items))
+                            <div class="newses__grid">
+                                @foreach($items as $item)
+                                    @include('news.newses_item')
+                                @endforeach
                             </div>
-                        @endforeach
-                    </div>
-                @endif
+                        @endif
+                    </section>
+                </main>
+                <!--aside._aside-->
+                <aside class="news-layout__aside">
+                    @if(count($items))
+                        <div class="a-newses">
+                            @foreach($aside_items as $item)
+                                @include('news.a_newses_item')
+                            @endforeach
+                        </div>
+                    @endif
+                </aside>
             </div>
-        </section>
-    </main>
+            @include('paginations.load_more', ['paginator' => $items])
+            <div class="news-layout__row">
+                @include('paginations.with_pages', ['paginator' => $items])
+            </div>
+        </div>
+    </div>
 @stop

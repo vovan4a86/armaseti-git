@@ -1,1 +1,3 @@
-<svg width="15" height="15" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill="#fff" stroke="#EA4D45" stroke-width="1.5" d="M.75.75h13.5v13.5H.75z"/></svg>
+<svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect x="0.75" y="0.75" width="13.5" height="13.5" fill="white" stroke="#EA4D45" stroke-width="1.5"/>
+</svg>

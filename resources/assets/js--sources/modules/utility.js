@@ -1,10 +1,5 @@
 import $ from 'jquery';
 
-export const preloader = () => {
-  $('.preloader').fadeOut();
-  $('body').removeClass('no-scroll');
-};
-
 export const utils = () => {
   const blocks = '.lazy, picture, img, video';
 
@@ -12,5 +7,4 @@ export const utils = () => {
   // $(blocks).on('contextmenu', () => false);
 };
 
-preloader();
 utils();

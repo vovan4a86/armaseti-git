@@ -3,12 +3,12 @@
     <!--.layout-->
     <div class="layout">
         <div class="layout__container container">
-            @include('blocks.aside')
-            <!--main._main-->
+        @include('blocks.aside')
+        <!--main._main-->
             <main class="layout__main">
                 <div class="page">
                     @if($banner_before = Settings::get('banner_before'))
-                        @if($banner_before['disable'] == '')
+                        @if($banner_before['visibility'] == '1')
                             <div class="page__item">
                                 <!--.b-focus-->
                                 <div class="b-focus">
@@ -24,11 +24,13 @@
                                                  width="162" height="125" alt="{{ $banner_before['title'] }}"
                                                  loading="lazy"/>
                                         @endif
-                                        <div class="b-focus__info">
+                                        @if($banner_before['img_text'])
+                                            <div class="b-focus__info">
                                             <span class="b-focus__icon iconify" data-icon="icon-park-solid:check-one"
                                                   data-width="18"></span>
-                                            <span class="b-focus__label">{{ $banner_before['diameter'] }}</span>
-                                        </div>
+                                                <span class="b-focus__label">{{ $banner_before['img_text'] }}</span>
+                                            </div>
+                                        @endif
                                     </div>
                                     <span class="b-focus__pseudo iconify" data-icon="maki:arrow" data-width="30"></span>
                                 </div>
@@ -238,23 +240,24 @@
                     @endif
                     @if($main_features = Settings::get('main_features'))
                         <div class="page__item page__item--wide">
-                        <!--section.s-feat-->
-                        <section class="s-feat">
-                            <div class="s-feat__head">
-                                <div class="title">Почему выгодно покупать у нас?</div>
-                            </div>
-                            <div class="s-feat__grid">
-                                @foreach($main_features as $item)
-                                    <div class="s-feat__item">
-                                        @if($item['img'])
-                                            <div class="s-feat__icon lazy" data-bg="{{ Settings::fileSrc($item['img']) }}"></div>
-                                        @endif
-                                        <div class="s-feat__title">{{ $item['text'] }}</div>
-                                    </div>
-                                @endforeach
-                            </div>
-                        </section>
-                    </div>
+                            <!--section.s-feat-->
+                            <section class="s-feat">
+                                <div class="s-feat__head">
+                                    <div class="title">Почему выгодно покупать у нас?</div>
+                                </div>
+                                <div class="s-feat__grid">
+                                    @foreach($main_features as $item)
+                                        <div class="s-feat__item">
+                                            @if($item['img'])
+                                                <div class="s-feat__icon lazy"
+                                                     data-bg="{{ Settings::fileSrc($item['img']) }}"></div>
+                                            @endif
+                                            <div class="s-feat__title">{{ $item['text'] }}</div>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </section>
+                        </div>
                     @endif
                     @if (count($news))
                         <div class="page__item page__item--wide">
