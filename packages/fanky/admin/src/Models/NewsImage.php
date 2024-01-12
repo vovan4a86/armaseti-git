@@ -13,7 +13,7 @@ class NewsImage extends Model {
 
 	public $timestamps = false;
 
-	const UPLOAD_URL = '/uploads/news/gallery';
+	const UPLOAD_URL = '/uploads/news/gallery/';
 
 	public static $thumbs = [
 		1 => '100x100|fit', //admin product

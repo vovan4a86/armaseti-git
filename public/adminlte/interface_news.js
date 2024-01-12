@@ -82,6 +82,20 @@ function newsImageDel(el, e){
     });
 }
 
+function newsImageGalleryDel(elem) {
+    if (!confirm('Удалить изображение?')) return false;
+    var url = $(elem).attr('href');
+    sendAjax(url, {}, function (json) {
+        if (typeof json.msg != 'undefined') alert(urldecode(json.msg));
+        if (typeof json.success != 'undefined' && json.success === true) {
+            $(elem).closest('.images_item').fadeOut(300, function () {
+                $(this).remove();
+            });
+        }
+    });
+    return false;
+}
+
 function newsImageUpload(elem, e){
     var url = $(elem).data('url');
     files = e.target.files;

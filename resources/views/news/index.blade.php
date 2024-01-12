@@ -18,15 +18,7 @@
                     </section>
                 </main>
                 <!--aside._aside-->
-                <aside class="news-layout__aside">
-                    @if(count($items))
-                        <div class="a-newses">
-                            @foreach($aside_items as $item)
-                                @include('news.a_newses_item')
-                            @endforeach
-                        </div>
-                    @endif
-                </aside>
+                @include('news.aside')
             </div>
             @include('paginations.load_more', ['paginator' => $items])
             <div class="news-layout__row">

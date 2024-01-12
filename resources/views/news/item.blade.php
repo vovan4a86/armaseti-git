@@ -32,23 +32,17 @@
                                 <div class="text-block">
                                     {!! $text !!}
 
-                                    <div class="text-block__gallery">
-                                        <a class="text-block__gallery-item" href="/static/images/common/gal-1.png"
-                                           data-fancybox="gallery" data-caption="caption">
-                                            <img class="text-block__pic" src="/static/images/common/gal-1.png"
-                                                 width="116" height="186" alt="name" loading="lazy">
-                                        </a>
-                                        <a class="text-block__gallery-item" href="/static/images/common/gal-2.png"
-                                           data-fancybox="gallery" data-caption="caption">
-                                            <img class="text-block__pic" src="/static/images/common/gal-2.png"
-                                                 width="116" height="186" alt="name" loading="lazy">
-                                        </a>
-                                        <a class="text-block__gallery-item" href="/static/images/common/gal-3.png"
-                                           data-fancybox="gallery" data-caption="caption">
-                                            <img class="text-block__pic" src="/static/images/common/gal-3.png"
-                                                 width="116" height="186" alt="name" loading="lazy">
-                                        </a>
-                                    </div>
+                                    @if(count($item->images))
+                                        <div class="text-block__gallery">
+                                            @foreach($item->images as $image)
+                                                <a class="text-block__gallery-item" href="{{ $image->imageSrc() }}"
+                                                   data-fancybox="gallery" data-caption="{{ $item->name }}">
+                                                    <img class="text-block__pic" src="{{ $image->thumb(2) }}"
+                                                         width="116" height="186" alt="{{ $item->name }}" loading="lazy">
+                                                </a>
+                                            @endforeach
+                                        </div>
+                                    @endif
 
                                    {!! $text_after !!}
                                 </div>
@@ -64,148 +58,7 @@
                     </section>
                 </main>
                 <!--aside._aside-->
-                <aside class="news-layout__aside">
-                    <div class="a-newses">
-                        <div class="a-newses__item">
-                            <div class="a-newses__top">
-                                <div class="a-newses__badge">
-                                    <!-- modificators: --accent --accent-alt --alt --grey-alt -->
-                                    <div class="badge badge--accent">Акция</div>
-                                </div>
-                                <div class="a-newses__date">01.09.2023</div>
-                            </div>
-                            <div class="a-newses__body">
-                                <a class="a-newses__title" href="javascript:void(0)">ГК Армасети открывает новый склад в
-                                    г. Екатеринбурге!</a>
-                                <div class="a-newses__text">Задвижка — это одна из разновидностей запорной арматуры,
-                                    которая перекрывала
-                                </div>
-                            </div>
-                            <div class="a-newses__foot">
-                                <a class="read-link" href="javascript:void(0)" title="Читать">
-                                    <span class="read-link__label">Читать</span>
-                                    <span class="read-link__icon iconify" data-icon="jam:arrow-right"
-                                          data-width="17"></span>
-                                </a>
-                            </div>
-                        </div>
-                        <div class="a-newses__item">
-                            <div class="a-newses__top">
-                                <div class="a-newses__badge">
-                                    <!-- modificators: --accent --accent-alt --alt --grey-alt -->
-                                    <div class="badge badge--alt">Новость</div>
-                                </div>
-                                <div class="a-newses__date">01.09.2023</div>
-                            </div>
-                            <div class="a-newses__body">
-                                <a class="a-newses__title" href="javascript:void(0)">ГК Армасети открывает новый склад в
-                                    г. Екатеринбурге!</a>
-                                <div class="a-newses__text">Задвижка — это одна из разновидностей запорной арматуры,
-                                    которая перекрывала
-                                </div>
-                            </div>
-                            <div class="a-newses__foot">
-                                <a class="read-link" href="javascript:void(0)" title="Читать">
-                                    <span class="read-link__label">Читать</span>
-                                    <span class="read-link__icon iconify" data-icon="jam:arrow-right"
-                                          data-width="17"></span>
-                                </a>
-                            </div>
-                        </div>
-                        <div class="a-newses__item">
-                            <div class="a-newses__top">
-                                <div class="a-newses__badge">
-                                    <!-- modificators: --accent --accent-alt --alt --grey-alt -->
-                                    <div class="badge badge--accent-alt">Статья</div>
-                                </div>
-                                <div class="a-newses__date">01.09.2023</div>
-                            </div>
-                            <div class="a-newses__body">
-                                <a class="a-newses__title" href="javascript:void(0)">ГК Армасети открывает новый склад в
-                                    г. Екатеринбурге!</a>
-                                <div class="a-newses__text">Задвижка — это одна из разновидностей запорной арматуры,
-                                    которая перекрывала
-                                </div>
-                            </div>
-                            <div class="a-newses__foot">
-                                <a class="read-link" href="javascript:void(0)" title="Читать">
-                                    <span class="read-link__label">Читать</span>
-                                    <span class="read-link__icon iconify" data-icon="jam:arrow-right"
-                                          data-width="17"></span>
-                                </a>
-                            </div>
-                        </div>
-                        <div class="a-newses__item">
-                            <div class="a-newses__top">
-                                <div class="a-newses__badge">
-                                    <!-- modificators: --accent --accent-alt --alt --grey-alt -->
-                                    <div class="badge badge--accent-alt">Статья</div>
-                                </div>
-                                <div class="a-newses__date">01.09.2023</div>
-                            </div>
-                            <div class="a-newses__body">
-                                <a class="a-newses__title" href="javascript:void(0)">ГК Армасети открывает новый склад в
-                                    г. Екатеринбурге!</a>
-                                <div class="a-newses__text">Задвижка — это одна из разновидностей запорной арматуры,
-                                    которая перекрывала
-                                </div>
-                            </div>
-                            <div class="a-newses__foot">
-                                <a class="read-link" href="javascript:void(0)" title="Читать">
-                                    <span class="read-link__label">Читать</span>
-                                    <span class="read-link__icon iconify" data-icon="jam:arrow-right"
-                                          data-width="17"></span>
-                                </a>
-                            </div>
-                        </div>
-                        <div class="a-newses__item">
-                            <div class="a-newses__top">
-                                <div class="a-newses__badge">
-                                    <!-- modificators: --accent --accent-alt --alt --grey-alt -->
-                                    <div class="badge badge--alt">Новость</div>
-                                </div>
-                                <div class="a-newses__date">01.09.2023</div>
-                            </div>
-                            <div class="a-newses__body">
-                                <a class="a-newses__title" href="javascript:void(0)">ГК Армасети открывает новый склад в
-                                    г. Екатеринбурге!</a>
-                                <div class="a-newses__text">Задвижка — это одна из разновидностей запорной арматуры,
-                                    которая перекрывала
-                                </div>
-                            </div>
-                            <div class="a-newses__foot">
-                                <a class="read-link" href="javascript:void(0)" title="Читать">
-                                    <span class="read-link__label">Читать</span>
-                                    <span class="read-link__icon iconify" data-icon="jam:arrow-right"
-                                          data-width="17"></span>
-                                </a>
-                            </div>
-                        </div>
-                        <div class="a-newses__item">
-                            <div class="a-newses__top">
-                                <div class="a-newses__badge">
-                                    <!-- modificators: --accent --accent-alt --alt --grey-alt -->
-                                    <div class="badge badge--accent">Акция</div>
-                                </div>
-                                <div class="a-newses__date">01.09.2023</div>
-                            </div>
-                            <div class="a-newses__body">
-                                <a class="a-newses__title" href="javascript:void(0)">ГК Армасети открывает новый склад в
-                                    г. Екатеринбурге!</a>
-                                <div class="a-newses__text">Задвижка — это одна из разновидностей запорной арматуры,
-                                    которая перекрывала
-                                </div>
-                            </div>
-                            <div class="a-newses__foot">
-                                <a class="read-link" href="javascript:void(0)" title="Читать">
-                                    <span class="read-link__label">Читать</span>
-                                    <span class="read-link__icon iconify" data-icon="jam:arrow-right"
-                                          data-width="17"></span>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </aside>
+                @include('news.aside')
             </div>
         </div>
     </div>

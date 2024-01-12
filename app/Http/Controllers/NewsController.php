@@ -106,6 +106,9 @@ class NewsController extends Controller
         $item->setSeo();
         $item->ogGenerate();
 
+        $aside_items = News::orderBy('date', 'desc')
+            ->public()->where('aside', 1)->get();
+
         return view(
             'news.item',
             [
@@ -114,6 +117,7 @@ class NewsController extends Controller
                 'text' => $item->text,
                 'text_after' => $item->text_after,
                 'bread' => $bread,
+                'aside_items' => $aside_items
             ]
         );
     }
