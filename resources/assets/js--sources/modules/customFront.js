@@ -53,6 +53,18 @@ $('.b-filter').submit(function (e) {
     });
 });
 
+$('.btn-cart').click(function () {
+    const url = '/ajax/add-to-cart'
+    const id = $(this).closest('.prod__data').data('id');
+    const count = $('input[name=count]').val();
+
+    sendAjax(url, {id, count}, function (json) {
+        if(json.success) {
+            alert('added');
+        }
+    });
+
+})
 
 // export const resetForm = (form) => {
 //     $(form).trigger('reset');
@@ -80,25 +92,3 @@ $('.b-filter').submit(function (e) {
 //     })
 //
 // });
-//
-// export const applySelectedDays = (days) => {
-//     const url = '/ajax/apply-calendar';
-//     const archive = $('.s-news__data').data('type') === 'archive' ? 1 : 0;
-//     const news_list = $('.s-news__list');
-//     const btn = $('.b-loader button');
-//     const lang = $('html').attr('lang');
-//     const message = lang === 'ru' ? 'Нет новостей на указанную дату' : 'No news on the date specified';
-//
-//     $(btn).hide();
-//     $(news_list).empty();
-//
-//     sendAjax(url, {days, archive}, function(json) {
-//         if(json.success && json.items) {
-//             $(news_list).append(json.items);
-//         }
-//         if(!json.items) {
-//             const no_news = '<h4 class="no-news" style="text-align: center">' + message + '</h4>'
-//             $(news_list).append(no_news);
-//         }
-//     });
-// }

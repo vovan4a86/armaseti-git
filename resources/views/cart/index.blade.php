@@ -1,137 +1,46 @@
 @extends('template')
 @section('content')
-    <title>Корзина</title>
+    @include('blocks.bread')
     <main>
-        <section class="cart">
-            <form class="cart__container container" action="{{ route('ajax.order') }}" onsubmit="sendOrder(this, event)">
-                <div class="cart__row">
-                    <div class="cart__title">Корзина</div>
-                    <button class="cart__trash btn-reset" type="button" aria-label="Очистить коризну" onclick="purgeCart()">
-                        <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M18.5625 4.8125L3.4375 4.81251" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-                            <path d="M8.9375 8.9375V14.4375" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-                            <path d="M13.0625 8.9375V14.4375" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-                            <path d="M17.1875 4.8125V17.875C17.1875 18.0573 17.1151 18.2322 16.9861 18.3611C16.8572 18.4901 16.6823 18.5625 16.5 18.5625H5.5C5.31766 18.5625 5.1428 18.4901 5.01386 18.3611C4.88493 18.2322 4.8125 18.0573 4.8125 17.875V4.8125" stroke="currentColor"
-                                  stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-                            <path d="M14.4375 4.8125V3.4375C14.4375 3.07283 14.2926 2.72309 14.0348 2.46523C13.7769 2.20737 13.4272 2.0625 13.0625 2.0625H8.9375C8.57283 2.0625 8.22309 2.20737 7.96523 2.46523C7.70737 2.72309 7.5625 3.07283 7.5625 3.4375V4.8125" stroke="currentColor"
-                                  stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-                        </svg>
-                        <span>Очистить корзину</span>
-                    </button>
-                </div>
-                <div class="c-order">
-                    <!-- row row--head-->
-                    <div class="c-order__row c-order__row--head">
-                        <div class="c-order__col c-order__col--col-1">
-                            <div class="c-order__label">Фото</div>
-                        </div>
-                        <div class="c-order__col">
-                            <div class="c-order__label">Наименование</div>
-                        </div>
-                        <div class="c-order__col c-order__col--col-2">
-                            <div class="c-order__label">Цена</div>
-                        </div>
-                        <div class="c-order__col c-order__col--col-2">
-                            <div class="c-order__label">Количество</div>
-                        </div>
-                        <div class="c-order__col c-order__col--col-2">
-                            <div class="c-order__label">Сумма</div>
-                        </div>
-                    </div>
-                    @foreach($items as $item)
-                        @include('cart.table_row')
-                    @endforeach
-                    <!-- footer-->
-                    <div class="c-order__footer">
-                        <div class="c-order__total">Итого:</div>
-                        @include('cart.table_row_total')
-                        <div class="c-order__count">/ шт</div>
-                    </div>
-                </div>
-                <div class="cart__infos">
-                    <div class="order-block">
-                        <div class="order-block__title">1. Контактная информация</div>
-                        <div class="order-block__grid">
-                            <div class="order-block__col">
-                                <div class="order-block__fields">
-                                    <label class="label-form">
-                                        <span data-required="*">Имя</span>
-                                        <input class="label-form__input" type="text" name="name" placeholder="Введите имя" required utocomplete="off">
-                                    </label>
-                                    <label class="label-form">
-                                        <span data-required="*">Телефон</span>
-                                        <input class="label-form__input" type="tel" name="phone" placeholder="+7 (___) ___-__-__" required autocomplete="off">
-                                    </label>
-                                    <label class="label-form">
-                                        <span data-required="*">Email</span>
-                                        <input class="label-form__input" type="text" name="email" placeholder="Введите email" autocomplete="off">
-                                    </label>
-                                    <label class="label-form">
-                                        <span data-required="*">Наименование организации</span>
-                                        <input class="label-form__input" type="tel" name="company" placeholder="Введите наименование организации" required autocomplete="off">
-                                    </label>
-                                </div>
+        <section class="page container">
+            <div class="page__title">{{ $h1 }}</div>
+            <form class="b-cart" action="#">
+                <div class="b-cart__dialog">
+                    <div class="b-dialog">
+                        <div class="b-dialog__icons">
+                            <div class="b-dialog__icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none">
+                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7" d="m8.041 14.065 6.404-6.405" />
+                                    <circle cx="13.804" cy="13.424" r=".85" fill="currentColor" stroke="currentColor" stroke-width=".435" />
+                                    <circle cx="8.681" cy="8.728" r=".85" fill="currentColor" stroke="currentColor" stroke-width=".435" />
+                                    <path stroke="currentColor" stroke-width="1.7" d="m10.311 20.37-.272-.805.272.805a2.15 2.15 0 0 1 1.378 0l.272-.805-.272.805.183.062a3.85 3.85 0 0 0 4.523-1.646l.1-.165a2.15 2.15 0 0 1 1.056-.886l.18-.07a3.85 3.85 0 0 0 2.407-4.168l-.03-.191a2.15 2.15 0 0 1 .24-1.357l.092-.17a3.85 3.85 0 0 0-.835-4.74l-.146-.128a2.15 2.15 0 0 1-.689-1.193l-.833.167.833-.167-.037-.19a3.85 3.85 0 0 0-3.688-3.093l-.193-.005a2.15 2.15 0 0 1-1.295-.47l-.53.663.53-.664-.15-.12a3.85 3.85 0 0 0-4.814 0l-.15.12a2.15 2.15 0 0 1-1.295.471l-.193.005a3.85 3.85 0 0 0-3.688 3.094l-.038.19a2.15 2.15 0 0 1-.688 1.192l-.146.128.562.639-.562-.639a3.85 3.85 0 0 0-.835 4.74l.092.17.735-.402-.735.402c.227.414.31.89.24 1.357l-.03.19a3.85 3.85 0 0 0 2.407 4.169l.18.07c.44.172.81.483 1.056.886l.1.165.726-.442-.726.442a3.85 3.85 0 0 0 4.523 1.646l.183-.062Z"
+                                    />
+                                </svg>
                             </div>
-                            <div class="order-block__col">
-                                <div class="order-block__text">
-                                    <p>Проверьте, пожалуйста, еще раз комплектацию вашего заказа.При необходимости измените заказ.</p>
-                                    <p>Если у вас есть дополнительные вопросы или пожелания связанные с организацией доставки в вашу сторону, пожалуйста, воспользуйтесь полем дополнительные комментарии. Вслучае необходимости мы свяжемся с вами.</p>
-                                    <p>
-                                        <strong>Обращаем Ваше внимание! Работаем только с юридическими лицами.</strong>
-                                    </p>
-                                </div>
+                            <div class="b-dialog__icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none">
+                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" stroke-width="1.5" d="M11 21C5.486 21 1 16.514 1 11S5.486 1 11 1s10 4.486 10 10-4.486 10-10 10Z" />
+                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" stroke-width="1.5" d="M9.431 11.102H8.143m1.288 0V7.429h3.222c2.56 0 2.556 3.673 0 3.673H9.431Zm0 0V16m-1.288-2.449h5.154" />
+                                </svg>
                             </div>
                         </div>
-                    </div>
-                    <div class="order-block" x-data="{ delivery: true}">
-                        <div class="order-block__title">2. Доставка</div>
-                        <div class="order-block__view">
-                            <div class="order-block__grid">
-                                <div class="order-block__col-4" x-show="delivery" x-transition.duration.500ms>
-                                    <label class="label-form">
-                                        <span data-required="*">Город</span>
-                                        <input class="label-form__input" type="text" name="city" placeholder="Введите название города" :required="delivery" autocomplete="off">
-                                    </label>
-                                </div>
-                                <div class="order-block__col-8" x-show="delivery" x-transition.duration.500ms=""></div>
-                                <div class="order-block__col-4" x-show="delivery" x-transition.duration.500ms>
-                                    <label class="label-form">
-                                        <span data-required="*">Улица</span>
-                                        <input class="label-form__input" type="text" name="street" placeholder="Введите название улицы" :required="delivery" autocomplete="off">
-                                    </label>
-                                </div>
-                                <div class="order-block__col-4" x-show="delivery" x-transition.duration.500ms>
-                                    <label class="label-form">
-                                        <span data-required="*">Дом</span>
-                                        <input class="label-form__input" type="text" name="home_number" placeholder="Введите номер дома" :required="delivery" autocomplete="off">
-                                    </label>
-                                </div>
-                                <div class="order-block__col-4" x-show="delivery" x-transition.duration.500ms>
-                                    <label class="label-form">
-                                        <span>Квартира/офис</span>
-                                        <input class="label-form__input" type="text" name="apartment_number" placeholder="Введите номер" :required="delivery" autocomplete="off">
-                                    </label>
-                                </div>
-                                <div class="order-block__col-12">
-                                    <div class="label-form">
-                                        <label class="label-form">
-                                            <span>Комментарий</span>
-                                            <textarea class="label-form__input" rows="6" name="comment" placeholder="Вы можете оставить комментарий к заказу"></textarea>
-                                        </label>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="cart__bottom">
-                        <button class="cart__submit btn-reset" name="submit" aria-label="Оформить">
-                            <span>Оформить</span>
-                        </button>
-                        <div class="cart__policy">Нажимая кнопку «Отправить», вы подтверждаете свое согласие на обработку
-                            <a href="{{ route('policy') }}" target="_blank">персональных данных</a>
-                        </div>
+                        <div class="b-dialog__body">Скидка на объём составляет до 30%, финальная цена рассчитывается менеджером и сообщается по предпочтительным средствам связи</div>
                     </div>
                 </div>
+                <div class="b-cart__list">
+                    @if(count($items))
+                        @foreach($items as $item)
+                            @include('cart.table_row')
+                        @endforeach
+                    @else
+                        <div>Пустая корзина</div>
+                    @endif
+                </div>
+                <div class="b-cart__sum">
+                    <div class="b-cart__sum-label">Общая сумма заказа</div>
+                    <div class="b-cart__sum-data">2 227 484 ₽</div>
+                </div>
+                @include('cart.cart_order')
             </form>
         </section>
     </main>

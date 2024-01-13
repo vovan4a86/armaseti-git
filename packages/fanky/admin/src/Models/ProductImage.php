@@ -38,6 +38,7 @@ class ProductImage extends Model {
 	public static $thumbs = [
 		1 => '100x100', //admin product
 		2 => '277x181', //card slider
+		3 => '306x306|fit', //single
 	];
 
     public function product(): BelongsTo

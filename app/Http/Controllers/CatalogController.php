@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Doctrine\DBAL\Query\QueryBuilder;
+use Fanky\Admin\Cart;
 use Fanky\Admin\Models\Catalog;
 use Fanky\Admin\Models\Page;
 use Fanky\Admin\Models\ParentCatalogFilter;
@@ -103,7 +104,6 @@ class CatalogController extends Controller
             $products = $category->public_products;
         }
 
-//        $all_filters = $category->getRecurseFilterList();
         $root_category = $category->findRootCategory();
         $all_filters = ParentCatalogFilter::where('catalog_id', $root_category->id)
             ->public()
@@ -146,18 +146,6 @@ class CatalogController extends Controller
 //            }
 //
 //            return ['success' => true, 'items' => $items];
-
-//            $data = request()->except(['price-from', 'price-to', 'in_stock']);
-            $price_from = request()->get('price-from');
-            $price_to = request()->get('price-to');
-            $in_stock = request()->get('in_stock');
-
-//            $products = Product::whereIn('catalog_id', $cat_children_ids)
-//                ->where('in_stock', $in_stock)
-//                ->where('price', '>', $price_from)
-//                ->where('price', '<=', $price_to)
-//                ->paginate(9);
-//                ->appends(['price_from' => $price_from, 'price_to' => $price_to, 'in_stock' => $in_stock]);
 
             //загрузить еще
             $view_items = [];
@@ -207,18 +195,10 @@ class CatalogController extends Controller
         $product->ogGenerate();
         $product = $this->add_region_seo($product);
 
-        $images = $product->images;
-
         Auth::init();
         if (Auth::user() && Auth::user()->isAdmin) {
             View::share('admin_edit_link', route('admin.catalog.productEdit', [$product->id]));
         }
-
-        $related = Product::query()
-            ->where('id', '!=', $product->id)
-            ->limit(Settings::get('related_per_page', 5))
-            ->inRandomOrder()
-            ->get();
 
         return view(
             'catalog.product',
@@ -226,11 +206,7 @@ class CatalogController extends Controller
                 'product' => $product,
                 'h1' => $product->getH1(),
                 'bread' => $bread,
-                'images' => $images,
-                'name' => $product->name,
                 'text' => $product->text,
-                'related' => $related,
-                'top_view' => $category->getCatalogTopView()
             ]
         );
     }

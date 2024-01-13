@@ -264,17 +264,6 @@ class Product extends Model
         }
     }
 
-    public function getLength()
-    {
-        if ($this->length) {
-            return $this->length;
-        } elseif ($this->dlina) {
-            return preg_replace('/[А-Яа-я]/', '', $this->dlina);
-        } else {
-            return null;
-        }
-    }
-
     public function showAnyImage(): string
     {
 //        $is_item_images = $this->images()->get();
@@ -340,5 +329,11 @@ class Product extends Model
         }
         return null;
     }
+
+    public function getFormatPrice(): string
+    {
+        return number_format($this->price, 0, ',', ' ');
+    }
+
 
 }

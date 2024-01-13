@@ -3474,6 +3474,19 @@ jquery__WEBPACK_IMPORTED_MODULE_0___default()('.b-filter').submit(function (e) {
     jquery__WEBPACK_IMPORTED_MODULE_0___default()(pagination).replaceWith(json.paginate);
   });
 });
+jquery__WEBPACK_IMPORTED_MODULE_0___default()('.btn-cart').click(function () {
+  var url = '/ajax/add-to-cart';
+  var id = jquery__WEBPACK_IMPORTED_MODULE_0___default()(this).closest('.prod__data').data('id');
+  var count = jquery__WEBPACK_IMPORTED_MODULE_0___default()('input[name=count]').val();
+  sendAjax(url, {
+    id: id,
+    count: count
+  }, function (json) {
+    if (json.success) {
+      alert('added');
+    }
+  });
+});
 
 // export const resetForm = (form) => {
 //     $(form).trigger('reset');
@@ -3501,28 +3514,6 @@ jquery__WEBPACK_IMPORTED_MODULE_0___default()('.b-filter').submit(function (e) {
 //     })
 //
 // });
-//
-// export const applySelectedDays = (days) => {
-//     const url = '/ajax/apply-calendar';
-//     const archive = $('.s-news__data').data('type') === 'archive' ? 1 : 0;
-//     const news_list = $('.s-news__list');
-//     const btn = $('.b-loader button');
-//     const lang = $('html').attr('lang');
-//     const message = lang === 'ru' ? 'Нет новостей на указанную дату' : 'No news on the date specified';
-//
-//     $(btn).hide();
-//     $(news_list).empty();
-//
-//     sendAjax(url, {days, archive}, function(json) {
-//         if(json.success && json.items) {
-//             $(news_list).append(json.items);
-//         }
-//         if(!json.items) {
-//             const no_news = '<h4 class="no-news" style="text-align: center">' + message + '</h4>'
-//             $(news_list).append(no_news);
-//         }
-//     });
-// }
 
 /***/ }),
 

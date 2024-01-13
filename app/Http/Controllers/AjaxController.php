@@ -23,7 +23,7 @@ use Validator;
 
 class AjaxController extends Controller
 {
-    private $fromMail = 'info@luxkraft.ru';
+    private $fromMail = 'info@armaseti.ru';
     private $fromName = 'Армасети';
 
     //РАБОТА С КОРЗИНОЙ
@@ -39,31 +39,33 @@ class AjaxController extends Controller
             $product_item['price'] = $product->price;
             $product_item['count'] = $count;
             $product_item['url'] = $product->url;
+            $product_item['active'] = true;
 
-            $prodImage = $product->image()->first();
-            if ($prodImage) {
-                $product_item['image'] = $prodImage->thumb(2);
-            } else {
-                $image = Catalog::whereId($product->catalog_id)->first()->image;
-                if ($image) {
-                    $product_item['image'] = Catalog::UPLOAD_URL . $image;
-                } else {
-                    $product_item['image'] = Product::NO_IMAGE;
-                }
+            $product_image = $product->images()->first();
+            if ($product_image) {
+                $product_item['image'] = $product_image->thumb(2, $product->catalog->alias);
             }
+//            else {
+//                $image = Catalog::whereId($product->catalog_id)->first()->image;
+//                if ($image) {
+//                    $product_item['image'] = Catalog::UPLOAD_URL . $image;
+//                } else {
+//                    $product_item['image'] = Product::NO_IMAGE;
+//                }
+//            }
 
             Cart::add($product_item);
         }
 
-        $header_cart = view('blocks.header_cart')->render();
-        $btn = view('catalog.product_btn', ['name' => $product->name, 'in_cart' => true])->render();
-        $card_btn = view('catalog.card_btn', ['product' => $product, 'in_cart' => true])->render();
+//        $header_cart = view('blocks.header_cart')->render();
+//        $btn = view('catalog.product_btn', ['name' => $product->name, 'in_cart' => true])->render();
+//        $card_btn = view('catalog.card_btn', ['product' => $product, 'in_cart' => true])->render();
 
         return [
             'success' => true,
-            'header_cart' => $header_cart,
-            'btn' => $btn,
-            'card_btn' => $card_btn
+//            'header_cart' => $header_cart,
+//            'btn' => $btn,
+//            'card_btn' => $card_btn
         ];
     }
 
