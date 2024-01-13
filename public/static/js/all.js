@@ -3413,44 +3413,65 @@ counter();
 /*!*************************************************************!*\
   !*** ./resources/assets/js--sources/modules/customFront.js ***!
   \*************************************************************/
-/***/ (() => {
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
-// import $ from 'jquery';
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   sendAjax: () => (/* binding */ sendAjax)
+/* harmony export */ });
+/* harmony import */ var jquery__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! jquery */ "./node_modules/jquery/dist/jquery.js");
+/* harmony import */ var jquery__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(jquery__WEBPACK_IMPORTED_MODULE_0__);
+
 // import "../plugins/jquery.autocomplete.min";
 // import {showSuccessDialog} from "./popups";
 // import {Fancybox} from "@fancyapps/ui";
-//
+
+var sendAjax = function sendAjax(url, data, callback, type) {
+  data = data || {};
+  if (typeof type == 'undefined') type = 'json';
+  jquery__WEBPACK_IMPORTED_MODULE_0___default().ajax({
+    type: 'post',
+    url: url,
+    data: data,
+    dataType: type,
+    beforeSend: function beforeSend(request) {
+      return request.setRequestHeader('X-CSRF-Token', jquery__WEBPACK_IMPORTED_MODULE_0___default()("meta[name='csrf-token']").attr('content'));
+    },
+    success: function success(json) {
+      if (typeof callback == 'function') {
+        callback(json);
+      }
+    },
+    error: function error(XMLHttpRequest, textStatus, errorThrown) {
+      alert('Не удалось выполнить запрос! Ошибка на сервере.');
+      console.log(errorThrown);
+    }
+  });
+};
+
+//применить фильтр
+jquery__WEBPACK_IMPORTED_MODULE_0___default()('.b-filter__submit').click(function (e) {
+  e.preventDefault();
+  var form = jquery__WEBPACK_IMPORTED_MODULE_0___default()(this).closest('form');
+  var url = jquery__WEBPACK_IMPORTED_MODULE_0___default()(form).attr('action');
+  var data = jquery__WEBPACK_IMPORTED_MODULE_0___default()(form).serialize();
+  var news_list = jquery__WEBPACK_IMPORTED_MODULE_0___default()('.cat-view__list');
+  sendAjax(url, data, function (json) {
+    if (json.items) {
+      jquery__WEBPACK_IMPORTED_MODULE_0___default()(news_list).empty();
+      jquery__WEBPACK_IMPORTED_MODULE_0___default()(news_list).append(json.items);
+    }
+  });
+});
+
 // export const resetForm = (form) => {
 //     $(form).trigger('reset');
 //     $(form).find('.err-msg-block').remove();
 //     $(form).find('.has-error').remove();
 //     $(form).find('.invalid').attr('title', '').removeClass('invalid');
 // }
-//
-// export const sendAjax = (url, data, callback, type) => {
-//     data = data || {};
-//     if (typeof type == 'undefined') type = 'json';
-//     $.ajax({
-//         type: 'post',
-//         url: url,
-//         data: data,
-//         // processData: false,
-//         // contentType: false,
-//         dataType: type,
-//         beforeSend: function (request) {
-//             return request.setRequestHeader('X-CSRF-Token', $("meta[name='csrf-token']").attr('content'));
-//         },
-//         success: function (json) {
-//             if (typeof callback == 'function') {
-//                 callback(json);
-//             }
-//         },
-//         error: function (XMLHttpRequest, textStatus, errorThrown) {
-//             alert('Не удалось выполнить запрос! Ошибка на сервере.');
-//             console.log(errorThrown);
-//         },
-//     });
-// }
+
 //
 // $('#message').submit(function (e) {
 //     e.preventDefault();
@@ -3659,7 +3680,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _filter__WEBPACK_IMPORTED_MODULE_17__ = __webpack_require__(/*! ./filter */ "./resources/assets/js--sources/modules/filter.js");
 /* harmony import */ var _priceSlider__WEBPACK_IMPORTED_MODULE_18__ = __webpack_require__(/*! ./priceSlider */ "./resources/assets/js--sources/modules/priceSlider.js");
 /* harmony import */ var _customFront__WEBPACK_IMPORTED_MODULE_19__ = __webpack_require__(/*! ./customFront */ "./resources/assets/js--sources/modules/customFront.js");
-/* harmony import */ var _customFront__WEBPACK_IMPORTED_MODULE_19___default = /*#__PURE__*/__webpack_require__.n(_customFront__WEBPACK_IMPORTED_MODULE_19__);
 
 
 

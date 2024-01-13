@@ -382,6 +382,15 @@ class Catalog extends Model
         });
     }
 
+    //max цена товара в каталоге для фильтра
+    public function getProductMaxPriceInCatalog(): string
+    {
+        return Cache::remember('product_max_price_' . $this->id, env('CACHE_TIME', 60), function () {
+            $ids = $this->getRecurseChildrenIds();
+            return Product::whereIn('catalog_id', $ids)->public()->max('price');
+        });
+    }
+
     public function getRecurseProductsCountWithEnd(): string
     {
 		$count = Cache::remember('product_count_' . $this->id, env('CACHE_TIME', 60), function () {

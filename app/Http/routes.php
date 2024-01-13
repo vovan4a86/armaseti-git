@@ -30,6 +30,8 @@ Route::group(
         Route::post('compare', 'AjaxController@postCompare')->name('compare');
         Route::post('compare-delete', 'AjaxController@postCompareDelete')->name('compare-delete');
         Route::post('favorite', 'AjaxController@postFavorite')->name('favorite');
+
+        Route::post('apply-filter/{category_id}', 'AjaxController@postApplyFilter')->name('apply-filter');
     }
 );
 

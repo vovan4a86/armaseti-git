@@ -112,7 +112,6 @@ class CatalogController extends Controller
 
         $filters_list = [];
         foreach ($all_filters as $filter) {
-//            if ($filter->published) {
             $values = ProductChar::where('name', $filter->name)
                 ->whereIn('catalog_id', $cat_children_ids)
                 ->select('value')
@@ -124,8 +123,10 @@ class CatalogController extends Controller
                 'translit' => Text::translit($filter->name),
                 'values' => $values
             ];
-//            }
         }
+
+        //макс цена для фильтра
+        $filter_max_price = $category->getProductMaxPriceInCatalog();
 
         if (request()->ajax()) {
 //            $data = request()->all();
@@ -180,6 +181,7 @@ class CatalogController extends Controller
             'children' => $category->public_children,
             'products' => $products,
             'filters_list' => $filters_list,
+            'filter_max_price' => $filter_max_price
         ];
 
         return view($view, $data);

@@ -18,12 +18,13 @@ use Mail;
 use Cart;
 use Settings;
 use SiteHelper;
+use Symfony\Component\Finder\Finder;
 use Validator;
 
 class AjaxController extends Controller
 {
     private $fromMail = 'info@luxkraft.ru';
-    private $fromName = 'Luxkraft';
+    private $fromName = 'Армасети';
 
     //РАБОТА С КОРЗИНОЙ
     public function postAddToCart(Request $request): array
@@ -547,6 +548,49 @@ class AjaxController extends Controller
         }
 
         return ['success' => true, 'msg' => 'Успешно обновлено!'];
+    }
+
+    public function postApplyFilter($category_id)
+    {
+        $data = request()->except(['price-from', 'price-to', 'in_stock']);
+        $price_from = request()->get('price-from');
+        $price_to = request()->get('price-to');
+        $in_stock = request()->get('in_stock');
+
+//        \Debugbar::log($in_stock);
+
+        $catalog = Catalog::find($category_id);
+        $children_ids = $catalog->getRecurseChildrenIds();
+
+        $products = Product::whereIn('catalog_id', $children_ids)
+            ->where('in_stock', $in_stock)
+            ->where('price', '>', $price_from)
+            ->where('price', '<=', $price_to)
+            ->paginate(9);
+
+        $view_items = [];
+        foreach ($products as $item) {
+            //добавляем новые элементы
+            $view_items[] = view(
+                'catalog.product_item',
+                [
+                    'product' => $item,
+                ]
+            )->render();
+        }
+
+        $btn_paginate = null;
+        if ($products->nextPageUrl()) {
+            $btn_paginate = view('paginations.load_more', ['paginator' => $products])->render();
+        }
+
+        $paginate = view('paginations.with_pages', ['paginator' => $products])->render();
+
+        return [
+            'items' => $view_items,
+            'btn' => $btn_paginate,
+            'paginate' => $paginate
+        ];
     }
 
     public function postFavorite(): array
