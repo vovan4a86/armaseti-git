@@ -1,6 +1,8 @@
 <aside class="layout__aside">
     <div class="layout__item">
-        <form class="b-filter" action="{{ route('ajax.apply-filter', ['category_id' => $category->id]) }}">
+        <form class="b-filter" action="{{ route('ajax.apply-filter', ['category_id' => $category->id]) }}"
+              data-current-url="{{ URL::full() }}">
+{{--        <form class="b-filter" action="{{ URL::full() }}">--}}
             <div class="b-filter__item">
                 <div class="b-filter__title is-active">Цена, ₽</div>
                 <div class="b-filter__body is-active" data-range-slider="data-range-slider">
@@ -10,11 +12,11 @@
                     <div class="b-filter__slider-controls extra-controls">
                         <label class="b-filter__slider-label" data-caption="Мин">
                             <input class="b-filter__slider-input js-input-from"
-                                   type="text" name="price-from" value="0" data-price-from="0" />
+                                   type="text" name="price_from" value="0" data-price-from="0" />
                         </label>
                         <label class="b-filter__slider-label" data-caption="Макс">
                             <input class="b-filter__slider-input js-input-to"
-                                   type="text" name="price-to" value="{{ $filter_max_price }}"
+                                   type="text" name="price_to" value="{{ $filter_max_price }}"
                                    data-price-to="{{ $filter_max_price }}" />
                         </label>
                     </div>

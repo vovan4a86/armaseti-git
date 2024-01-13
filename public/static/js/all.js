@@ -3451,17 +3451,27 @@ var sendAjax = function sendAjax(url, data, callback, type) {
 };
 
 //применить фильтр
-jquery__WEBPACK_IMPORTED_MODULE_0___default()('.b-filter__submit').click(function (e) {
+jquery__WEBPACK_IMPORTED_MODULE_0___default()('.b-filter').submit(function (e) {
   e.preventDefault();
   var form = jquery__WEBPACK_IMPORTED_MODULE_0___default()(this).closest('form');
-  var url = jquery__WEBPACK_IMPORTED_MODULE_0___default()(form).attr('action');
+  var ajax_url = jquery__WEBPACK_IMPORTED_MODULE_0___default()(form).attr('action');
   var data = jquery__WEBPACK_IMPORTED_MODULE_0___default()(form).serialize();
   var news_list = jquery__WEBPACK_IMPORTED_MODULE_0___default()('.cat-view__list');
-  sendAjax(url, data, function (json) {
+  var current_url = jquery__WEBPACK_IMPORTED_MODULE_0___default()(form).data('current-url');
+  var btn = jquery__WEBPACK_IMPORTED_MODULE_0___default()('.cat-view__load .b-loader');
+  var pagination = jquery__WEBPACK_IMPORTED_MODULE_0___default()('.cat-view__pagination .b-pagination');
+  jquery__WEBPACK_IMPORTED_MODULE_0___default()(btn).hide();
+  sendAjax(ajax_url, data, function (json) {
+    history.pushState('', '', current_url + json.url);
     if (json.items) {
       jquery__WEBPACK_IMPORTED_MODULE_0___default()(news_list).empty();
       jquery__WEBPACK_IMPORTED_MODULE_0___default()(news_list).append(json.items);
     }
+    if (json.btn) {
+      jquery__WEBPACK_IMPORTED_MODULE_0___default()(btn).replaceWith(json.btn);
+      jquery__WEBPACK_IMPORTED_MODULE_0___default()(btn).show();
+    }
+    jquery__WEBPACK_IMPORTED_MODULE_0___default()(pagination).replaceWith(json.paginate);
   });
 });
 

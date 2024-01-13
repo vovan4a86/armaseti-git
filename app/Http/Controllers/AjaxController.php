@@ -552,9 +552,9 @@ class AjaxController extends Controller
 
     public function postApplyFilter($category_id)
     {
-        $data = request()->except(['price-from', 'price-to', 'in_stock']);
-        $price_from = request()->get('price-from');
-        $price_to = request()->get('price-to');
+        $data = request()->except(['price_from', 'price_to', 'in_stock']);
+        $price_from = request()->get('price_from');
+        $price_to = request()->get('price_to');
         $in_stock = request()->get('in_stock');
 
 //        \Debugbar::log($in_stock);
@@ -566,7 +566,15 @@ class AjaxController extends Controller
             ->where('in_stock', $in_stock)
             ->where('price', '>', $price_from)
             ->where('price', '<=', $price_to)
-            ->paginate(9);
+            ->paginate(9)
+            ->appends(['price_from' => $price_from, 'price_to' => $price_to, 'in_stock' => $in_stock]);
+
+        $url = '?price_from=' . $price_from . '&price_to=' . $price_to . '&in_stock=' . $in_stock;
+
+        $page = $products->currentPage();
+        if ($page > 1) {
+            $url.= '&page=' . $page;
+        }
 
         $view_items = [];
         foreach ($products as $item) {
@@ -589,7 +597,8 @@ class AjaxController extends Controller
         return [
             'items' => $view_items,
             'btn' => $btn_paginate,
-            'paginate' => $paginate
+            'paginate' => $paginate,
+            'url' => $url,
         ];
     }
 

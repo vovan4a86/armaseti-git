@@ -147,15 +147,22 @@ class CatalogController extends Controller
 //
 //            return ['success' => true, 'items' => $items];
 
+//            $data = request()->except(['price-from', 'price-to', 'in_stock']);
+            $price_from = request()->get('price-from');
+            $price_to = request()->get('price-to');
+            $in_stock = request()->get('in_stock');
+
+//            $products = Product::whereIn('catalog_id', $cat_children_ids)
+//                ->where('in_stock', $in_stock)
+//                ->where('price', '>', $price_from)
+//                ->where('price', '<=', $price_to)
+//                ->paginate(9);
+//                ->appends(['price_from' => $price_from, 'price_to' => $price_to, 'in_stock' => $in_stock]);
+
+            //загрузить еще
             $view_items = [];
             foreach ($products as $item) {
-                //добавляем новые элементы
-                $view_items[] = view(
-                    'catalog.product_item',
-                    [
-                        'product' => $item,
-                    ]
-                )->render();
+                $view_items[] = view('catalog.product_item', ['product' => $item,])->render();
             }
 
             $btn_paginate = null;

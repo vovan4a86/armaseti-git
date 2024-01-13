@@ -27,18 +27,29 @@ export const sendAjax = (url, data, callback, type) => {
 }
 
 //применить фильтр
-$('.b-filter__submit').click(function (e) {
+$('.b-filter').submit(function (e) {
     e.preventDefault();
     const form = $(this).closest('form');
-    const url = $(form).attr('action');
+    const ajax_url = $(form).attr('action');
     const data = $(form).serialize();
     const news_list = $('.cat-view__list');
+    const current_url = $(form).data('current-url');
 
-    sendAjax(url, data, function (json) {
+    const btn = $('.cat-view__load .b-loader');
+    const pagination = $('.cat-view__pagination .b-pagination')
+    $(btn).hide();
+
+    sendAjax(ajax_url, data, function (json) {
+        history.pushState('', '', current_url + json.url);
         if (json.items) {
             $(news_list).empty();
             $(news_list).append(json.items);
         }
+        if (json.btn) {
+            $(btn).replaceWith(json.btn);
+            $(btn).show();
+        }
+        $(pagination).replaceWith(json.paginate)
     });
 });
 
