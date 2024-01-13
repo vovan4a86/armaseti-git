@@ -89,7 +89,6 @@ class CatalogController extends Controller
             View::share('admin_edit_link', route('admin.catalog.catalogEdit', [$category->id]));
         }
 
-//        $view = $category->products()->count() ? 'catalog.sub_category' : 'catalog.category';
         $view = 'catalog.category';
 
         if (count($category->children)) {
@@ -98,7 +97,7 @@ class CatalogController extends Controller
 
             $products = Product::whereIn('catalog_id', $cat_children_ids)
                 ->public()
-                ->get();
+                ->paginate(Settings::get('products_per_page', 9));
         } else {
             $cat_children_ids[] = $category->id;
             $products = $category->public_products;
@@ -129,23 +128,47 @@ class CatalogController extends Controller
         }
 
         if (request()->ajax()) {
-            $data = request()->all();
+//            $data = request()->all();
+//
+//            $found_ids_query = ProductChar::whereIn('catalog_id', $cat_children_ids);
+//
+//            $found_ids = $found_ids_query->select('product_id')->distinct()->pluck('product_id')->all();
+//            foreach ($data as $name => $values) {
+//                $found_ids_query = ProductChar::whereIn('product_id', $found_ids)
+//                    ->whereIn('value', $values);
+//                $found_ids = $found_ids_query->select('product_id')->distinct()->pluck('product_id')->all();
+//            }
+//            $products = Product::whereIn('id', $found_ids)->get('name');
+//            $items = [];
+//            foreach ($products as $product) {
+//                $items[] = view('catalog.product_item', ['product' => $product])->render();
+//            }
+//
+//            return ['success' => true, 'items' => $items];
 
-            $found_ids_query = ProductChar::whereIn('catalog_id', $cat_children_ids);
-
-            $found_ids = $found_ids_query->select('product_id')->distinct()->pluck('product_id')->all();
-            foreach ($data as $name => $values) {
-                $found_ids_query = ProductChar::whereIn('product_id', $found_ids)
-                    ->whereIn('value', $values);
-                $found_ids = $found_ids_query->select('product_id')->distinct()->pluck('product_id')->all();
+            $view_items = [];
+            foreach ($products as $item) {
+                //добавляем новые элементы
+                $view_items[] = view(
+                    'catalog.product_item',
+                    [
+                        'product' => $item,
+                    ]
+                )->render();
             }
-            $products = Product::whereIn('id', $found_ids)->get('name');
-            $items = [];
-            foreach ($products as $product) {
-                $items[] = view('catalog.product_item', ['product' => $product])->render();
+
+            $btn_paginate = null;
+            if ($products->nextPageUrl()) {
+                $btn_paginate = view('paginations.load_more', ['paginator' => $products])->render();
             }
 
-            return ['success' => true, 'items' => $items];
+            $paginate = view('paginations.with_pages', ['paginator' => $products])->render();
+
+            return [
+                'items' => $view_items,
+                'btn' => $btn_paginate,
+                'paginate' => $paginate
+            ];
         }
 
         $data = [

@@ -33,7 +33,7 @@ class ProductImage extends Model {
 
 	public $timestamps = false;
 
-	const UPLOAD_URL = '/uploads/products_test/';
+	const UPLOAD_URL = '/uploads/products/';
 
 	public static $thumbs = [
 		1 => '100x100', //admin product

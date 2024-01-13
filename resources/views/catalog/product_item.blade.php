@@ -3,7 +3,7 @@
     <!--form.prod-card(action="#")-->
     <form class="prod-card" action="#">
         <input type="hidden" name="id" />
-        <input type="hidden" name="product" value="Фланцевый REON RSV16 вентиль запорный" />
+        <input type="hidden" name="product" value="{{ $product->name }}" />
         <input type="hidden" name="count" value="1" />
         <div class="prod-card__view">
             <div class="prod-card__utils">
@@ -26,54 +26,52 @@
                     </button>
                 </div>
             </div>
-            <div class="prod-card__slider swiper-slide" data-card-slider="data-card-slider">
+            @if(count($product->images))
+                <div class="prod-card__slider swiper-slide" data-card-slider="data-card-slider">
                 <div class="prod-card__wrapper swiper-wrapper">
-                    <div class="prod-card__slide swiper-slide">
-                        <picture>
-                            <source srcset="/static/images/common/prod-3.webp" type="image/webp" />
-                            <img class="prod-card__img" src="/static/images/common/prod-3.png" width="277" height="181" alt="Фланцевый REON RSV16 вентиль запорный" loading="lazy" />
-                        </picture>
-                    </div>
-                    <div class="prod-card__slide swiper-slide">
-                        <picture>
-                            <source srcset="/static/images/common/prod-3.webp" type="image/webp" />
-                            <img class="prod-card__img" src="/static/images/common/prod-3.png" width="277" height="181" alt="Фланцевый REON RSV16 вентиль запорный" loading="lazy" />
-                        </picture>
-                    </div>
-                    <div class="prod-card__slide swiper-slide">
-                        <picture>
-                            <source srcset="/static/images/common/prod-3.webp" type="image/webp" />
-                            <img class="prod-card__img" src="/static/images/common/prod-3.png" width="277" height="181" alt="Фланцевый REON RSV16 вентиль запорный" loading="lazy" />
-                        </picture>
-                    </div>
-                    <div class="prod-card__slide swiper-slide">
-                        <picture>
-                            <source srcset="/static/images/common/prod-3.webp" type="image/webp" />
-                            <img class="prod-card__img" src="/static/images/common/prod-3.png" width="277" height="181" alt="Фланцевый REON RSV16 вентиль запорный" loading="lazy" />
-                        </picture>
-                    </div>
+                    @foreach($product->images as $image)
+                        <div class="prod-card__slide swiper-slide">
+                            <picture>
+                                <img class="prod-card__img" src="{{ $image->thumb(2, $product->catalog->alias) }}"
+                                     width="277" height="181" alt="{{ $product->name }}" loading="lazy" />
+                            </picture>
+                        </div>
+                    @endforeach
                 </div>
                 <div class="prod-card__slider-pagination swiper-pagination" data-card-pagination="data-card-pagination"></div>
             </div>
+            @endif
         </div>
         <div class="prod-card__body">
             <div class="prod-card__data">
                 <div class="prod-card__meta">
                     <div class="prod-card__badge">
                         <!-- modificators: --accent --accent-alt --alt --grey-alt -->
-                        <div class="badge">Хит</div>
+                        @if($product->is_hit)
+                            <div class="badge">Хит</div>
+                        @endif
+                        @if($product->is_new)
+                            <div class="badge badge--accent">Новинка</div>
+                        @endif
+                        @if($product->is_discount)
+                            <div class="badge badge--accent-alt">Скидка</div>
+                        @endif
                     </div>
                     <div class="prod-card__availability">
                         <!-- .unactive - цвет нет в наличии-->
-                        <div class="availability">В наличии — 14 шт</div>
+                        @if($product->in_stock)
+                            <div class="availability">В наличии</div>
+                        @else
+                            <div class="unactive">Нет в наличии</div>
+                        @endif
                     </div>
                 </div>
-                <a class="prod-card__title" href="javascript:void(0)">Фланцевый REON RSV16 вентиль запорный</a>
-                <div class="prod-card__code">Артикул 0265089</div>
+                <a class="prod-card__title" href="{{ $product->url }}">{{ $product->name }}</a>
+                <div class="prod-card__code">Артикул {{ $product->article }}</div>
             </div>
             <div class="prod-card__data prod-card__data--order">
                 <div class="prod-card__pricing">
-                    <div class="prod-card__price">880 ₽</div>
+                    <div class="prod-card__price">{{ $product->price }} ₽</div>
                     <div class="prod-card__price prod-card__price--old"></div>
                 </div>
                 <div class="prod-card__actions">
@@ -93,7 +91,8 @@
                         </div>
                     </div>
                     <div class="prod-card__cart">
-                        <button class="btn-cart btn-reset" type="button" aria-label="Добавить в корзину" data-product-popup="data-product-popup" data-src="#order" data-label="Фланцевый REON RSV16 вентиль запорный">
+                        <button class="btn-cart btn-reset" type="button" aria-label="Добавить в корзину"
+                                data-product-popup="data-product-popup" data-src="#order" data-label="{{ $product->name }}">
                             <span class="btn-cart__icon iconify" data-icon="mynaui:cart" data-width="20"></span>
                         </button>
                     </div>

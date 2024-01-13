@@ -29,7 +29,7 @@ class ProductDoc extends Model {
 
     protected $table = 'product_docs';
 
-    const UPLOAD_URL = '/uploads/products-docs_test/';
+    const UPLOAD_URL = '/uploads/products-docs/';
     const DOC_ICON = '/adminlte/doc_icon.png';
 
     protected $guarded = ['id'];

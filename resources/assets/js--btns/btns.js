@@ -22,10 +22,31 @@ function sendAjax(url, data, callback, type){
    });
 }
 
-$('.b-loader').click(function () {
+//загрузить еще новости
+$('.news-layout__row .b-loader').click(function () {
    const btn = $(this);
    const news_list = $('.newses__grid');
-   const pagination = $('.b-pagination')
+   const pagination = $('.news-layout__row .b-pagination')
+   const url = $(btn).data('url');
+   $(btn).hide();
+
+   sendAjax(url, {}, function(json) {
+      if (json.items) {
+         $(news_list).append(json.items);
+      }
+      if (json.btn) {
+         $(btn).replaceWith(json.btn);
+         $(btn).show();
+      }
+      $(pagination).replaceWith(json.paginate)
+   });
+});
+
+//загрузить еще товары в каталоге
+$('.cat-view__load .b-loader').click(function () {
+   const btn = $(this);
+   const news_list = $('.cat-view__list');
+   const pagination = $('.cat-view__pagination .b-pagination')
    const url = $(btn).data('url');
    $(btn).hide();
 

@@ -20,7 +20,9 @@
                 <!--aside._aside-->
                 @include('news.aside')
             </div>
-            @include('paginations.load_more', ['paginator' => $items])
+            <div class="news-layout__row news-layout__row--loader">
+                @include('paginations.load_more', ['paginator' => $items])
+            </div>
             <div class="news-layout__row">
                 @include('paginations.with_pages', ['paginator' => $items])
             </div>
