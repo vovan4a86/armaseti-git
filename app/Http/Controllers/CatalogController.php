@@ -195,6 +195,11 @@ class CatalogController extends Controller
         $product->ogGenerate();
         $product = $this->add_region_seo($product);
 
+//        Cart::purge();
+
+//        $product_n = Product::where('id',1)->first(['id', 'name', 'price']);
+//        dd($product_n);
+
         Auth::init();
         if (Auth::user() && Auth::user()->isAdmin) {
             View::share('admin_edit_link', route('admin.catalog.productEdit', [$product->id]));

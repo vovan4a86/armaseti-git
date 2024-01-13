@@ -3474,16 +3474,33 @@ jquery__WEBPACK_IMPORTED_MODULE_0___default()('.b-filter').submit(function (e) {
     jquery__WEBPACK_IMPORTED_MODULE_0___default()(pagination).replaceWith(json.paginate);
   });
 });
+
+//добавление товара со страницы товара
 jquery__WEBPACK_IMPORTED_MODULE_0___default()('.btn-cart').click(function () {
   var url = '/ajax/add-to-cart';
   var id = jquery__WEBPACK_IMPORTED_MODULE_0___default()(this).closest('.prod__data').data('id');
   var count = jquery__WEBPACK_IMPORTED_MODULE_0___default()('input[name=count]').val();
+  var header_cart = jquery__WEBPACK_IMPORTED_MODULE_0___default()('[data-header-cart]');
   sendAjax(url, {
     id: id,
     count: count
   }, function (json) {
     if (json.success) {
-      alert('added');
+      header_cart.replaceWith(json.header_cart);
+    }
+  });
+});
+
+//удаление товара из корзины
+jquery__WEBPACK_IMPORTED_MODULE_0___default()('.cart-item__close').click(function () {
+  var url = '/ajax/remove-from-cart';
+  var card = jquery__WEBPACK_IMPORTED_MODULE_0___default()(this).closest('.b-cart__item');
+  var id = jquery__WEBPACK_IMPORTED_MODULE_0___default()(card).data('id');
+  sendAjax(url, {
+    id: id
+  }, function (json) {
+    if (json.success) {
+      card.replaceWith(json.del_cart_item);
     }
   });
 });

@@ -40,10 +40,11 @@ class AjaxController extends Controller
             $product_item['count'] = $count;
             $product_item['url'] = $product->url;
             $product_item['active'] = true;
+            $product_item['article'] = $product->article;
 
             $product_image = $product->images()->first();
             if ($product_image) {
-                $product_item['image'] = $product_image->thumb(2, $product->catalog->alias);
+                $product_item['image'] = $product_image->thumb(1, $product->catalog->alias);
             }
 //            else {
 //                $image = Catalog::whereId($product->catalog_id)->first()->image;
@@ -57,13 +58,13 @@ class AjaxController extends Controller
             Cart::add($product_item);
         }
 
-//        $header_cart = view('blocks.header_cart')->render();
+        $header_cart = view('blocks.header_cart')->render();
 //        $btn = view('catalog.product_btn', ['name' => $product->name, 'in_cart' => true])->render();
 //        $card_btn = view('catalog.card_btn', ['product' => $product, 'in_cart' => true])->render();
 
         return [
             'success' => true,
-//            'header_cart' => $header_cart,
+            'header_cart' => $header_cart,
 //            'btn' => $btn,
 //            'card_btn' => $card_btn
         ];
@@ -109,18 +110,20 @@ class AjaxController extends Controller
     public function postRemoveFromCart(Request $request): array
     {
         $id = $request->get('id');
+        $product = Product::where('id',$id)->first(['id', 'name', 'price']);
         Cart::remove($id);
-        $total_count = Cart::count();
-        $total_sum = Cart::sum();
-        $summary = view('cart.summary', compact('total_count', 'total_sum'))
-            ->render();
+//        $total_count = Cart::count();
+//        $total_sum = Cart::sum();
+//        $summary = view('cart.summary', compact('total_count', 'total_sum'))
+//            ->render();
+
         $header_cart = view('blocks.header_cart')->render();
+        $del_cart_item = view('cart.table_row_del', ['item' => $product])->render();
+
         return [
             'success' => true,
-            'summary' => $summary,
             'header_cart' => $header_cart,
-            'total_count' => $total_count,
-            'total_sum' => $total_sum
+            'del_cart_item' => $del_cart_item
         ];
     }
 

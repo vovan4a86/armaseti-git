@@ -192,7 +192,7 @@
                                             </div>
                                         </div>
                                         <div class="b-order__actions">
-                                            <a class="btn-cart btn-cart--wide" href="javascript:void(0)"
+                                            <a class="btn-cart btn-cart--wide" href="{{ route('cart') }}"
                                                title="Оформить заказ">
                                                 <span class="btn-cart__label">Оформить заказ</span>
                                             </a>

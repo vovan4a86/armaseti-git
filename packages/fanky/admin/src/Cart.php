@@ -37,6 +37,11 @@ class Cart {
         Session::put(self::$key, []);
     }
 
+    public static function count() {
+        $res = Session::get(self::$key, []);
+        return is_array($res) ? count($res) : 0;
+    }
+
     public static function all(): array {
         $res = Session::get(self::$key, []);
         return is_array($res) ? $res : [];

@@ -99,11 +99,7 @@
                               data-width="22"></span>
                     </a>
                 </div>
-                <div class="header__action">
-                    <a class="h-action" href="{{ route('cart') }}" title="Корзина">
-                        <span class="icon iconify" data-icon="mynaui:cart" data-width="22"></span>
-                    </a>
-                </div>
+                @include('blocks.header_cart')
             </div>
         </div>
     </div>
@@ -167,7 +163,8 @@
                                     x-show="openView == {{ $loop->iteration }}">
                                     @foreach($category->public_children as $children)
                                         <li class="b-overlay__menu-item">
-                                            <a class="b-overlay__menu-link" href="{{ $children->url }}">{{ $children->name }}</a>
+                                            <a class="b-overlay__menu-link"
+                                               href="{{ $children->url }}">{{ $children->name }}</a>
                                         </li>
                                     @endforeach
                                 </ul>

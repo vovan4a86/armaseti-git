@@ -53,14 +53,31 @@ $('.b-filter').submit(function (e) {
     });
 });
 
+//добавление товара со страницы товара
 $('.btn-cart').click(function () {
     const url = '/ajax/add-to-cart'
     const id = $(this).closest('.prod__data').data('id');
     const count = $('input[name=count]').val();
 
+    const header_cart = $('[data-header-cart]');
+
     sendAjax(url, {id, count}, function (json) {
         if(json.success) {
-            alert('added');
+            header_cart.replaceWith(json.header_cart);
+        }
+    });
+
+})
+
+//удаление товара из корзины
+$('.cart-item__close').click(function () {
+    const url = '/ajax/remove-from-cart';
+    const card = $(this).closest('.b-cart__item');
+    const id = $(card).data('id');
+
+    sendAjax(url, {id}, function (json) {
+        if(json.success) {
+            card.replaceWith(json.del_cart_item);
         }
     });
 
