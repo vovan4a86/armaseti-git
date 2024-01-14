@@ -1,4 +1,5 @@
 import $ from 'jquery';
+import {counter} from "./counter";
 // import "../plugins/jquery.autocomplete.min";
 // import {showSuccessDialog} from "./popups";
 // import {Fancybox} from "@fancyapps/ui";
@@ -70,18 +71,97 @@ $('.btn-cart').click(function () {
 })
 
 //удаление товара из корзины
-$('.cart-item__close').click(function () {
-    const url = '/ajax/remove-from-cart';
-    const card = $(this).closest('.b-cart__item');
-    const id = $(card).data('id');
+export const removeFromCart = () => {
+    $('.cart-item__close').click(function () {
+        const url = '/ajax/remove-from-cart';
+        const card = $(this).closest('.b-cart__item');
+        const id = $(card).data('id');
+        const header_cart = $('[data-header-cart]');
+        const cart_total = $('.b-cart__sum-data');
 
-    sendAjax(url, {id}, function (json) {
-        if(json.success) {
-            card.replaceWith(json.del_cart_item);
+        sendAjax(url, {id}, function (json) {
+            if(json.success) {
+                card.replaceWith(json.del_cart_item);
+                header_cart.replaceWith(json.header_cart);
+                cart_total.replaceWith(json.cart_total)
+                restoreFromCart();
+                updateCountUp();
+                updateCountDown();
+                counter();
+            }
+        });
+    })
+}
+removeFromCart();
+
+//восстановление товара из корзины
+export const restoreFromCart = () => {
+    $('.del-item__action').click(function () {
+        const url = '/ajax/restore-from-cart';
+        const card = $(this).closest('.b-cart__item');
+        const id = $(card).data('id');
+        const header_cart = $('[data-header-cart]');
+        const cart_total = $('.b-cart__sum-data');
+
+        sendAjax(url, {id}, function (json) {
+            if (json.success) {
+                card.replaceWith(json.restore_cart_item);
+                header_cart.replaceWith(json.header_cart);
+                cart_total.replaceWith(json.cart_total)
+                removeFromCart();
+                updateCountUp();
+                updateCountDown();
+                counter();
+            }
+        });
+    })
+}
+restoreFromCart();
+
+//увеличение количества +
+export const updateCountUp = () => {
+    $('.b-counter__btn--next').click(function () {
+        const url = '/ajax/update-count';
+        const card = $(this).closest('.b-cart__item');
+        const id = $(card).data('id');
+        const row_summary = $(card).find('.cart-item__summary');
+        const cart_total = $('.b-cart__sum-data');
+        let count = $('input[name=count]').val();
+        count++;
+
+        sendAjax(url, {id, count}, function (json) {
+            if (json.success) {
+                row_summary.replaceWith(json.row_summary);
+                cart_total.replaceWith(json.cart_total)
+            }
+        });
+    })
+}
+updateCountUp();
+
+//уменьшение количества +
+export const updateCountDown = () => {
+    $('.b-counter__btn--prev').click(function () {
+        const url = '/ajax/update-count';
+        const card = $(this).closest('.b-cart__item');
+        const id = $(card).data('id');
+        const row_summary = $(card).find('.cart-item__summary');
+        const cart_total = $('.b-cart__sum-data');
+        let count = $('input[name=count]').val();
+
+        if(count != 1) {
+            count--;
         }
-    });
 
-})
+        sendAjax(url, {id, count}, function (json) {
+            if (json.success) {
+                row_summary.replaceWith(json.row_summary);
+                cart_total.replaceWith(json.cart_total)
+            }
+        });
+    })
+}
+updateCountDown();
 
 // export const resetForm = (form) => {
 //     $(form).trigger('reset');

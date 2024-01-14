@@ -33,7 +33,7 @@
                         </button>
                     </div>
                 </div>
-                <div class="cart-item__summary">2 113 302 ₽</div>
+                @include('cart.table_row_summary')
             </div>
             <div class="cart-item__delete">
                 <button class="cart-item__close btn-reset" type="button" aria-label="Удалить из заказа">

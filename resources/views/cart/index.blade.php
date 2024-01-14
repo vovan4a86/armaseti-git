@@ -30,7 +30,11 @@
                 <div class="b-cart__list">
                     @if(count($items))
                         @foreach($items as $item)
-                            @include('cart.table_row')
+                            @if($item['active'])
+                                @include('cart.table_row')
+                            @else
+                                @include('cart.table_row_del')
+                            @endif
                         @endforeach
                     @else
                         <div>Пустая корзина</div>
@@ -38,7 +42,7 @@
                 </div>
                 <div class="b-cart__sum">
                     <div class="b-cart__sum-label">Общая сумма заказа</div>
-                    <div class="b-cart__sum-data">2 227 484 ₽</div>
+                    @include('cart.cart_total')
                 </div>
                 @include('cart.cart_order')
             </form>

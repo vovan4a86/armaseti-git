@@ -110,20 +110,56 @@ class AjaxController extends Controller
     public function postRemoveFromCart(Request $request): array
     {
         $id = $request->get('id');
-        $product = Product::where('id',$id)->first(['id', 'name', 'price']);
-        Cart::remove($id);
-//        $total_count = Cart::count();
-//        $total_sum = Cart::sum();
-//        $summary = view('cart.summary', compact('total_count', 'total_sum'))
-//            ->render();
+        Cart::deleteItem($id);
+        $cart = Cart::all();
 
         $header_cart = view('blocks.header_cart')->render();
-        $del_cart_item = view('cart.table_row_del', ['item' => $product])->render();
+        $del_cart_item = view('cart.table_row_del', ['item' => $cart[$id]])->render();
+        $cart_total = view('cart.cart_total')->render();
 
         return [
             'success' => true,
             'header_cart' => $header_cart,
-            'del_cart_item' => $del_cart_item
+            'del_cart_item' => $del_cart_item,
+            'cart_total' => $cart_total
+        ];
+    }
+
+    public function postRestoreFromCart(Request $request): array
+    {
+        $id = $request->get('id');
+        Cart::restoreItem($id);
+        $cart = Cart::all();
+
+        $header_cart = view('blocks.header_cart')->render();
+        $restore_cart_item = view('cart.table_row', ['item' => $cart[$id]])->render();
+        $cart_total = view('cart.cart_total')->render();
+
+        return [
+            'success' => true,
+            'header_cart' => $header_cart,
+            'restore_cart_item' => $restore_cart_item,
+            'cart_total' => $cart_total
+        ];
+    }
+
+    public function postUpdateCount(Request $request): array
+    {
+        $id = $request->get('id');
+        $count = $request->get('count');
+
+        Cart::updateCount($id, $count);
+        $cart = Cart::all();
+
+        $row_summary = view('cart.table_row_summary', ['item' => $cart[$id]])
+            ->render();
+
+        $cart_total = view('cart.cart_total')->render();
+
+        return [
+            'success' => true,
+            'row_summary' => $row_summary,
+            'cart_total' => $cart_total
         ];
     }
 
@@ -578,7 +614,7 @@ class AjaxController extends Controller
 
         $page = $products->currentPage();
         if ($page > 1) {
-            $url.= '&page=' . $page;
+            $url .= '&page=' . $page;
         }
 
         $view_items = [];
@@ -624,8 +660,8 @@ class AjaxController extends Controller
             if (!in_array($id, $favorites)) {
                 \Session::push('favorites', $id);
             } else {
-                foreach($favorites as $key => $item){
-                    if ($item == $id){
+                foreach ($favorites as $key => $item) {
+                    if ($item == $id) {
                         unset($favorites[$key]);
                     }
                 }
@@ -655,8 +691,8 @@ class AjaxController extends Controller
             if (!in_array($id, $compare)) {
                 \Session::push('compare', $id);
             } else {
-                foreach($compare as $key => $item){
-                    if ($item == $id){
+                foreach ($compare as $key => $item) {
+                    if ($item == $id) {
                         unset($compare[$key]);
                     }
                 }
@@ -678,8 +714,8 @@ class AjaxController extends Controller
         }
 
         $compare = \Session::get('compare', []);
-        foreach($compare as $key => $item){
-            if ($item == $id){
+        foreach ($compare as $key => $item) {
+            if ($item == $id) {
                 unset($compare[$key]);
             }
         }

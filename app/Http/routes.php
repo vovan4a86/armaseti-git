@@ -10,6 +10,8 @@ Route::group(
         Route::post('add-to-cart', [AjaxController::class, 'postAddToCart'])->name('add-to-cart');
         Route::post('update-to-cart', [AjaxController::class, 'postUpdateToCart'])->name('update-to-cart');
         Route::post('remove-from-cart', [AjaxController::class, 'postRemoveFromCart'])->name('remove-from-cart');
+        Route::post('restore-from-cart', [AjaxController::class, 'postRestoreFromCart'])->name('restore-from-cart');
+        Route::post('update-count', [AjaxController::class, 'postUpdateCount'])->name('update-count');
         Route::post('purge-cart', [AjaxController::class, 'postPurgeCart'])->name('purge-cart');
         Route::post('edit-cart-product', [AjaxController::class, 'postEditCartProduct'])->name('edit-cart-product');
 

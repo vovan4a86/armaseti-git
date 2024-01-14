@@ -33,13 +33,36 @@ class Cart {
         }
     }
 
+    public static function deleteItem($id) {
+        $cart = self::all();
+        if (isset($cart[$id])) {
+            $cart[$id]['active'] = false;
+            Session::put(self::$key, $cart);
+        }
+    }
+
+    public static function restoreItem($id) {
+        $cart = self::all();
+        if (isset($cart[$id])) {
+            $cart[$id]['active'] = true;
+            Session::put(self::$key, $cart);
+        }
+    }
+
     public static function purge() {
         Session::put(self::$key, []);
     }
 
     public static function count() {
         $res = Session::get(self::$key, []);
-        return is_array($res) ? count($res) : 0;
+
+        if(!is_array($res)) return 0;
+
+        $count = 0;
+        foreach ($res as $item) {
+            if($item['active']) $count++;
+        }
+        return $count;
     }
 
     public static function all(): array {
@@ -51,7 +74,9 @@ class Cart {
         $cart = self::all();
         $sum = 0;
         foreach ($cart as $item) {
-            $sum += $item['count'] * $item['price'];
+            if ($item['active']) {
+                $sum += $item['count'] * $item['price'];
+            }
         }
         return $sum;
     }

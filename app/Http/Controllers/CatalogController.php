@@ -195,7 +195,7 @@ class CatalogController extends Controller
         $product->ogGenerate();
         $product = $this->add_region_seo($product);
 
-//        Cart::purge();
+        Cart::purge();
 
 //        $product_n = Product::where('id',1)->first(['id', 'name', 'price']);
 //        dd($product_n);
