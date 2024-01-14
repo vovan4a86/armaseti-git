@@ -14,4 +14,3 @@
         </button>
     @endif
 @endif
-<script src="/static/js/btns.js"></script>
