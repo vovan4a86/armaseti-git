@@ -4,7 +4,7 @@
     <main>
         <section class="page container">
             <div class="page__title">{{ $h1 }}</div>
-            <form class="b-cart" action="#">
+            <form class="b-cart" action="{{ route('ajax.request') }}">
                 <div class="b-cart__dialog">
                     <div class="b-dialog">
                         <div class="b-dialog__icons">
@@ -44,7 +44,7 @@
                     <div class="b-cart__sum-label">Общая сумма заказа</div>
                     @include('cart.cart_total')
                 </div>
-                @include('cart.cart_order')
+                @include('cart.request')
             </form>
         </section>
     </main>

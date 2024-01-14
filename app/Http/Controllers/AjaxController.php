@@ -175,116 +175,45 @@ class AjaxController extends Controller
         ];
     }
 
-    //прайс
-    public function postRequestPrice(Request $request): array
+    //Отправить запрос
+    public function postRequest(Request $request): array
     {
-        $data = $request->only(['email']);
-        $valid = Validator::make(
-            $data,
-            [
-                'email' => 'required',
-            ],
-            [
-                'email.required' => 'Не заполнено поле Email',
-            ]
-        );
+        $data = $request->only(['name', 'phone', 'email', 'message']);
+        $file = $request->file('file');
+        $details = $request->file('details');
+
+        $valid = Validator::make($data, [
+            'email' => 'required',
+        ], [
+            'email.required' => 'Не заполнено поле email',
+        ]);
 
         if ($valid->fails()) {
             return ['errors' => $valid->messages()];
         } else {
-            $feedback_data = [
-                'type' => 4,
-                'data' => $data
-            ];
-            $feedback = Feedback::create($feedback_data);
-            Mail::send(
-                'mail.feedback',
-                ['feedback' => $feedback],
-                function ($message) use ($feedback) {
-                    $title = $feedback->id . ' | Запрос прайс-листа | Luxkraft';
-                    $message->from($this->fromMail, $this->fromName)
-                        ->to(Settings::get('feedback_email'))
-                        ->subject($title);
-                }
-            );
+            if ($file) {
+                $file_name = md5(uniqid(rand(), true)) . '.' . $file->getClientOriginalExtension();
+                $file->move(public_path(Feedback::UPLOAD_URL), $file_name);
+                $data['file'] = '<a target="_blanc" href=\'' . Feedback::UPLOAD_URL . $file_name . '\'>' . $file_name . '</a>';
+            }
+            if ($details) {
+                $file_name = md5(uniqid(rand(), true)) . '.' . $file->getClientOriginalExtension();
+                $details->move(public_path(Feedback::UPLOAD_URL), $file_name);
+                $data['details'] = '<a target="_blanc" style="color: red;" href=\'' . Feedback::UPLOAD_URL . $file_name . '\'>' . $file_name . '</a>';
+            }
 
-            return ['success' => true];
-        }
-    }
-
-    //расчет цены
-    public function postCalc(Request $request): array
-    {
-        $data = $request->only(['name', 'phone', 'text']);
-        $valid = Validator::make(
-            $data,
-            [
-                'name' => 'required',
-                'phone' => 'required',
-            ],
-            [
-                'name.required' => 'Не заполнено поле Имя',
-                'phone.required' => 'Не заполнено поле Телефон',
-            ]
-        );
-
-        if ($valid->fails()) {
-            return ['errors' => $valid->messages()];
-        } else {
-            $feedback_data = [
-                'type' => 2,
-                'data' => $data
-            ];
-            $feedback = Feedback::create($feedback_data);
-            Mail::send(
-                'mail.feedback',
-                ['feedback' => $feedback],
-                function ($message) use ($feedback) {
-                    $title = $feedback->id . ' | Расчет цены | Luxkraft';
-                    $message->from($this->fromMail, $this->fromName)
-                        ->to(Settings::get('feedback_email'))
-                        ->subject($title);
-                }
-            );
-
-            return ['success' => true];
-        }
-    }
-
-    //закажите звонок
-    public function postCallback(Request $request): array
-    {
-        $data = $request->only(['name', 'phone']);
-        $valid = Validator::make(
-            $data,
-            [
-                'name' => 'required',
-                'phone' => 'required',
-            ],
-            [
-                'name.required' => 'Не заполнено поле Имя',
-                'phone.required' => 'Не заполнено поле Phone',
-            ]
-        );
-
-        if ($valid->fails()) {
-            return ['errors' => $valid->messages()];
-        } else {
             $feedback_data = [
                 'type' => 1,
                 'data' => $data
             ];
+
             $feedback = Feedback::create($feedback_data);
-            Mail::send(
-                'mail.feedback',
-                ['feedback' => $feedback],
-                function ($message) use ($feedback) {
-                    $title = $feedback->id . ' | Заказ звонка | Luxkraft';
-                    $message->from($this->fromMail, $this->fromName)
-                        ->to(Settings::get('feedback_email'))
-                        ->subject($title);
-                }
-            );
+            Mail::send('mail.feedback', ['feedback' => $feedback], function ($message) use ($feedback) {
+                $title = $feedback->id . ' | Заявка | Армасети';
+                $message->from($this->fromMail, $this->fromName)
+                    ->to(Settings::get('feedback_email'))
+                    ->subject($title);
+            });
 
             return ['success' => true];
         }

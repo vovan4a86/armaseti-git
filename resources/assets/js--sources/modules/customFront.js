@@ -27,6 +27,63 @@ export const sendAjax = (url, data, callback, type) => {
     });
 }
 
+export const sendFiles = (url, data, callback, type) => {
+    if (typeof type == 'undefined') type = 'json';
+    $.ajax({
+        url: url,
+        type: 'POST',
+        data: data,
+        cache: false,
+        dataType: type,
+        processData: false, // Don't process the files
+        contentType: false, // Set content type to false as jQuery will tell the server its a query string request
+        beforeSend: function(request) {
+            return request.setRequestHeader('X-CSRF-Token', $("meta[name='csrf-token']").attr('content'));
+        },
+        success: function(json, textStatus, jqXHR)
+        {
+            if (typeof callback == 'function') {
+                callback(json);
+            }
+        },
+        error: function(jqXHR, textStatus, errorThrown)
+        {
+            alert('Не удалось выполнить запрос! Ошибка на сервере.');
+        }
+    });
+}
+
+export const sendAjaxWithFile = (url, data, callback, type) => {
+    data = data || {};
+    if (typeof type == 'undefined') type = 'json';
+    $.ajax({
+        type: 'post',
+        url: url,
+        data: data,
+        processData: false,
+        contentType: false,
+        dataType: type,
+        beforeSend: function(request) {
+            return request.setRequestHeader('X-CSRF-Token', $("meta[name='csrf-token']").attr('content'));
+        },
+        success: function(json){
+            if (typeof callback == 'function') {
+                callback(json);
+            }
+        },
+        error: function(XMLHttpRequest, textStatus, errorThrown){
+            alert('Не удалось выполнить запрос! Ошибка на сервере.');
+        },
+    });
+}
+
+export const resetForm = (form) => {
+    $(form).trigger('reset');
+    $(form).find('.err-msg-block').remove();
+    $(form).find('.has-error').remove();
+    $(form).find('.invalid').attr('title', '').removeClass('invalid');
+}
+
 //загрузить еще новости
 export const loadMoreNews = () => {
     $('.news-layout__row .b-loader').click(function () {
@@ -226,12 +283,37 @@ export const updateCountDown = () => {
 }
 updateCountDown();
 
-// export const resetForm = (form) => {
-//     $(form).trigger('reset');
-//     $(form).find('.err-msg-block').remove();
-//     $(form).find('.has-error').remove();
-//     $(form).find('.invalid').attr('title', '').removeClass('invalid');
-// }
+//Отправить заявку
+export const sendRequest = () => {
+    $('.order__item .btn').click(function (e) {
+        e.preventDefault();
+        const form = $(this).closest('form');
+        const url = $(form).attr('action');
+
+        const file = $('input[name=file]');
+        const details = $('input[name=details]');
+
+        let data = new FormData();
+        $.each($(form).serializeArray(), function(key, value){
+            data.append(value.name, value.value);
+        });
+
+        data.append('file', file.prop('files')[0]);
+        data.append('details', details.prop('files')[0]);
+
+        sendAjaxWithFile(url, data, function (json) {
+            if (json.success) {
+                alert('Отправлено!');
+                resetForm(form);
+            }
+            if (json.errors) {
+                console.log(json.errors);
+            }
+
+        });
+    })
+}
+sendRequest();
 
 //
 // $('#message').submit(function (e) {

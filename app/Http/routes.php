@@ -15,10 +15,7 @@ Route::group(
         Route::post('purge-cart', [AjaxController::class, 'postPurgeCart'])->name('purge-cart');
         Route::post('edit-cart-product', [AjaxController::class, 'postEditCartProduct'])->name('edit-cart-product');
 
-        Route::post('calc', 'AjaxController@postCalc')->name('calc');
-        Route::post('callback', 'AjaxController@postCallback')->name('callback');
-        Route::post('feedback', 'AjaxController@postFeedback')->name('feedback');
-        Route::post('request-price', 'AjaxController@postRequestPrice')->name('request-price');
+        Route::post('request', 'AjaxController@postRequest')->name('request');
 
         Route::get('show-popup-cities', [AjaxController::class, 'showCitiesPopup'])->name('show-popup-cities');
         Route::post('set-city', 'AjaxController@postSetCity')->name('set-city');

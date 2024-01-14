@@ -3421,8 +3421,12 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   loadMoreNews: () => (/* binding */ loadMoreNews),
 /* harmony export */   loadMoreProducts: () => (/* binding */ loadMoreProducts),
 /* harmony export */   removeFromCart: () => (/* binding */ removeFromCart),
+/* harmony export */   resetForm: () => (/* binding */ resetForm),
 /* harmony export */   restoreFromCart: () => (/* binding */ restoreFromCart),
 /* harmony export */   sendAjax: () => (/* binding */ sendAjax),
+/* harmony export */   sendAjaxWithFile: () => (/* binding */ sendAjaxWithFile),
+/* harmony export */   sendFiles: () => (/* binding */ sendFiles),
+/* harmony export */   sendRequest: () => (/* binding */ sendRequest),
 /* harmony export */   updateCountDown: () => (/* binding */ updateCountDown),
 /* harmony export */   updateCountUp: () => (/* binding */ updateCountUp)
 /* harmony export */ });
@@ -3456,6 +3460,60 @@ var sendAjax = function sendAjax(url, data, callback, type) {
       console.log(errorThrown);
     }
   });
+};
+var sendFiles = function sendFiles(url, data, callback, type) {
+  if (typeof type == 'undefined') type = 'json';
+  jquery__WEBPACK_IMPORTED_MODULE_0___default().ajax({
+    url: url,
+    type: 'POST',
+    data: data,
+    cache: false,
+    dataType: type,
+    processData: false,
+    // Don't process the files
+    contentType: false,
+    // Set content type to false as jQuery will tell the server its a query string request
+    beforeSend: function beforeSend(request) {
+      return request.setRequestHeader('X-CSRF-Token', jquery__WEBPACK_IMPORTED_MODULE_0___default()("meta[name='csrf-token']").attr('content'));
+    },
+    success: function success(json, textStatus, jqXHR) {
+      if (typeof callback == 'function') {
+        callback(json);
+      }
+    },
+    error: function error(jqXHR, textStatus, errorThrown) {
+      alert('Не удалось выполнить запрос! Ошибка на сервере.');
+    }
+  });
+};
+var sendAjaxWithFile = function sendAjaxWithFile(url, data, callback, type) {
+  data = data || {};
+  if (typeof type == 'undefined') type = 'json';
+  jquery__WEBPACK_IMPORTED_MODULE_0___default().ajax({
+    type: 'post',
+    url: url,
+    data: data,
+    processData: false,
+    contentType: false,
+    dataType: type,
+    beforeSend: function beforeSend(request) {
+      return request.setRequestHeader('X-CSRF-Token', jquery__WEBPACK_IMPORTED_MODULE_0___default()("meta[name='csrf-token']").attr('content'));
+    },
+    success: function success(json) {
+      if (typeof callback == 'function') {
+        callback(json);
+      }
+    },
+    error: function error(XMLHttpRequest, textStatus, errorThrown) {
+      alert('Не удалось выполнить запрос! Ошибка на сервере.');
+    }
+  });
+};
+var resetForm = function resetForm(form) {
+  jquery__WEBPACK_IMPORTED_MODULE_0___default()(form).trigger('reset');
+  jquery__WEBPACK_IMPORTED_MODULE_0___default()(form).find('.err-msg-block').remove();
+  jquery__WEBPACK_IMPORTED_MODULE_0___default()(form).find('.has-error').remove();
+  jquery__WEBPACK_IMPORTED_MODULE_0___default()(form).find('.invalid').attr('title', '').removeClass('invalid');
 };
 
 //загрузить еще новости
@@ -3659,12 +3717,32 @@ var updateCountDown = function updateCountDown() {
 };
 updateCountDown();
 
-// export const resetForm = (form) => {
-//     $(form).trigger('reset');
-//     $(form).find('.err-msg-block').remove();
-//     $(form).find('.has-error').remove();
-//     $(form).find('.invalid').attr('title', '').removeClass('invalid');
-// }
+//Отправить заявку
+var sendRequest = function sendRequest() {
+  jquery__WEBPACK_IMPORTED_MODULE_0___default()('.order__item .btn').click(function (e) {
+    e.preventDefault();
+    var form = jquery__WEBPACK_IMPORTED_MODULE_0___default()(this).closest('form');
+    var url = jquery__WEBPACK_IMPORTED_MODULE_0___default()(form).attr('action');
+    var file = jquery__WEBPACK_IMPORTED_MODULE_0___default()('input[name=file]');
+    var details = jquery__WEBPACK_IMPORTED_MODULE_0___default()('input[name=details]');
+    var data = new FormData();
+    jquery__WEBPACK_IMPORTED_MODULE_0___default().each(jquery__WEBPACK_IMPORTED_MODULE_0___default()(form).serializeArray(), function (key, value) {
+      data.append(value.name, value.value);
+    });
+    data.append('file', file.prop('files')[0]);
+    data.append('details', details.prop('files')[0]);
+    sendAjaxWithFile(url, data, function (json) {
+      if (json.success) {
+        alert('Отправлено!');
+        resetForm(form);
+      }
+      if (json.errors) {
+        console.log(json.errors);
+      }
+    });
+  });
+};
+sendRequest();
 
 //
 // $('#message').submit(function (e) {

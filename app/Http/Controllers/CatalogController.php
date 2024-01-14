@@ -72,6 +72,8 @@ class CatalogController extends Controller
             abort(404, 'Страница не найдена');
         }
 
+        Cart::purge();
+
         $bread = $category->getBread();
         $category->setSeo();
         $category->ogGenerate();
@@ -194,8 +196,6 @@ class CatalogController extends Controller
         $product->setSeo();
         $product->ogGenerate();
         $product = $this->add_region_seo($product);
-
-        Cart::purge();
 
 //        $product_n = Product::where('id',1)->first(['id', 'name', 'price']);
 //        dd($product_n);

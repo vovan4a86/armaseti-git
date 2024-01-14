@@ -20,11 +20,13 @@
                 <div class="order__fields">
                     <label class="upload upload--black">
                         <span class="upload__name">Прикрепить файл</span>
-                        <input class="upload__input" type="file" name="file" accept=".jpg, .jpeg, .png, .pdf, .doc, .docs, .xls, .xlsx" />
+                        <input class="upload__input" type="file" name="file"
+                               accept=".jpg, .jpeg, .png, .pdf, .doc, .docs, .xls, .xlsx" />
                     </label>
                     <label class="upload upload--black">
                         <span class="upload__name">Прикрепить реквизиты</span>
-                        <input class="upload__input" type="file" name="details" accept=".jpg, .jpeg, .png, .pdf, .doc, .docs, .xls, .xlsx" />
+                        <input class="upload__input" type="file" name="details"
+                               accept=".jpg, .jpeg, .png, .pdf, .doc, .docs, .xls, .xlsx" />
                     </label>
                 </div>
             </div>
