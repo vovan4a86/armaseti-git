@@ -202,6 +202,38 @@ class AjaxController extends Controller
                 $data['details'] = '<a target="_blanc" style="color: red;" href=\'' . Feedback::UPLOAD_URL . $file_name . '\'>' . $file_name . '</a>';
             }
 
+//            $order = Order::create($data);
+//            $items = Cart::all();
+//
+//            foreach ($items as $item) {
+//                $order->products()->attach($item['id'], [
+//                    'count' => $item['count'],
+//                    'price' => $item['price'],
+//                ]);
+//            }
+//
+//            $order_items = $order->products;
+//            $all_count = 0;
+//            $all_summ = 0;
+//            foreach ($order_items as $item) {
+//                $all_summ += $item->pivot->price;
+//                $all_count += $item->pivot->count;
+//            }
+//
+//            Mail::send('mail.new_order_table', [
+//                'order' => $order,
+//                'items' => $order_items,
+//                'all_count' => $all_count,
+//                'all_summ' => $all_summ
+//            ], function ($message) use ($order) {
+//                $title = $order->id . ' | Новый заказ | ГидроКомплектСнаб';
+//                $message->from($this->fromMail, $this->fromName)
+//                    ->to(Settings::get('feedback_email'))
+//                    ->subject($title);
+//            });
+//
+//            Cart::purge();
+
             $feedback_data = [
                 'type' => 1,
                 'data' => $data

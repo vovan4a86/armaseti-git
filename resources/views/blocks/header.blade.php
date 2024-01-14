@@ -3,13 +3,13 @@
         <div class="header__top-row container">
             <div class="header__links">
                 <div class="header__city">
-                    <button class="b-city btn-reset" type="button" data-popup="data-popup" data-src="#change-city"
-                            aria-label="Выбрать город">
+                    <a class="b-city" href="{{ route('ajax.show-popup-cities') }}" data-cities="data-cities"
+                       data-type="ajax" title="Выбрать город">
                         <svg class="svg-sprite-icon icon-pin" width="1em" height="1em">
-                            <use xlink:href="/static/images/sprite/symbol/sprite.svg#pin"></use>
+                            <use xlink:href="static/images/sprite/symbol/sprite.svg#pin"></use>
                         </svg>
                         <span class="b-city__label">Москва</span>
-                    </button>
+                    </a>
                 </div>
                 @if(count($header_menu))
                     <div class="header__nav">
