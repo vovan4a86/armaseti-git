@@ -77,6 +77,7 @@ Route::group(
         Route::any('search', ['as' => 'search', 'uses' => 'CatalogController@search']);
 
         Route::get('cart', ['as' => 'cart', 'uses' => 'CartController@index']);
+        Route::get('order-success', ['as' => 'order-success', 'uses' => 'CartController@success']);
 
         Route::any('policy', ['as' => 'policy', 'uses' => 'PageController@policy']);
 

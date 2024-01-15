@@ -3735,6 +3735,7 @@ var sendRequest = function sendRequest() {
       if (json.success) {
         alert('Отправлено!');
         resetForm(form);
+        location.href = json.redirect;
       }
       if (json.errors) {
         console.log(json.errors);
@@ -3743,26 +3744,6 @@ var sendRequest = function sendRequest() {
   });
 };
 sendRequest();
-
-//
-// $('#message').submit(function (e) {
-//     e.preventDefault();
-//     const form = $(this);
-//     const url = form.attr('action');
-//     const data = form.serialize();
-//
-//     const lang = $('html').attr('lang');
-//
-//     sendAjax(url, data, function (json) {
-//         if (json.success) {
-//             resetForm(form);
-//             showSuccessDialog({
-//                 title: lang === 'ru' ? 'Сообщение отправлено!' : 'Message sent!'
-//             });
-//         }
-//     })
-//
-// });
 
 /***/ }),
 

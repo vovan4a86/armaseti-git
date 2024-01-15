@@ -4,14 +4,22 @@
 <p><b>Заказчик:</b> {{ $order->name }}</p>
 <p><b>Телефон:</b> {{ $order->phone }}</p>
 <p><b>Email:</b> {{ $order->email }}</p>
-<p><b>Название организации:</b> {{ $order->company }}</p>
-<p><b>Сумма заказа:</b> {{ $order->summ }} р.</p>
+<p><b>Сумма заказа:</b> {{ $order->total_sum }} р.</p>
 <hr>
-<p><b>Город:</b> {{ $order->city }}</p>
-<p><b>Улица:</b> {{ $order->street }}</p>
-<p><b>Дом:</b> {{ $order->home_number }}</p>
-<p><b>Квартира/Офис:</b> {{ $order->apartment_number }}</p>
-<p><b>Комментарий:</b> {{ $order->comment }}</p>
+<p><b>Прикрепленный файл:</b>
+    @if($order->file)
+        <a target="_blanc" href="{{ \Fanky\Admin\Models\Order::UPLOAD_URL . $order->file }}">{{ $order->file }}</a>
+    @else
+        <span>Нет</span>
+    @endif
+</p>
+<p><b>Реквизиты:</b>
+    @if($order->details)
+        <a target="_blanc" href="{{ \Fanky\Admin\Models\Order::UPLOAD_URL . $order->details }}">{{ $order->details }}</a>
+    @else
+        <span>Нет</span>
+    @endif
+</p>
 
 
 @if (count($items))
@@ -31,8 +39,7 @@
                 <td><a target="_blank"
                        href="{{ route('admin.catalog.productEdit', [$item->id]) }}">{{ $item->name }}</a></td>
                 <td>{{ $item->pivot->count }}</td>
-                <td>{{ number_format($item->price, 0, '', ' ') }}
-                    /{{ $item->measure }}</td>
+                <td>{{ number_format($item->price, 0, '', ' ') }}</td>
                 <td>{{ number_format($item->pivot->price, 0, '', ' ') }} </td>
             </tr>
         @endforeach
@@ -43,7 +50,7 @@
             <th style="text-align: left">{{ '' }}</th>
             <th style="text-align: left">{{ $all_count }}</th>
             <th style="text-align: left">{{ '' }}</th>
-            <th style="text-align: left">{{ number_format($all_summ, 0, '', ' ') }}</th>
+            <th style="text-align: left">{{ number_format($all_sum, 0, '', ' ') }}</th>
         </tr>
         </tfoot>
     </table>

@@ -17,10 +17,10 @@ class AdminOrdersController extends AdminController {
 
         $items = $order->products;
         $all_count = 0;
-        $all_summ = 0;
+        $all_sum = 0;
 
         foreach ($items as $item) {
-            $all_summ += $item->pivot->price;
+            $all_sum += $item->pivot->price;
             $all_count += $item->pivot->count;
         }
 
@@ -28,7 +28,7 @@ class AdminOrdersController extends AdminController {
             'order'     => $order,
             'items'     => $items,
             'all_count' => $all_count,
-            'all_summ'  => $all_summ,
+            'all_sum'  => $all_sum,
         ]);
     }
 

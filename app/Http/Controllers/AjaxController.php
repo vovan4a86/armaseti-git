@@ -175,7 +175,7 @@ class AjaxController extends Controller
         ];
     }
 
-    //Отправить запрос
+    //Отправить запрос = ОФОРМЛЕНИЕ ЗАКАЗА
     public function postRequest(Request $request): array
     {
         $data = $request->only(['name', 'phone', 'email', 'message']);
@@ -193,61 +193,51 @@ class AjaxController extends Controller
         } else {
             if ($file) {
                 $file_name = md5(uniqid(rand(), true)) . '.' . $file->getClientOriginalExtension();
-                $file->move(public_path(Feedback::UPLOAD_URL), $file_name);
-                $data['file'] = '<a target="_blanc" href=\'' . Feedback::UPLOAD_URL . $file_name . '\'>' . $file_name . '</a>';
+                $file->move(public_path(Order::UPLOAD_URL), $file_name);
+                $data['file'] = $file_name;
             }
             if ($details) {
                 $file_name = md5(uniqid(rand(), true)) . '.' . $file->getClientOriginalExtension();
-                $details->move(public_path(Feedback::UPLOAD_URL), $file_name);
-                $data['details'] = '<a target="_blanc" style="color: red;" href=\'' . Feedback::UPLOAD_URL . $file_name . '\'>' . $file_name . '</a>';
+                $details->move(public_path(Order::UPLOAD_URL), $file_name);
+                $data['details'] = $file_name;
             }
 
-//            $order = Order::create($data);
-//            $items = Cart::all();
-//
-//            foreach ($items as $item) {
-//                $order->products()->attach($item['id'], [
-//                    'count' => $item['count'],
-//                    'price' => $item['price'],
-//                ]);
-//            }
-//
-//            $order_items = $order->products;
-//            $all_count = 0;
-//            $all_summ = 0;
-//            foreach ($order_items as $item) {
-//                $all_summ += $item->pivot->price;
-//                $all_count += $item->pivot->count;
-//            }
-//
-//            Mail::send('mail.new_order_table', [
-//                'order' => $order,
-//                'items' => $order_items,
-//                'all_count' => $all_count,
-//                'all_summ' => $all_summ
-//            ], function ($message) use ($order) {
-//                $title = $order->id . ' | Новый заказ | ГидроКомплектСнаб';
-//                $message->from($this->fromMail, $this->fromName)
-//                    ->to(Settings::get('feedback_email'))
-//                    ->subject($title);
-//            });
-//
-//            Cart::purge();
+            $order = Order::create($data);
+            $items = Cart::all();
 
-            $feedback_data = [
-                'type' => 1,
-                'data' => $data
-            ];
+            foreach ($items as $item) {
+                $order->products()->attach($item['id'], [
+                    'count' => $item['count'],
+                    'price' => $item['price'],
+                    'created_at' => Carbon::now(),
+                    'updated_at' => Carbon::now()
+                ]);
+            }
 
-            $feedback = Feedback::create($feedback_data);
-            Mail::send('mail.feedback', ['feedback' => $feedback], function ($message) use ($feedback) {
-                $title = $feedback->id . ' | Заявка | Армасети';
+            $order_items = $order->products;
+            $all_count = 0;
+            $all_sum = 0;
+            foreach ($order_items as $item) {
+                $all_sum += $item->pivot->price;
+                $all_count += $item->pivot->count;
+            }
+            $order->update(['total_sum' => $all_sum]);
+
+            Mail::send('mail.new_order_table', [
+                'order' => $order,
+                'items' => $order_items,
+                'all_count' => $all_count,
+                'all_sum' => $all_sum
+            ], function ($message) use ($order) {
+                $title = $order->id . ' | Заявка | Армасети';
                 $message->from($this->fromMail, $this->fromName)
                     ->to(Settings::get('feedback_email'))
                     ->subject($title);
             });
 
-            return ['success' => true];
+            Cart::purge();
+
+            return ['success' => true, 'redirect' => route('order-success')];
         }
     }
 
@@ -515,24 +505,6 @@ class AjaxController extends Controller
 
         return ['success' => true];
     }
-
-//    public function postUpdateCatalogFilter()
-//    {
-//        $id = request()->get('id');
-//
-//        if (!$id) {
-//            return ['success' => false, 'msg' => 'Ошибка, нет id'];
-//        }
-//
-//        $item = CatalogFilter::where('id', $id)->first();
-//        if ($item->published == 1) {
-//            $item->update(['published' => 0]);
-//        } else {
-//            $item->update(['published' => 1]);
-//        }
-//
-//        return ['success' => true, 'msg' => 'Успешно обновлено!'];
-//    }
 
     public function postUpdateCatalogFilter()
     {

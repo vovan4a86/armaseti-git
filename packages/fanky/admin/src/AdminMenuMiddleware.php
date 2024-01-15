@@ -25,20 +25,14 @@ class AdminMenuMiddleware {
             $menu->add('Новости', ['route' => 'admin.news', 'icon' => 'fa-calendar'])
                 ->active('/admin/news/*');
 
-            $menu->add('Справочник', ['route' => 'admin.handbook', 'icon' => 'fa-book'])
-                ->active('/admin/handbook/*');
+            $menu->add('Заказы', ['route' => 'admin.orders', 'icon' => 'fa-dollar'])
+				->active('/admin/orders/*');
 
-            $menu->add('Отзывы', ['route' => 'admin.reviews', 'icon' => 'fa-star'])
-                ->active('/admin/reviews/*');
+//            $menu->add('Отзывы', ['route' => 'admin.reviews', 'icon' => 'fa-star'])
+//                ->active('/admin/reviews/*');
 
-//			$menu->add('Заказы', ['route' => 'admin.orders', 'icon' => 'fa-dollar'])
-//				->active('/admin/orders/*');
-
-			$menu->add('Региональность', ['route' => 'admin.cities', 'icon' => 'fa-globe'])
+            $menu->add('Региональность', ['route' => 'admin.cities', 'icon' => 'fa-globe'])
 				->active('/admin/cities/*');
-
-			$menu->add('Покупатели', ['route' => 'admin.customers', 'icon' => 'fa-handshake-o'])
-				->active('/admin/customers/*');
 
 //			$menu->add('Галереи', ['route' => 'admin.gallery', 'icon' => 'fa-image'])
 //				->active('/admin/gallery/*');

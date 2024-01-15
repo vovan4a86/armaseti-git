@@ -4081,7 +4081,7 @@ button.swiper-pagination-bullet {
   width: 10px;
   height: 10px;
   margin-right: 10px;
-  background-image: url(/images/ico_chbx-title.svg?58c0bdf2c318b213e736cd6a29adb6cf);
+  background-image: url(/images/ico_chbx-title.svg?45283fbe7bf3437201c18e41918a9654);
   background-repeat: no-repeat;
   background-size: contain;
   background-position: center;
@@ -5218,7 +5218,7 @@ button.swiper-pagination-bullet {
 }
 
 .c-radio__input:checked + .c-radio__box {
-  background-image: url(/images/ico_radio--checked.svg?8dee714fd0e4b185e202ecd58d44e87b);
+  background-image: url(/images/ico_radio--checked.svg?8f46f12f428561ccd79e80ade180ba96);
 }
 
 .c-radio__box {
@@ -5226,7 +5226,7 @@ button.swiper-pagination-bullet {
   left: 0;
   width: 15px;
   height: 15px;
-  background-image: url(/images/ico_radio.svg?913bd4c89f384db95cc61c2f48dbf19f);
+  background-image: url(/images/ico_radio.svg?3cdd0e09aae6914863af1a2fbf177bce);
   background-repeat: no-repeat;
   background-size: 15px 15px;
   background-position: center;
@@ -5463,7 +5463,7 @@ button.swiper-pagination-bullet {
 
 .chbx__input.invalid + .checkbox__box,
 .chbx__input.invalid + .chbx__box {
-  background-image: url(/images/ico_chbx--error.svg?8fc637508ca0a56bfe219340ec7a0094) !important;
+  background-image: url(/images/ico_chbx--error.svg?ff654999db85a32b3aa9522f9b43cf24) !important;
 }
 
 .chbx__box {
@@ -5488,19 +5488,19 @@ button.swiper-pagination-bullet {
 .checkbox--accent .chbx__input:checked + .checkbox__box,
 .checkbox--accent .checkbox__input:checked + .chbx__box,
 .checkbox--accent .chbx__input:checked + .chbx__box {
-  background-image: url(/images/checkbox--checked.svg?cc20b6014d37413eed734c52ad5de68d);
+  background-image: url(/images/checkbox--checked.svg?6e1f5fcd23f2e2d5765759ab524ae200);
 }
 
 .checkbox--accent .checkbox__input.invalid + .checkbox__box,
 .checkbox--accent .invalid.chbx__input + .checkbox__box,
 .checkbox--accent .checkbox__input.invalid + .chbx__box,
 .checkbox--accent .invalid.chbx__input + .chbx__box {
-  background-image: url(/images/checkbox--error.svg?8fc637508ca0a56bfe219340ec7a0094);
+  background-image: url(/images/checkbox--error.svg?ff654999db85a32b3aa9522f9b43cf24);
 }
 
 .checkbox--accent .checkbox__box,
 .checkbox--accent .chbx__box {
-  background-image: url(/images/checkbox.svg?f5f39e9ff683cb2b60ab7fa6c5011a95);
+  background-image: url(/images/checkbox.svg?24e40c68cd3aa6c34ffe47f0f5c4f73e);
 }
 
 .checkbox__input,
@@ -5516,14 +5516,14 @@ button.swiper-pagination-bullet {
 .chbx__input:checked + .checkbox__box,
 .checkbox__input:checked + .chbx__box,
 .chbx__input:checked + .chbx__box {
-  background-image: url(/images/ico_checkbox--checked.svg?901236dcf40b72ad5f6e0a50e63a9032);
+  background-image: url(/images/ico_checkbox--checked.svg?fec3b9b1be67ca694827878d4460a1f2);
 }
 
 .checkbox__input.invalid + .checkbox__box,
 .invalid.chbx__input + .checkbox__box,
 .checkbox__input.invalid + .chbx__box,
 .invalid.chbx__input + .chbx__box {
-  background-image: url(/images/ico_checkbox--error.svg?38edb254c9d5976114cd0caace55193f);
+  background-image: url(/images/ico_checkbox--error.svg?165c24358b17d5af3ab0d3d3dc148617);
 }
 
 .checkbox__box,
@@ -5532,7 +5532,7 @@ button.swiper-pagination-bullet {
   left: 0;
   width: 15px;
   height: 15px;
-  background-image: url(/images/ico_checkbox.svg?cfe925d9917ebd54a34b16dd65d7bca0);
+  background-image: url(/images/ico_checkbox.svg?0cae67fa734ba4ea2b7945aa8d378c2b);
   background-repeat: no-repeat;
   background-size: 15px 15px;
   background-position: center;
