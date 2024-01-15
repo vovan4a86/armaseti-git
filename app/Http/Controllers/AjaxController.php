@@ -182,11 +182,15 @@ class AjaxController extends Controller
         $file = $request->file('file');
         $details = $request->file('details');
 
-        $valid = Validator::make($data, [
-            'email' => 'required',
-        ], [
-            'email.required' => 'Не заполнено поле email',
-        ]);
+        $valid = Validator::make(
+            $data,
+            [
+                'email' => 'required',
+            ],
+            [
+                'email.required' => 'Не заполнено поле email',
+            ]
+        );
 
         if ($valid->fails()) {
             return ['errors' => $valid->messages()];
@@ -206,12 +210,15 @@ class AjaxController extends Controller
             $items = Cart::all();
 
             foreach ($items as $item) {
-                $order->products()->attach($item['id'], [
-                    'count' => $item['count'],
-                    'price' => $item['price'],
-                    'created_at' => Carbon::now(),
-                    'updated_at' => Carbon::now()
-                ]);
+                $order->products()->attach(
+                    $item['id'],
+                    [
+                        'count' => $item['count'],
+                        'price' => $item['price'],
+                        'created_at' => Carbon::now(),
+                        'updated_at' => Carbon::now()
+                    ]
+                );
             }
 
             $order_items = $order->products;
@@ -223,17 +230,21 @@ class AjaxController extends Controller
             }
             $order->update(['total_sum' => $all_sum]);
 
-            Mail::send('mail.new_order_table', [
-                'order' => $order,
-                'items' => $order_items,
-                'all_count' => $all_count,
-                'all_sum' => $all_sum
-            ], function ($message) use ($order) {
-                $title = $order->id . ' | Заявка | Армасети';
-                $message->from($this->fromMail, $this->fromName)
-                    ->to(Settings::get('feedback_email'))
-                    ->subject($title);
-            });
+            Mail::send(
+                'mail.new_order_table',
+                [
+                    'order' => $order,
+                    'items' => $order_items,
+                    'all_count' => $all_count,
+                    'all_sum' => $all_sum
+                ],
+                function ($message) use ($order) {
+                    $title = $order->id . ' | Заявка | Армасети';
+                    $message->from($this->fromMail, $this->fromName)
+                        ->to(Settings::get('feedback_email'))
+                        ->subject($title);
+                }
+            );
 
             Cart::purge();
 
@@ -282,93 +293,7 @@ class AjaxController extends Controller
         }
     }
 
-    //ОФОРМЛЕНИЕ ЗАКАЗА
-    public function postSendCartOrder(Request $request): array
-    {
-        $data = $request->only(
-            [
-                'receiver',
-                'phone',
-                'email',
-                'city',
-                'street',
-                'building',
-                'room',
-                'message',
-                'delivery',
-                'payment'
-            ]
-        );
-
-        $messages = array(
-            'receiver.required' => 'Не заполнено поле Получатель',
-            'phone.required' => 'Не заполнено поле Телефон',
-            'email.required' => 'Не заполнено поле Email',
-        );
-
-        $valid = Validator::make(
-            $data,
-            [
-                'receiver' => 'required',
-                'phone' => 'required',
-                'email' => 'required',
-            ],
-            $messages
-        );
-        if ($valid->fails()) {
-            return ['errors' => $valid->messages()];
-        }
-
-        $data['total_sum'] = Cart::sum();
-        $data['unique_id'] = time();
-        session(['therm_order_id' => $data['unique_id']]);
-
-        $order = Order::query()->create($data);
-        $items = Cart::all();
-
-        foreach ($items as $item) {
-            $itemPrice = $item['price'] * $item['count'];
-            $order->products()->attach(
-                $item['id'],
-                [
-                    'count' => $item['count'],
-                    'price' => $itemPrice,
-                    'created_at' => Carbon::now(),
-                    'updated_at' => Carbon::now()
-                ]
-            );
-        }
-
-        $order_items = $order->products;
-        $all_count = 0;
-        $all_sum = 0;
-        foreach ($order_items as $item) {
-            $all_sum += $item->pivot->price;
-            $all_count += $item->pivot->count;
-        }
-
-        Mail::send(
-            'mail.new_order_table',
-            [
-                'order' => $order,
-                'items' => $order_items,
-                'all_count' => $all_count,
-                'all_sum' => $all_sum
-            ],
-            function ($message) use ($order) {
-                $title = $order->id . ' | Новый заказ | Thermoline';
-                $message->from($this->fromMail, $this->fromName)
-                    ->to(Settings::get('feedback_email'))
-                    ->subject($title);
-            }
-        );
-
-        Cart::purge();
-
-        return ['success' => true, 'redirect' => route('cart.success')];
-    }
-
-    public function search(Request $request)
+    public function search(Request $request): array
     {
         $data = $request->only(['search']);
 
@@ -395,6 +320,164 @@ class AjaxController extends Controller
 //            'data' => $data,
 //        ]);
 
+    }
+
+    public function postApplyFilter($category_id): array
+    {
+        $data_filter = request()->except(['price_from', 'price_to', 'in_stock']);
+        $price_from = request()->get('price_from');
+        $price_to = request()->get('price_to');
+        $in_stock = request()->get('in_stock');
+
+        $catalog = Catalog::find($category_id);
+        $children_ids = $catalog->getRecurseChildrenIds();
+
+        //параметры для строки браузера
+        $query = '?price_from=' . $price_from . '&price_to=' . $price_to . '&in_stock=' . $in_stock;
+        $appends = ['price_from' => $price_from, 'price_to' => $price_to, 'in_stock' => $in_stock];
+
+        $products_query = Product::whereIn('catalog_id', $children_ids)
+            ->where('in_stock', $in_stock)
+            ->where('price', '>', $price_from)
+            ->where('price', '<=', $price_to);
+
+        if (!count($data_filter)) {
+            $products = $products_query
+                ->paginate(Settings::get('products_per_page', 9))
+                ->appends($appends);
+        } else {
+            $result_filters = [];
+            foreach ($data_filter as $name => $values) {
+                foreach ($values as $val) {
+                    $result_filters[] = ['value', $val];
+                    $query .= '&' . $name . '[]=' . $val;
+                    if (count($values) == 1) {
+                        $appends[$name] = $val;
+                    } else {
+                        $appends[$name][] = $val;
+                    }
+                }
+            }
+
+            $products = $products_query
+                ->whereHas('chars', function ($query) use ($result_filters) {
+                    $query->orWhere($result_filters);
+                })
+                ->paginate(Settings::get('products_per_page', 9))
+                ->appends($appends);
+        }
+
+        $page = $products->currentPage();
+        if ($page > 1) {
+            $query .= '&page=' . $page;
+        }
+
+        $view_items = [];
+        foreach ($products as $item) {
+            //добавляем новые элементы
+            $view_items[] = view(
+                'catalog.product_item',
+                [
+                    'product' => $item,
+                ]
+            )->render();
+        }
+
+        $btn_paginate = null;
+        if ($products->nextPageUrl()) {
+            $btn_paginate = view('paginations.load_more', ['paginator' => $products])->render();
+        }
+
+        $paginate = view('paginations.with_pages', ['paginator' => $products])->render();
+
+        return [
+            'items' => $view_items,
+            'btn' => $btn_paginate,
+            'paginate' => $paginate,
+            'current_url' => $catalog->url . $query
+        ];
+    }
+
+    public function postFavorite(): array
+    {
+        $id = \request()->get('id');
+
+        if (!$id) {
+            return ['success' => false, 'msg' => 'Нет ID'];
+        }
+
+        $favorites = \Session::get('favorites', []);
+
+        $add = true;
+        if (count($favorites) == 0) {
+            \Session::push('favorites', $id);
+        } else {
+            if (!in_array($id, $favorites)) {
+                \Session::push('favorites', $id);
+            } else {
+                foreach ($favorites as $key => $item) {
+                    if ($item == $id) {
+                        unset($favorites[$key]);
+                    }
+                }
+                \Session::forget('favorites');
+                \Session::put('favorites', $favorites);
+                $add = false;
+            }
+        }
+
+        return ['success' => true, 'count' => count(\Session::get('favorites')), 'add' => $add];
+    }
+
+    public function postCompare(): array
+    {
+        $id = \request()->get('id');
+
+        if (!$id) {
+            return ['success' => false, 'msg' => 'Нет ID'];
+        }
+
+        $compare = \Session::get('compare', []);
+
+        $add = true;
+        if (count($compare) == 0) {
+            \Session::push('compare', $id);
+        } else {
+            if (!in_array($id, $compare)) {
+                \Session::push('compare', $id);
+            } else {
+                foreach ($compare as $key => $item) {
+                    if ($item == $id) {
+                        unset($compare[$key]);
+                    }
+                }
+                \Session::forget('compare');
+                \Session::put('compare', $compare);
+                $add = false;
+            }
+        }
+
+        return ['success' => true, 'count' => count(\Session::get('compare')), 'add' => $add];
+    }
+
+    public function postCompareDelete(): array
+    {
+        $id = \request()->get('id');
+
+        if (!$id) {
+            return ['success' => false, 'msg' => 'Нет ID'];
+        }
+
+        $compare = \Session::get('compare', []);
+        foreach ($compare as $key => $item) {
+            if ($item == $id) {
+                unset($compare[$key]);
+            }
+        }
+        \Session::forget('compare');
+        \Session::put('compare', $compare);
+
+        return ['success' => true, 'count' => count(\Session::get('compare'))];
     }
 
     //РАБОТА С ГОРОДАМИ
@@ -497,157 +580,5 @@ class AjaxController extends Controller
                 'current_city' => $current_city,
             ]
         );
-    }
-
-    public function postUpdateCatalogFilter()
-    {
-        $id = request()->get('id');
-
-        if (!$id) {
-            return ['success' => false, 'msg' => 'Ошибка, нет id'];
-        }
-
-        $item = ParentCatalogFilter::where('id', $id)->first();
-        if ($item->published == 1) {
-            $item->update(['published' => 0]);
-        } else {
-            $item->update(['published' => 1]);
-        }
-
-        return ['success' => true, 'msg' => 'Успешно обновлено!'];
-    }
-
-    public function postApplyFilter($category_id)
-    {
-        $data = request()->except(['price_from', 'price_to', 'in_stock']);
-        $price_from = request()->get('price_from');
-        $price_to = request()->get('price_to');
-        $in_stock = request()->get('in_stock');
-
-//        \Debugbar::log($in_stock);
-
-        $catalog = Catalog::find($category_id);
-        $children_ids = $catalog->getRecurseChildrenIds();
-
-        $products = Product::whereIn('catalog_id', $children_ids)
-            ->where('in_stock', $in_stock)
-            ->where('price', '>', $price_from)
-            ->where('price', '<=', $price_to)
-            ->paginate(9)
-            ->appends(['price_from' => $price_from, 'price_to' => $price_to, 'in_stock' => $in_stock]);
-
-        $url = '?price_from=' . $price_from . '&price_to=' . $price_to . '&in_stock=' . $in_stock;
-
-        $page = $products->currentPage();
-        if ($page > 1) {
-            $url .= '&page=' . $page;
-        }
-
-        $view_items = [];
-        foreach ($products as $item) {
-            //добавляем новые элементы
-            $view_items[] = view(
-                'catalog.product_item',
-                [
-                    'product' => $item,
-                ]
-            )->render();
-        }
-
-        $btn_paginate = null;
-        if ($products->nextPageUrl()) {
-            $btn_paginate = view('paginations.load_more', ['paginator' => $products])->render();
-        }
-
-        $paginate = view('paginations.with_pages', ['paginator' => $products])->render();
-
-        return [
-            'items' => $view_items,
-            'btn' => $btn_paginate,
-            'paginate' => $paginate,
-            'url' => $url,
-        ];
-    }
-
-    public function postFavorite(): array
-    {
-        $id = \request()->get('id');
-
-        if (!$id) {
-            return ['success' => false, 'msg' => 'Нет ID'];
-        }
-
-        $favorites = \Session::get('favorites', []);
-
-        $add = true;
-        if (count($favorites) == 0) {
-            \Session::push('favorites', $id);
-        } else {
-            if (!in_array($id, $favorites)) {
-                \Session::push('favorites', $id);
-            } else {
-                foreach ($favorites as $key => $item) {
-                    if ($item == $id) {
-                        unset($favorites[$key]);
-                    }
-                }
-                \Session::forget('favorites');
-                \Session::put('favorites', $favorites);
-                $add = false;
-            }
-        }
-
-        return ['success' => true, 'count' => count(\Session::get('favorites')), 'add' => $add];
-    }
-
-    public function postCompare(): array
-    {
-        $id = \request()->get('id');
-
-        if (!$id) {
-            return ['success' => false, 'msg' => 'Нет ID'];
-        }
-
-        $compare = \Session::get('compare', []);
-
-        $add = true;
-        if (count($compare) == 0) {
-            \Session::push('compare', $id);
-        } else {
-            if (!in_array($id, $compare)) {
-                \Session::push('compare', $id);
-            } else {
-                foreach ($compare as $key => $item) {
-                    if ($item == $id) {
-                        unset($compare[$key]);
-                    }
-                }
-                \Session::forget('compare');
-                \Session::put('compare', $compare);
-                $add = false;
-            }
-        }
-
-        return ['success' => true, 'count' => count(\Session::get('compare')), 'add' => $add];
-    }
-
-    public function postCompareDelete()
-    {
-        $id = \request()->get('id');
-
-        if (!$id) {
-            return ['success' => false, 'msg' => 'Нет ID'];
-        }
-
-        $compare = \Session::get('compare', []);
-        foreach ($compare as $key => $item) {
-            if ($item == $id) {
-                unset($compare[$key]);
-            }
-        }
-        \Session::forget('compare');
-        \Session::put('compare', $compare);
-
-        return ['success' => true, 'count' => count(\Session::get('compare'))];
     }
 }

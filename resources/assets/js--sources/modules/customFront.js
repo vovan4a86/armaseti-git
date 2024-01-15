@@ -37,17 +37,15 @@ export const sendFiles = (url, data, callback, type) => {
         dataType: type,
         processData: false, // Don't process the files
         contentType: false, // Set content type to false as jQuery will tell the server its a query string request
-        beforeSend: function(request) {
+        beforeSend: function (request) {
             return request.setRequestHeader('X-CSRF-Token', $("meta[name='csrf-token']").attr('content'));
         },
-        success: function(json, textStatus, jqXHR)
-        {
+        success: function (json, textStatus, jqXHR) {
             if (typeof callback == 'function') {
                 callback(json);
             }
         },
-        error: function(jqXHR, textStatus, errorThrown)
-        {
+        error: function (jqXHR, textStatus, errorThrown) {
             alert('Не удалось выполнить запрос! Ошибка на сервере.');
         }
     });
@@ -63,15 +61,15 @@ export const sendAjaxWithFile = (url, data, callback, type) => {
         processData: false,
         contentType: false,
         dataType: type,
-        beforeSend: function(request) {
+        beforeSend: function (request) {
             return request.setRequestHeader('X-CSRF-Token', $("meta[name='csrf-token']").attr('content'));
         },
-        success: function(json){
+        success: function (json) {
             if (typeof callback == 'function') {
                 callback(json);
             }
         },
-        error: function(XMLHttpRequest, textStatus, errorThrown){
+        error: function (XMLHttpRequest, textStatus, errorThrown) {
             alert('Не удалось выполнить запрос! Ошибка на сервере.');
         },
     });
@@ -133,31 +131,38 @@ export const loadMoreProducts = () => {
 loadMoreProducts();
 
 //применить фильтр
-$('.b-filter').submit(function (e) {
-    e.preventDefault();
-    const form = $(this).closest('form');
-    const ajax_url = $(form).attr('action');
-    const data = $(form).serialize();
-    const news_list = $('.cat-view__list');
-    const current_url = $(form).data('current-url');
+export const applyFilter = () => {
+    $('.b-filter').submit(function (e) {
+        e.preventDefault();
+        const form = $(this).closest('form');
+        const ajax_url = $(form).attr('action');
+        const data = $(form).serialize();
+        const news_list = $('.cat-view__list');
+        const current_url = $(form).data('current-url');
 
-    const btn = $('.cat-view__load .b-loader');
-    const pagination = $('.cat-view__pagination .b-pagination')
-    $(btn).hide();
+        const btn = $('.cat-view__load .b-loader');
+        const pagination = $('.cat-view__pagination .b-pagination')
+        $(btn).hide();
 
-    sendAjax(ajax_url, data, function (json) {
-        history.pushState('', '', current_url + json.url);
-        if (json.items) {
-            $(news_list).empty();
-            $(news_list).append(json.items);
-        }
-        if (json.btn) {
-            $(btn).replaceWith(json.btn);
-            $(btn).show();
-        }
-        $(pagination).replaceWith(json.paginate)
+        sendAjax(ajax_url, data, function (json) {
+            // const url = window.location.href;
+            // if (!url.endsWith(current_url + json.url)) {
+                history.pushState('', '', json.current_url);
+            // }
+            if (json.items) {
+                $(news_list).empty();
+                $(news_list).append(json.items);
+            }
+            if (json.btn) {
+                $(btn).replaceWith(json.btn);
+                $(btn).show();
+                loadMoreProducts();
+            }
+            $(pagination).replaceWith(json.paginate)
+        });
     });
-});
+}
+applyFilter();
 
 //добавление товара со страницы товара
 $('.prod__cart .btn-cart').click(function () {
@@ -168,7 +173,7 @@ $('.prod__cart .btn-cart').click(function () {
     const header_cart = $('[data-header-cart]');
 
     sendAjax(url, {id, count}, function (json) {
-        if(json.success) {
+        if (json.success) {
             header_cart.replaceWith(json.header_cart);
         }
     });
@@ -184,7 +189,7 @@ $('.prod-card__actions .btn-cart').click(function () {
     const header_cart = $('[data-header-cart]');
 
     sendAjax(url, {id, count}, function (json) {
-        if(json.success) {
+        if (json.success) {
             header_cart.replaceWith(json.header_cart);
         }
     });
@@ -200,7 +205,7 @@ export const removeFromCart = () => {
         const cart_total = $('.b-cart__sum-data');
 
         sendAjax(url, {id}, function (json) {
-            if(json.success) {
+            if (json.success) {
                 card.replaceWith(json.del_cart_item);
                 header_cart.replaceWith(json.header_cart);
                 cart_total.replaceWith(json.cart_total)
@@ -269,7 +274,7 @@ export const updateCountDown = () => {
         const cart_total = $('.b-cart__sum-data');
         let count = $('input[name=count]').val();
 
-        if(count != 1) {
+        if (count != 1) {
             count--;
         }
 
@@ -294,7 +299,7 @@ export const sendRequest = () => {
         const details = $('input[name=details]');
 
         let data = new FormData();
-        $.each($(form).serializeArray(), function(key, value){
+        $.each($(form).serializeArray(), function (key, value) {
             data.append(value.name, value.value);
         });
 

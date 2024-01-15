@@ -81,8 +81,6 @@ class CatalogController extends Controller
 
         if (count(request()->query())) {
             $canonical = $category->url;
-        } else {
-            $canonical = null;
         }
 
         Auth::init();
@@ -90,20 +88,96 @@ class CatalogController extends Controller
             View::share('admin_edit_link', route('admin.catalog.catalogEdit', [$category->id]));
         }
 
-        $view = 'catalog.category';
-
+        $children_ids = [];
         if (count($category->children)) {
-            $cat_children_ids = $category->getRecurseChildrenIds();
-            $cat_children_ids[] = $category->id;
-
-            $products = Product::whereIn('catalog_id', $cat_children_ids)
-                ->public()
-                ->paginate(Settings::get('products_per_page', 9));
-        } else {
-            $cat_children_ids[] = $category->id;
-            $products = $category->public_products()->paginate(Settings::get('products_per_page', 9));
+            $children_ids = $category->getRecurseChildrenIds();
+        }
+        if (!in_array($category->id, $children_ids)) {
+            $children_ids[] = $category->id;
         }
 
+//        $arr = [
+//            'diametr-uslovniy-dudn' => ['15 мм'],
+//            'material' => ['сталь 20', '123']
+//        ];
+//
+//        $query = '?price_from=' . 0 . '&price_to=' . 12000 . '&in_stock=' . 1;
+//        $appends = ['price_from' => 0, 'price_to' => 12000, 'in_stock' => 1];
+//        $res = [];
+//        foreach ($arr as $name => $values) {
+//            foreach ($values as $val) {
+//                $res[] = ['value', $val];
+//                $query .= '&' . $name . '[]=' . $val;
+//                if (count($values) == 1) {
+//                    $appends[$name] = $val;
+//                } else {
+//                    $appends[$name][] = $val;
+//                }
+//            }
+//        }
+//        dd($appends);
+//        $products = Product::with('chars')->whereIn('catalog_id', $children_ids)
+//            ->where('in_stock', 1)
+//            ->where('price', '>', 0)
+//            ->where('price', '<=', 63000)
+//            ->whereHas('chars', function ($query) use ($res) {
+//                $query->orWhere($res);
+//            })->get();
+//
+
+        //макс цена для фильтра
+        $filter_max_price = $category->getProductMaxPriceInCatalog();
+
+        //параметры строки
+        $data_filter = request()->except(['price_from', 'price_to', 'in_stock']); //фильтры товаров
+        $price_from = request()->get('price_from'); //встроенный фильтр
+        $price_to = request()->get('price_to'); //встроенный фильтр
+        $in_stock = request()->get('in_stock'); //встроенный фильтр
+
+        $appends = ['price_from' => $price_from, 'price_to' => $price_to, 'in_stock' => $in_stock];
+
+        //если фильтровали по встроенным фильтрам (цена/наличие)
+        if ($price_from || $price_to || $in_stock) {
+            $products_query = Product::whereIn('catalog_id', $children_ids)
+                ->where('in_stock', $in_stock)
+                ->where('price', '>', $price_from)
+                ->where('price', '<=', $price_to);
+
+            //фильтры товаров, кроме цены и наличия
+            if (!count($data_filter)) {
+                $products = $products_query
+                    ->paginate(Settings::get('products_per_page', 9))
+                    ->appends($appends);
+            } else {
+                //формирование массива для запроса + appends
+                $result_filters = [];
+                foreach ($data_filter as $name => $values) {
+                    foreach ($values as $val) {
+                        $result_filters[] = ['value', $val];
+                        if (count($values) == 1) {
+                            $appends[$name] = $val;
+                        } else {
+                            $appends[$name][] = $val;
+                        }
+                    }
+                }
+
+                //фильтруем по характеристикам товара
+                $products = $products_query
+                    ->whereHas('chars', function ($query) use ($result_filters) {
+                        $query->orWhere($result_filters);
+                    })
+                    ->paginate(Settings::get('products_per_page', 9))
+                    ->appends($appends);
+            }
+        } else {
+            //чистая загрузка страницы без фильтрации
+            $products = Product::whereIn('catalog_id', $children_ids)
+                ->public()
+                ->paginate(Settings::get('products_per_page', 9));
+        }
+
+        //фильтры товаров
         $root_category = $category->findRootCategory();
         $all_filters = ParentCatalogFilter::where('catalog_id', $root_category->id)
             ->public()
@@ -113,7 +187,7 @@ class CatalogController extends Controller
         $filters_list = [];
         foreach ($all_filters as $filter) {
             $values = ProductChar::where('name', $filter->name)
-                ->whereIn('catalog_id', $cat_children_ids)
+                ->whereIn('catalog_id', $children_ids)
                 ->select('value')
                 ->distinct()
                 ->pluck('value')
@@ -125,28 +199,7 @@ class CatalogController extends Controller
             ];
         }
 
-        //макс цена для фильтра
-        $filter_max_price = $category->getProductMaxPriceInCatalog();
-
         if (request()->ajax()) {
-//            $data = request()->all();
-//
-//            $found_ids_query = ProductChar::whereIn('catalog_id', $cat_children_ids);
-//
-//            $found_ids = $found_ids_query->select('product_id')->distinct()->pluck('product_id')->all();
-//            foreach ($data as $name => $values) {
-//                $found_ids_query = ProductChar::whereIn('product_id', $found_ids)
-//                    ->whereIn('value', $values);
-//                $found_ids = $found_ids_query->select('product_id')->distinct()->pluck('product_id')->all();
-//            }
-//            $products = Product::whereIn('id', $found_ids)->get('name');
-//            $items = [];
-//            foreach ($products as $product) {
-//                $items[] = view('catalog.product_item', ['product' => $product])->render();
-//            }
-//
-//            return ['success' => true, 'items' => $items];
-
             //загрузить еще
             $view_items = [];
             foreach ($products as $item) {
@@ -170,7 +223,6 @@ class CatalogController extends Controller
         $data = [
             'bread' => $bread,
             'category' => $category,
-            'canonical' => $canonical,
             'h1' => $category->getH1(),
             'text' => $category->text,
             'children' => $category->public_children,
@@ -179,7 +231,7 @@ class CatalogController extends Controller
             'filter_max_price' => $filter_max_price
         ];
 
-        return view($view, $data);
+        return view('catalog.category', $data);
     }
 
     public function product(Product $product)
