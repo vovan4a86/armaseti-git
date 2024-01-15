@@ -7,7 +7,8 @@ $('.cities-page__link').click(function (e) {
     e.preventDefault();
     const homeLink = $('.cities-page__current').data('home');
     const cur_url = $('.cities-page__current').data('current');
-    const url = $(elem).prop('href');
+    // const url = $(elem).prop('href');
+    const url = '/ajax/set-city';
     const city_id = $(elem).data('id');
 
     const data = {city_id}
@@ -23,6 +24,18 @@ $('.cities-page__link').click(function (e) {
         });
     }
 });
+
+$('.default-city').click(function (e) {
+    e.preventDefault();
+    const url = '/ajax/set-default-city';
+
+    sendAjax(url, {}, function (json) {
+        if (json.success) {
+            location.href = '/';
+        }
+    });
+});
+
 export const redirect_to_current_city = (city_id, cur_url) => {
     sendAjax('/ajax/get-correct-region-link', {city_id, cur_url}, function (json) {
         if (typeof json.redirect != 'undefined') {

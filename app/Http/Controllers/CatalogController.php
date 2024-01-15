@@ -72,8 +72,6 @@ class CatalogController extends Controller
             abort(404, 'Страница не найдена');
         }
 
-        Cart::purge();
-
         $bread = $category->getBread();
         $category->setSeo();
         $category->ogGenerate();
@@ -103,7 +101,7 @@ class CatalogController extends Controller
                 ->paginate(Settings::get('products_per_page', 9));
         } else {
             $cat_children_ids[] = $category->id;
-            $products = $category->public_products;
+            $products = $category->public_products()->paginate(Settings::get('products_per_page', 9));
         }
 
         $root_category = $category->findRootCategory();

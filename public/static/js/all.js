@@ -23016,10 +23016,10 @@ return jQuery;
 
 /***/ }),
 
-/***/ "./resources/assets/css/styles.css":
-/*!*****************************************!*\
-  !*** ./resources/assets/css/styles.css ***!
-  \*****************************************/
+/***/ "./resources/assets/css/main.css":
+/*!***************************************!*\
+  !*** ./resources/assets/css/main.css ***!
+  \***************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 "use strict";
@@ -36307,7 +36307,7 @@ __webpack_require__.r(__webpack_exports__);
 /******/ 	// Load entry module and return exports
 /******/ 	// This entry module depends on other loaded chunks and execution need to be delayed
 /******/ 	__webpack_require__.O(undefined, ["static/css/all"], () => (__webpack_require__("./resources/assets/js--sources/main.js")))
-/******/ 	var __webpack_exports__ = __webpack_require__.O(undefined, ["static/css/all"], () => (__webpack_require__("./resources/assets/css/styles.css")))
+/******/ 	var __webpack_exports__ = __webpack_require__.O(undefined, ["static/css/all"], () => (__webpack_require__("./resources/assets/css/main.css")))
 /******/ 	__webpack_exports__ = __webpack_require__.O(__webpack_exports__);
 /******/ 	
 /******/ })()

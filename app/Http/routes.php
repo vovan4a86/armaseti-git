@@ -19,6 +19,7 @@ Route::group(
 
         Route::get('show-popup-cities', [AjaxController::class, 'showCitiesPopup'])->name('show-popup-cities');
         Route::post('set-city', 'AjaxController@postSetCity')->name('set-city');
+        Route::post('set-default-city', 'AjaxController@postSetDefaultCity')->name('set-default-city');
         Route::post('get-correct-region-link', 'AjaxController@postGetCorrectRegionLink')->name(
             'get-correct-region-link'
         );

@@ -1,16 +1,7 @@
 <?php namespace App\Traits;
-use Illuminate\Support\Str;
-use Image;
-use OpenGraph;
-use Settings;
-use Thumb;
 
-/**
- * Created by PhpStorm.
- * User: aleks
- * Date: 19.12.2017
- * Time: 11:09
- */
+use Fanky\Admin\Models\Product;
+use OpenGraph;
 
 
 trait OgGenerate{
@@ -23,8 +14,10 @@ trait OgGenerate{
 		if($this->og_description || $this->description){
 			OpenGraph::setDescription($this->og_description ?: $this->description);
 		}
-		if($this->image_src){
-			OpenGraph::addImage($this->image ? $this->image_src : '/apple-touch-icon.png');
-		}
+		if($this instanceof Product){
+			OpenGraph::addImage($this->image ? $this->image->imageSrc($this->catalog->alias) : '/static/images/favicon/apple-touch-icon.png');
+		} else {
+            OpenGraph::addImage($this->image ? $this->image_src : '/static/images/favicon/apple-touch-icon.png');
+        }
 	}
 }

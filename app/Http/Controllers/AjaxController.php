@@ -421,6 +421,13 @@ class AjaxController extends Controller
         return ['success' => false, 'msg' => 'Город не найден'];
     }
 
+    public function postSetDefaultCity()
+    {
+        session(['city_alias' => '']);
+
+        return response(json_encode(['success' => true]))->withCookie('city_id', 0);
+    }
+
     public function postGetCorrectRegionLink(Request $request)
     {
         $city_id = $request->get('city_id');
@@ -490,20 +497,6 @@ class AjaxController extends Controller
                 'current_city' => $current_city,
             ]
         );
-    }
-
-    public function confirmCity()
-    {
-        session(['confirm_city' => true]);
-
-        return ['success' => true];
-    }
-
-    public function unConfirmCity()
-    {
-        session(['confirm_city' => null]);
-
-        return ['success' => true];
     }
 
     public function postUpdateCatalogFilter()

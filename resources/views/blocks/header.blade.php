@@ -6,9 +6,9 @@
                     <a class="b-city" href="{{ route('ajax.show-popup-cities') }}" data-cities="data-cities"
                        data-type="ajax" title="Выбрать город">
                         <svg class="svg-sprite-icon icon-pin" width="1em" height="1em">
-                            <use xlink:href="static/images/sprite/symbol/sprite.svg#pin"></use>
+                            <use xlink:href="/static/images/sprite/symbol/sprite.svg#pin"></use>
                         </svg>
-                        <span class="b-city__label">Москва</span>
+                        <span class="b-city__label">{{ $current_city ? $current_city->name : 'Россия' }}</span>
                     </a>
                 </div>
                 @if(count($header_menu))
@@ -61,9 +61,15 @@
     <div class="header__body">
         <div class="header__body-row container">
             <div class="header__info">
-                <div class="header__logo">
-                    <img class="logo" src="/static/images/common/logo.svg" width="60" height="36" alt="Армасети">
-                </div>
+                @if(Route::is('main'))
+                    <div class="header__logo">
+                        <img class="logo" src="/static/images/common/logo.svg" width="60" height="36" alt="Армасети">
+                    </div>
+                @else
+                    <a href="{{ route('main') }}" class="header__logo">
+                        <img class="logo" src="/static/images/common/logo.svg" width="60" height="36" alt="Армасети">
+                    </a>
+                @endif
                 <div class="header__label">Доставка от 3-х дней</div>
             </div>
             <div class="header__features">
