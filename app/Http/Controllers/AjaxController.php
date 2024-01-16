@@ -176,7 +176,7 @@ class AjaxController extends Controller
     }
 
     //Отправить запрос = ОФОРМЛЕНИЕ ЗАКАЗА
-    public function postRequest(Request $request): array
+    public function postMakeOrder(Request $request): array
     {
         $data = $request->only(['name', 'phone', 'email', 'message']);
         $file = $request->file('file');
@@ -252,44 +252,52 @@ class AjaxController extends Controller
         }
     }
 
-    //обратная связь
-    public function postFeedback(Request $request): array
+    //Отправить заявку
+    public function postSendRequest(Request $request): array
     {
-        $data = $request->only(['name', 'email', 'message']);
+        $data = $request->only(['name', 'phone', 'email', 'message']);
+        $file = $request->file('file');
+        $details = $request->file('details');
+
         $valid = Validator::make(
             $data,
             [
-                'name' => 'required',
                 'email' => 'required',
-                'message' => 'required',
             ],
             [
-                'name.required' => 'Не заполнено поле Имя',
-                'email.required' => 'Не заполнено поле Email',
-                'message.required' => 'Не заполнено поле Сообщение',
+                'email.required' => 'Не заполнено поле email',
             ]
         );
 
         if ($valid->fails()) {
             return ['errors' => $valid->messages()];
         } else {
+            if ($file) {
+                $file_name = md5(uniqid(rand(), true)) . '.' . $file->getClientOriginalExtension();
+                $file->move(public_path(Feedback::UPLOAD_URL), $file_name);
+                $data['file'] = '<a target="_blanc" href=\'' . Feedback::UPLOAD_URL . $file_name . '\'>' . $file_name . '</a>';
+            }
+            if ($details) {
+                $file_name = md5(uniqid(rand(), true)) . '.' . $file->getClientOriginalExtension();
+                $details->move(public_path(Feedback::UPLOAD_URL), $file_name);
+                $data['details'] = '<a target="_blanc" style="color: red;" href=\'' . Feedback::UPLOAD_URL . $file_name . '\'>' . $file_name . '</a>';
+            }
+
             $feedback_data = [
-                'type' => 3,
+                'type' => 1,
                 'data' => $data
             ];
-            $feedback = Feedback::create($feedback_data);
-            Mail::send(
-                'mail.feedback',
-                ['feedback' => $feedback],
-                function ($message) use ($feedback) {
-                    $title = $feedback->id . ' | Обратная связь | Luxkraft';
-                    $message->from($this->fromMail, $this->fromName)
-                        ->to(Settings::get('feedback_email'))
-                        ->subject($title);
-                }
-            );
 
-            return ['success' => true];
+            $feedback = Feedback::create($feedback_data);
+            Mail::send('mail.feedback', ['feedback' => $feedback], function ($message) use ($feedback) {
+                $title = $feedback->id . ' | Заявка | Армасети';
+                $message->from($this->fromMail, $this->fromName)
+                    ->to(Settings::get('feedback_email'))
+                    ->subject($title);
+            });
+
+
+            return ['success' => true, 'redirect' => route('order-success')];
         }
     }
 

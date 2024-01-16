@@ -44,7 +44,9 @@
                     @if(count($products))
                         <ul class="products">
                             @foreach($products as $product)
-                                @include('catalog.product_item')
+                                <div class="cat-view__item" :class="listView &amp;&amp; 'is-active'">
+                                    @include('catalog.product_item')
+                                </div>
                             @endforeach
                         </ul>
                     @else

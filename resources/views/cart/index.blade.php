@@ -4,7 +4,8 @@
     <main>
         <section class="page container">
             <div class="page__title">{{ $h1 }}</div>
-            <form class="b-cart" action="{{ route('ajax.request') }}">
+            <form class="b-cart" action="{{ route('ajax.make-order') }}">
+                @if($discount = Settings::get('cart_discount'))
                 <div class="b-cart__dialog">
                     <div class="b-dialog">
                         <div class="b-dialog__icons">
@@ -24,9 +25,10 @@
                                 </svg>
                             </div>
                         </div>
-                        <div class="b-dialog__body">Скидка на объём составляет до 30%, финальная цена рассчитывается менеджером и сообщается по предпочтительным средствам связи</div>
+                        <div class="b-dialog__body">{{ $discount }}</div>
                     </div>
                 </div>
+                @endif
                 <div class="b-cart__list">
                     @if(count($items))
                         @foreach($items as $item)

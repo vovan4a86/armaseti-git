@@ -1,5 +1,6 @@
 import $ from 'jquery';
 import {counter} from "./counter";
+import {showSuccessRequestDialog} from "./popups";
 // import "../plugins/jquery.autocomplete.min";
 // import {showSuccessDialog} from "./popups";
 // import {Fancybox} from "@fancyapps/ui";
@@ -181,7 +182,7 @@ $('.prod__cart .btn-cart').click(function () {
 })
 
 //добавление товара из карточки
-$('.prod-card__actions .btn-cart').click(function () {
+$('.prod-card .btn-cart').click(function () {
     const url = '/ajax/add-to-cart'
     const id = $(this).closest('.prod-card__data--order').data('id');
     const count = $(this).closest('.prod-card__data--order').find('input[name=count]').val();
@@ -288,8 +289,8 @@ export const updateCountDown = () => {
 }
 updateCountDown();
 
-//Отправить заявку
-export const sendRequest = () => {
+//Создать заказ
+export const makeOrder = () => {
     $('.order__item .btn').click(function (e) {
         e.preventDefault();
         const form = $(this).closest('form');
@@ -313,7 +314,40 @@ export const sendRequest = () => {
                 location.href = json.redirect;
             }
             if (json.errors) {
-                console.log(json.errors);
+                console.error(json.errors);
+            }
+
+        });
+    })
+}
+makeOrder();
+
+//Отправить заявку
+export const sendRequest = () => {
+    $('.s-req__body .btn').click(function (e) {
+        e.preventDefault();
+        const form = $(this).closest('form');
+        const url = $(form).attr('action');
+
+        const file = $('input[name=file]');
+        const details = $('input[name=details]');
+
+        let data = new FormData();
+        $.each($(form).serializeArray(), function (key, value) {
+            data.append(value.name, value.value);
+        });
+
+        data.append('file', file.prop('files')[0]);
+        data.append('details', details.prop('files')[0]);
+
+        sendAjaxWithFile(url, data, function (json) {
+            if (json.success) {
+                resetForm(form);
+                alert('Отправлено!');
+                // showSuccessRequestDialog();
+            }
+            if (json.errors) {
+                console.error(json.errors);
             }
 
         });

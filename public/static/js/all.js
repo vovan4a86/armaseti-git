@@ -3421,6 +3421,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   applyFilter: () => (/* binding */ applyFilter),
 /* harmony export */   loadMoreNews: () => (/* binding */ loadMoreNews),
 /* harmony export */   loadMoreProducts: () => (/* binding */ loadMoreProducts),
+/* harmony export */   makeOrder: () => (/* binding */ makeOrder),
 /* harmony export */   removeFromCart: () => (/* binding */ removeFromCart),
 /* harmony export */   resetForm: () => (/* binding */ resetForm),
 /* harmony export */   restoreFromCart: () => (/* binding */ restoreFromCart),
@@ -3434,6 +3435,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var jquery__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! jquery */ "./node_modules/jquery/dist/jquery.js");
 /* harmony import */ var jquery__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(jquery__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _counter__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./counter */ "./resources/assets/js--sources/modules/counter.js");
+/* harmony import */ var _popups__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./popups */ "./resources/assets/js--sources/modules/popups.js");
+
 
 
 // import "../plugins/jquery.autocomplete.min";
@@ -3612,7 +3615,7 @@ jquery__WEBPACK_IMPORTED_MODULE_0___default()('.prod__cart .btn-cart').click(fun
 });
 
 //добавление товара из карточки
-jquery__WEBPACK_IMPORTED_MODULE_0___default()('.prod-card__actions .btn-cart').click(function () {
+jquery__WEBPACK_IMPORTED_MODULE_0___default()('.prod-card .btn-cart').click(function () {
   var url = '/ajax/add-to-cart';
   var id = jquery__WEBPACK_IMPORTED_MODULE_0___default()(this).closest('.prod-card__data--order').data('id');
   var count = jquery__WEBPACK_IMPORTED_MODULE_0___default()(this).closest('.prod-card__data--order').find('input[name=count]').val();
@@ -3725,8 +3728,8 @@ var updateCountDown = function updateCountDown() {
 };
 updateCountDown();
 
-//Отправить заявку
-var sendRequest = function sendRequest() {
+//Создать заказ
+var makeOrder = function makeOrder() {
   jquery__WEBPACK_IMPORTED_MODULE_0___default()('.order__item .btn').click(function (e) {
     e.preventDefault();
     var form = jquery__WEBPACK_IMPORTED_MODULE_0___default()(this).closest('form');
@@ -3746,7 +3749,36 @@ var sendRequest = function sendRequest() {
         location.href = json.redirect;
       }
       if (json.errors) {
-        console.log(json.errors);
+        console.error(json.errors);
+      }
+    });
+  });
+};
+makeOrder();
+
+//Отправить заявку
+var sendRequest = function sendRequest() {
+  jquery__WEBPACK_IMPORTED_MODULE_0___default()('.s-req__body .btn').click(function (e) {
+    e.preventDefault();
+    var form = jquery__WEBPACK_IMPORTED_MODULE_0___default()(this).closest('form');
+    var url = jquery__WEBPACK_IMPORTED_MODULE_0___default()(form).attr('action');
+    var file = jquery__WEBPACK_IMPORTED_MODULE_0___default()('input[name=file]');
+    var details = jquery__WEBPACK_IMPORTED_MODULE_0___default()('input[name=details]');
+    var data = new FormData();
+    jquery__WEBPACK_IMPORTED_MODULE_0___default().each(jquery__WEBPACK_IMPORTED_MODULE_0___default()(form).serializeArray(), function (key, value) {
+      data.append(value.name, value.value);
+    });
+    data.append('file', file.prop('files')[0]);
+    data.append('details', details.prop('files')[0]);
+    sendAjaxWithFile(url, data, function (json) {
+      if (json.success) {
+        resetForm(form);
+        alert('Отправлено!');
+        // showSuccessRequestDialog();
+      }
+
+      if (json.errors) {
+        console.error(json.errors);
       }
     });
   });

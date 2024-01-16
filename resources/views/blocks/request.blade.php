@@ -1,5 +1,5 @@
 <section class="s-req lazy" data-bg="/static/images/common/request-bg.jpg">
-    <form class="s-req__container container" action="#">
+    <form class="s-req__container container" action="{{ route('ajax.send-request') }}">
         <div class="s-req__head">
             <div class="title title--white">Отправить заявку</div>
         </div>
