@@ -337,6 +337,8 @@ class AjaxController extends Controller
         $price_to = request()->get('price_to');
         $in_stock = request()->get('in_stock');
 
+        \Debugbar::log($data_filter);
+
         $catalog = Catalog::find($category_id);
         $children_ids = $catalog->getRecurseChildrenIds();
 
@@ -368,9 +370,12 @@ class AjaxController extends Controller
             }
 
             $products = $products_query
-                ->whereHas('chars', function ($query) use ($result_filters) {
+                ->with(['chars' => function ($query) use ($result_filters) {
                     $query->orWhere($result_filters);
-                })
+                }])
+//                ->with('chars', function ($query) use ($result_filters) {
+//                    $query->orWhere($result_filters);
+//                })
                 ->paginate(Settings::get('products_per_page', 9))
                 ->appends($appends);
         }
@@ -384,7 +389,7 @@ class AjaxController extends Controller
         foreach ($products as $item) {
             //добавляем новые элементы
             $view_items[] = view(
-                'catalog.product_item',
+                'catalog.product_item_catalog',
                 [
                     'product' => $item,
                 ]

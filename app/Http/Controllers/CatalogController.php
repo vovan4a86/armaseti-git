@@ -124,15 +124,13 @@ class CatalogController extends Controller
 //                $query->orWhere($res);
 //            })->get();
 //
-
-        //макс цена для фильтра
-        $filter_max_price = $category->getProductMaxPriceInCatalog();
-
         //параметры строки
         $data_filter = request()->except(['price_from', 'price_to', 'in_stock']); //фильтры товаров
         $price_from = request()->get('price_from'); //встроенный фильтр
         $price_to = request()->get('price_to'); //встроенный фильтр
         $in_stock = request()->get('in_stock'); //встроенный фильтр
+
+        \Debugbar::log($data_filter);
 
         $appends = ['price_from' => $price_from, 'price_to' => $price_to, 'in_stock' => $in_stock];
 
@@ -164,9 +162,12 @@ class CatalogController extends Controller
 
                 //фильтруем по характеристикам товара
                 $products = $products_query
-                    ->whereHas('chars', function ($query) use ($result_filters) {
+//                    ->whereHas('chars', function ($query) use ($result_filters) {
+//                        $query->orWhere($result_filters);
+//                    })
+                    ->with(['chars' => function ($query) use ($result_filters) {
                         $query->orWhere($result_filters);
-                    })
+                    }])
                     ->paginate(Settings::get('products_per_page', 9))
                     ->appends($appends);
             }
@@ -176,6 +177,9 @@ class CatalogController extends Controller
                 ->public()
                 ->paginate(Settings::get('products_per_page', 9));
         }
+
+        //макс цена для фильтра
+        $filter_max_price = $category->getProductMaxPriceInCatalog();
 
         //фильтры товаров
         $root_category = $category->findRootCategory();
@@ -203,7 +207,7 @@ class CatalogController extends Controller
             //загрузить еще
             $view_items = [];
             foreach ($products as $item) {
-                $view_items[] = view('catalog.product_item', ['product' => $item,])->render();
+                $view_items[] = view('catalog.product_item_catalog', ['product' => $item,])->render();
             }
 
             $btn_paginate = null;
