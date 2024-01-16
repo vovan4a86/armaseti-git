@@ -27,8 +27,8 @@ class CatalogController extends Controller
 
         $bread = $page->getBread();
         $page->h1 = $page->getH1();
-//        $page->setSeo();
-//        $page = $this->add_region_seo($page);
+        $page->setSeo();
+        $page = $this->add_region_seo($page);
 
         $categories = Catalog::public()->whereParentId(0)->orderBy('order')->get();
 
@@ -96,43 +96,24 @@ class CatalogController extends Controller
             $children_ids[] = $category->id;
         }
 
-//        $arr = [
-//            'diametr-uslovniy-dudn' => ['15 мм'],
-//            'material' => ['сталь 20', '123']
-//        ];
-//
-//        $query = '?price_from=' . 0 . '&price_to=' . 12000 . '&in_stock=' . 1;
-//        $appends = ['price_from' => 0, 'price_to' => 12000, 'in_stock' => 1];
-//        $res = [];
-//        foreach ($arr as $name => $values) {
-//            foreach ($values as $val) {
-//                $res[] = ['value', $val];
-//                $query .= '&' . $name . '[]=' . $val;
-//                if (count($values) == 1) {
-//                    $appends[$name] = $val;
-//                } else {
-//                    $appends[$name][] = $val;
-//                }
-//            }
-//        }
-//        dd($appends);
-//        $products = Product::with('chars')->whereIn('catalog_id', $children_ids)
-//            ->where('in_stock', 1)
-//            ->where('price', '>', 0)
-//            ->where('price', '<=', 63000)
-//            ->whereHas('chars', function ($query) use ($res) {
-//                $query->orWhere($res);
-//            })->get();
-//
         //параметры строки
         $data_filter = request()->except(['price_from', 'price_to', 'in_stock']); //фильтры товаров
         $price_from = request()->get('price_from'); //встроенный фильтр
         $price_to = request()->get('price_to'); //встроенный фильтр
         $in_stock = request()->get('in_stock'); //встроенный фильтр
+        $reset_filter = request()->get('reset'); //нажали кнопку сброса фильтра
 
-        \Debugbar::log($data_filter);
-
-        $appends = ['price_from' => $price_from, 'price_to' => $price_to, 'in_stock' => $in_stock];
+        $query_string = '';
+        if (!$reset_filter) {
+            $query_string = '?price_from=' . $price_from . '&price_to=' . $price_to . '&in_stock=' . $in_stock;
+            $appends = ['price_from' => $price_from, 'price_to' => $price_to, 'in_stock' => $in_stock];
+        }
+        //сброс кнопкой, цену/наличие не учитываем
+        if ($reset_filter == 1) {
+            $price_from = null;
+            $price_to = null;
+            $in_stock = null;
+        }
 
         //если фильтровали по встроенным фильтрам (цена/наличие)
         if ($price_from || $price_to || $in_stock) {
@@ -148,23 +129,24 @@ class CatalogController extends Controller
                     ->appends($appends);
             } else {
                 //формирование массива для запроса + appends
+                //на входе массивы параметров разные, при нажатии кнопки/показать еще поэтому доп.проверка
                 $result_filters = [];
                 foreach ($data_filter as $name => $values) {
-                    foreach ($values as $val) {
-                        $result_filters[] = ['value', $val];
-                        if (count($values) == 1) {
-                            $appends[$name] = $val;
-                        } else {
+                    if(is_array($values)) {
+                        foreach ($values as $val) {
+                            $result_filters[] = ['value', $val];
+                            $query_string .= '&' . $name . '[]=' . $val;
                             $appends[$name][] = $val;
                         }
+                    } else {
+                        $result_filters[] = ['value', $values];
+                        $query_string .= '&' . $name . '=' . $values;
+                        $appends[$name] = $values;
                     }
                 }
 
                 //фильтруем по характеристикам товара
                 $products = $products_query
-//                    ->whereHas('chars', function ($query) use ($result_filters) {
-//                        $query->orWhere($result_filters);
-//                    })
                     ->with(['chars' => function ($query) use ($result_filters) {
                         $query->orWhere($result_filters);
                     }])
@@ -220,7 +202,8 @@ class CatalogController extends Controller
             return [
                 'items' => $view_items,
                 'btn' => $btn_paginate,
-                'paginate' => $paginate
+                'paginate' => $paginate,
+                'current_url' => $category->url . $query_string
             ];
         }
 
@@ -229,10 +212,11 @@ class CatalogController extends Controller
             'category' => $category,
             'h1' => $category->getH1(),
             'text' => $category->text,
+            'canonical' => $canonical,
             'children' => $category->public_children,
             'products' => $products,
             'filters_list' => $filters_list,
-            'filter_max_price' => $filter_max_price
+            'filter_max_price' => $filter_max_price,
         ];
 
         return view('catalog.category', $data);
@@ -266,6 +250,50 @@ class CatalogController extends Controller
                 'h1' => $product->getH1(),
                 'bread' => $bread,
                 'text' => $product->text,
+            ]
+        );
+    }
+
+    public function new() {
+        $page = Page::getByPath(['new-products']);
+        if (!$page) {
+            return abort(404);
+        }
+
+        $bread = $page->getBread();
+        $page->setSeo();
+        $page = $this->add_region_seo($page);
+
+        $products = Product::public()
+            ->where('is_new', 1)
+            ->with('images')
+            ->get();
+
+//        dd($products);
+
+        $products_categories = [];
+        foreach ($products as $product) {
+            $main_category = $product->findRootParentCatalog($product->catalog_id);
+            $products_categories[$main_category->name][] = $product;
+        }
+
+        $main_products_categories = [];
+        foreach ($products_categories as $name => $values) {
+            $catalog = Catalog::where('name', $name)->first();
+            $main_products_categories[] = $catalog;
+        }
+
+        //макс цена для фильтра
+        $filter_max_price = $products->max('price');
+
+        return view(
+            'catalog.new_products',
+            [
+                'h1' => $page->getH1(),
+                'bread' => $bread,
+                'products' => $products,
+                'main_products_categories' => $main_products_categories,
+                'filter_max_price' => $filter_max_price
             ]
         );
     }

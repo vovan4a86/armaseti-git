@@ -19,12 +19,13 @@ class WelcomeController extends Controller {
 
         $catalog_on_main = Catalog::public()
             ->onMain()
+            ->with('public_children')
             ->orderBy('order')
             ->get();
 
         $new_products = Product::public()
             ->where('is_new',1)
-            ->with(['catalog'])
+            ->with(['catalog', 'images'])
             ->get();
 
         $new_products_categories = [];

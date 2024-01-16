@@ -373,9 +373,6 @@ class AjaxController extends Controller
                 ->with(['chars' => function ($query) use ($result_filters) {
                     $query->orWhere($result_filters);
                 }])
-//                ->with('chars', function ($query) use ($result_filters) {
-//                    $query->orWhere($result_filters);
-//                })
                 ->paginate(Settings::get('products_per_page', 9))
                 ->appends($appends);
         }

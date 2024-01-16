@@ -20,9 +20,11 @@
                                         <a class="h-nav__link" href="{{ $item->url }}">{{ $item->name }}</a>
                                     </li>
                                 @endforeach
-                                <li class="h-nav__item">
-                                    <a class="h-nav__link" href="javascript:void(0)">Прайс-лист</a>
-                                </li>
+                                @if($file = Settings::get('price_list'))
+                                    <li class="h-nav__item">
+                                        <a class="h-nav__link" href="{{ Settings::fileSrc($file) }}" download="armaseti-price">Прайс-лист</a>
+                                    </li>
+                                @endif
                             </ul>
                         </nav>
                     </div>
@@ -132,7 +134,7 @@
             </div>
             <form class="header__search" action="#">
                 <label class="h-search">
-                    <input class="h-search__input" type="search" name="search" placeholder="Поиск по каталогу"
+                    <input class="h-search__input" type="search" name="search" placeholder="Поиск по каталогу"
                            required="required"/>
                     <button class="h-search__btn btn-reset" aria-label="Найти">
                         <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none">

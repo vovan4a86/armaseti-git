@@ -1,6 +1,5 @@
 import $ from 'jquery';
 import {counter} from "./counter";
-import {showSuccessRequestDialog} from "./popups";
 // import "../plugins/jquery.autocomplete.min";
 // import {showSuccessDialog} from "./popups";
 // import {Fancybox} from "@fancyapps/ui";
@@ -117,6 +116,7 @@ export const loadMoreProducts = () => {
         $(btn).hide();
 
         sendAjax(url, {}, function (json) {
+            history.pushState('', '', json.current_url);
             if (json.items) {
                 $(news_list).append(json.items);
             }
@@ -146,10 +146,7 @@ export const applyFilter = () => {
         $(btn).hide();
 
         sendAjax(ajax_url, data, function (json) {
-            // const url = window.location.href;
-            // if (!url.endsWith(current_url + json.url)) {
-                history.pushState('', '', json.current_url);
-            // }
+            history.pushState('', '', json.current_url);
             if (json.items) {
                 $(news_list).empty();
                 $(news_list).append(json.items);
@@ -164,6 +161,34 @@ export const applyFilter = () => {
     });
 }
 applyFilter();
+
+//сбросить фильтр
+export const resetFilter = () => {
+    $('.b-filter__actions .b-filter__submit--reset').click(function () {
+        const form = $(this).closest('form');
+        const ajax_url = $(form).attr('action');
+        const news_list = $('.cat-view__list');
+
+        const btn = $('.cat-view__load .b-loader');
+        const pagination = $('.cat-view__pagination .b-pagination')
+        $(btn).hide();
+
+        sendAjax(ajax_url, {reset: 1}, function (json) {
+            history.pushState('', '', json.current_url);
+            if (json.items) {
+                $(news_list).empty();
+                $(news_list).append(json.items);
+            }
+            if (json.btn) {
+                $(btn).replaceWith(json.btn);
+                $(btn).show();
+                loadMoreProducts();
+            }
+            $(pagination).replaceWith(json.paginate)
+        });
+    });
+}
+resetFilter();
 
 //добавление товара со страницы товара
 $('.prod__cart .btn-cart').click(function () {

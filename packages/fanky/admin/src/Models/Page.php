@@ -85,8 +85,8 @@ class Page extends Model
         'search',
         'contacts',
         'payments',
+        'new-products',
         'news',
-        'handbook',
         'reviews'
     ];
 
@@ -102,7 +102,9 @@ class Page extends Model
         'news',
         'reviews',
         'contacts',
-        'handbook'
+        'new-products',
+        'cart',
+        'catalog',
     ];
 
     public static function boot()

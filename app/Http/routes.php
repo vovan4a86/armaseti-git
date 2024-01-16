@@ -32,7 +32,7 @@ Route::group(
         Route::post('compare-delete', 'AjaxController@postCompareDelete')->name('compare-delete');
         Route::post('favorite', 'AjaxController@postFavorite')->name('favorite');
 
-        Route::post('apply-filter/{category_id}', 'AjaxController@postApplyFilter')->name('apply-filter');
+//        Route::post('apply-filter/{category_id}', 'AjaxController@postApplyFilter')->name('apply-filter');
     }
 );
 
@@ -68,12 +68,6 @@ Route::group(
         Route::any('news', ['as' => 'news', 'uses' => 'NewsController@index']);
         Route::any('news/{alias}', ['as' => 'news.item', 'uses' => 'NewsController@item']);
 
-        Route::any('handbook', ['as' => 'handbook', 'uses' => 'HandbookController@index']);
-        Route::any('handbook/{alias}', ['as' => 'handbook.item', 'uses' => 'HandbookController@item']);
-
-        Route::any('reviews', ['as' => 'reviews', 'uses' => 'ReviewsController@index']);
-        Route::any('reviews/{alias}', ['as' => 'reviews.item', 'uses' => 'ReviewsController@item']);
-
         Route::any('contacts', ['as' => 'contacts', 'uses' => 'ContactsController@index']);
 
         Route::any('search', ['as' => 'search', 'uses' => 'CatalogController@search']);
@@ -85,9 +79,10 @@ Route::group(
 
         Route::any('catalog', ['as' => 'catalog', 'uses' => 'CatalogController@index']);
         Route::any('catalog/compare', ['as' => 'catalog.compare', 'uses' => 'CatalogController@compare']);
-
         Route::any('catalog/{alias}', ['as' => 'catalog.view', 'uses' => 'CatalogController@view'])
             ->where('alias', '([A-Za-z0-9\-\/_]+)');
+
+        Route::any('new-products', ['as' => 'new-products', 'uses' => 'CatalogController@new']);
 
         Route::any('{alias}', ['as' => 'default', 'uses' => 'PageController@page'])
             ->where('alias', '([A-Za-z0-9\-\/_]+)');

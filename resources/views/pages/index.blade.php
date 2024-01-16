@@ -90,7 +90,7 @@
                             <section class="s-prods">
                                 <div class="s-prods__head">
                                     <div class="title">Новинки</div>
-                                    <a class="link" href="javascript:void(0)" title="Смотреть все новинки">
+                                    <a class="link" href="{{ route('new-products') }}" title="Смотреть все новинки">
                                         <span class="link__label">Смотреть все новинки</span>
                                         <span class="link__icon iconify" data-icon="uil:arrow-right"
                                               data-width="16"></span>
