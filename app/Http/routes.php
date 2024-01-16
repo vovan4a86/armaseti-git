@@ -70,8 +70,6 @@ Route::group(
 
         Route::any('contacts', ['as' => 'contacts', 'uses' => 'ContactsController@index']);
 
-        Route::any('search', ['as' => 'search', 'uses' => 'CatalogController@search']);
-
         Route::get('cart', ['as' => 'cart', 'uses' => 'CartController@index']);
         Route::get('order-success', ['as' => 'order-success', 'uses' => 'CartController@success']);
 
@@ -83,6 +81,8 @@ Route::group(
             ->where('alias', '([A-Za-z0-9\-\/_]+)');
 
         Route::any('new-products', ['as' => 'new-products', 'uses' => 'CatalogController@new']);
+
+        Route::any('search', ['as' => 'search', 'uses' => 'CatalogController@search']);
 
         Route::any('{alias}', ['as' => 'default', 'uses' => 'PageController@page'])
             ->where('alias', '([A-Za-z0-9\-\/_]+)');

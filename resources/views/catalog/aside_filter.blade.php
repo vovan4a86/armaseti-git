@@ -1,8 +1,6 @@
 <aside class="layout__aside">
     <div class="layout__item">
-        <form class="b-filter" action="{{ $category->url }}"
-{{--        <form class="b-filter" action="{{ route('ajax.apply-filter', ['category_id' => $category->id]) }}"--}}
-              data-current-url="{{ URL::full() }}">
+        <form class="b-filter" action="{{ $category->url }}" data-current-url="{{ URL::full() }}">
             <div class="b-filter__item">
                 <div class="b-filter__title is-active">Цена, ₽</div>
                 <div class="b-filter__body is-active" data-range-slider="data-range-slider">
@@ -48,7 +46,8 @@
                         @foreach($filter['values'] as $value)
                             @if($loop->iteration <= 6)
                                 <label class="chbx">
-                                    <input class="chbx__input" type="checkbox" name="{{ $filter['translit'] }}[]" value="{{ $value }}" />
+                                    <input class="chbx__input" type="checkbox"
+                                           name="{{ $filter['translit'] }}[]" value="{{ $value }}" />
                                     <span class="chbx__box"></span>
                                     <span class="chbx__label">{{ $value }}</span>
                                 </label>
@@ -61,7 +60,8 @@
                                 @foreach($filter['values'] as $value)
                                     @if($loop->iteration > 6)
                                         <label class="chbx">
-                                            <input class="chbx__input" type="checkbox" name="{{ $filter['translit'] }}[]" value="{{ $value }}" />
+                                            <input class="chbx__input" type="checkbox"
+                                                   name="{{ $filter['translit'] }}[]" value="{{ $value }}" />
                                             <span class="chbx__box"></span>
                                             <span class="chbx__label">{{ $value }}</span>
                                         </label>
@@ -70,7 +70,8 @@
                             </div>
                         </div>
                         <div class="b-filter__action">
-                            <button class="b-filter__btn btn-reset" type="button" aria-label="Показать все">Показать все</button>
+                            <button class="b-filter__btn btn-reset"
+                                    type="button" aria-label="Показать все">Показать все</button>
                         </div>
                     @endif
                 </div>

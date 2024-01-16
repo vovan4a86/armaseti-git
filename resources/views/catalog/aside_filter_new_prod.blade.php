@@ -1,8 +1,6 @@
 <aside class="layout__aside">
     <div class="layout__item">
-        <form class="b-filter" action="{{ route('new-products') }}"
-{{--        <form class="b-filter" action="{{ route('ajax.apply-filter', ['category_id' => $category->id]) }}"--}}
-              data-current-url="{{ URL::full() }}">
+        <form class="b-filter" action="{{ route('new-products') }}">
             <div class="b-filter__item">
                 <div class="b-filter__title is-active">Цена, ₽</div>
                 <div class="b-filter__body is-active" data-range-slider="data-range-slider">
