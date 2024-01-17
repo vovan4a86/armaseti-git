@@ -132,9 +132,9 @@
 							</span>
                 </button>
             </div>
-            <form class="header__search" action="#">
+            <form class="header__search" action="{{ route('search') }}">
                 <label class="h-search">
-                    <input class="h-search__input" type="search" name="search" placeholder="Поиск по каталогу"
+                    <input class="h-search__input" type="search" name="s" placeholder="Поиск по каталогу"
                            required="required"/>
                     <button class="h-search__btn btn-reset" aria-label="Найти">
                         <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none">

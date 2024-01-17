@@ -79,6 +79,7 @@ class CatalogController extends Controller
         $category->generateDescription();
         $category = $this->add_region_seo($category);
 
+        $canonical = null;
         if (count(request()->query())) {
             $canonical = $category->url;
         }
@@ -132,7 +133,7 @@ class CatalogController extends Controller
                 //на входе массивы параметров разные, при нажатии кнопки/показать еще поэтому доп.проверка
                 $result_filters = [];
                 foreach ($data_filter as $name => $values) {
-                    if(is_array($values)) {
+                    if (is_array($values)) {
                         foreach ($values as $val) {
                             $result_filters[] = ['value', $val];
                             $query_string .= '&' . $name . '[]=' . $val;
@@ -147,9 +148,13 @@ class CatalogController extends Controller
 
                 //фильтруем по характеристикам товара
                 $products = $products_query
-                    ->with(['chars' => function ($query) use ($result_filters) {
-                        $query->orWhere($result_filters);
-                    }])
+                    ->with(
+                        [
+                            'chars' => function ($query) use ($result_filters) {
+                                $query->orWhere($result_filters);
+                            }
+                        ]
+                    )
                     ->paginate(Settings::get('products_per_page', 9))
                     ->appends($appends);
             }
@@ -254,7 +259,8 @@ class CatalogController extends Controller
         );
     }
 
-    public function new() {
+    public function new()
+    {
         $page = Page::getByPath(['new-products']);
         if (!$page) {
             return abort(404);
@@ -293,80 +299,63 @@ class CatalogController extends Controller
                 'bread' => $bread,
                 'products' => $products,
                 'main_products_categories' => $main_products_categories,
-                'filter_max_price' => $filter_max_price
+                'filter_max_price' => $filter_max_price,
+                'route' => route('new-products')
             ]
         );
     }
 
     public function search()
     {
-        $see = Request::get('see', 'all');
-        $products_inst = Product::query();
-        if ($s = Request::get('search')) {
-            $products_inst->where(
-                function ($query) use ($s) {
-                    /** @var QueryBuilder $query */
-                    //сначала ищем точное совпадение с началом названия товара
-                    return $query->orWhere('name', 'LIKE', $s . '%');
-                }
-            );
+        if ($s = Request::get('s')) {
+            $products_query = Product::public()
+                ->orWhere('name', 'LIKE', '%' . str_replace(' ', '%', $s) . '%')
+                ->orWhere('article', 'LIKE', '%' . str_replace(' ', '%', $s) . '%');
 
-            if (Request::ajax()) {
-                //если нашлось больше 10 товаров, показываем их
-                if ($products_inst->count() >= 10) {
-                    $products = $products_inst->limit(10)->get()->transform(
-                        function ($item) {
-                            return [
-                                'name' => $item->name . ' [' . $item->article . ']',
-                                'url' => $item->url
-                            ];
-                        }
-                    );
-                } else {
-                    //если меньше 10, разницу дополняем с совпадением по всему названию товара и артиклу
-                    $count_before = $products_inst->count();
-                    $sub = 10 - $count_before;
-                    $adds_query = Product::query()
-                        ->orWhere('name', 'LIKE', '%' . str_replace(' ', '%', $s) . '%')
-                        ->orWhere('article', 'LIKE', '%' . str_replace(' ', '%', $s) . '%');
-                    $adds_prod = $adds_query->limit($sub)->get();
-                    $prods_before = $products_inst->limit($count_before)->get();
-                    $all_prods = $prods_before->merge($adds_prod);
-                    $products = $all_prods->transform(
-                        function ($item) {
-                            return [
-                                'name' => $item->name . ' [' . $item->article . ']',
-                                'url' => $item->url
-                            ];
-                        }
-                    );
-                }
-                return ['data' => $products];
-            }
+            //макс цена для фильтра
+            $filter_max_price = $products_query->max('price');
 
-            if ($see == 'all' || !is_numeric($see)) {
-                $products = $products_inst->paginate(Settings::get('search_per_page'));
-            } else {
-                $products = $products_inst->paginate($see);
-                $filter_query = Request::only(['see', 'price', 'in_stock']);
-                $filter_query = array_filter($filter_query);
-                $products->appends($filter_query);
-            }
+            $products = $products_query
+                ->paginate(Settings::get('search_per_page', 9))
+                ->appends(['s' => $s]);
         } else {
-            $products = collect();
+            $filter_max_price = 0;
+            $products = [];
         }
 
+        SEOMeta::setTitle('Результат поиска «' . $s . '»');
+
+        if (request()->ajax()) {
+            //загрузить еще
+            $view_items = [];
+            foreach ($products as $item) {
+                $view_items[] = view('catalog.product_item_catalog', ['product' => $item,])->render();
+            }
+
+            $btn_paginate = null;
+            if ($products->nextPageUrl()) {
+                $btn_paginate = view('paginations.load_more', ['paginator' => $products])->render();
+            }
+
+            $paginate = view('paginations.with_pages', ['paginator' => $products])->render();
+
+            return [
+                'items' => $view_items,
+                'btn' => $btn_paginate,
+                'paginate' => $paginate,
+                'current_url' => route('search') . '?' . $s . '&page=' . $products->currentPage()
+            ];
+        }
 
         return view(
             'search.index',
             [
-                'items' => $products,
+                'products' => $products,
                 'h1' => 'Результат поиска «' . $s . '»',
                 'title' => 'Результат поиска «' . $s . '»',
-                'query' => $see,
-                'name' => 'Поиск ' . $s,
-                'keywords' => 'Поиск',
-                'description' => 'Поиск',
+                's' => $s,
+                'route' => route('search'),
+                'filter_max_price' => $filter_max_price
             ]
         );
     }

@@ -40,7 +40,7 @@ class SiteServiceProvider extends ServiceProvider
                         ->where('parent_id', 0)
                         ->orderBy('order')
                         ->with(['public_children'])
-                        ->get('name');
+                        ->get();
                     Cache::add('catalog_menu', $catalog_menu, now()->addMinutes(60));
                 }
 
@@ -99,7 +99,7 @@ class SiteServiceProvider extends ServiceProvider
                         ->where('parent_id', 0)
                         ->orderBy('order')
                         ->with(['public_children'])
-                        ->get('name');
+                        ->get();
                     Cache::add('catalog_menu', $catalog_menu, now()->addMinutes(60));
                 }
 

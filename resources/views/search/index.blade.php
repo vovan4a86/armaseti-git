@@ -12,24 +12,24 @@
                     <!--mobile filter-->
                     @include('catalog.mobile_filter_not_catalog')
                     <!--._item-->
-                    @if(count($main_products_categories))
-                        <div class="page__item">
-                            <div class="b-nav">
-                                <nav class="b-nav__nav">
-                                    <ul class="b-nav__list list-reset">
-                                        @foreach($main_products_categories as $category)
-                                            <li class="b-nav__item">
-                                                <a class="b-nav__link {{ $category->isActive ? 'is-active' : '' }}"
-                                                   href="{{ $category->url }}" data-link="data-link">
-                                                    {{ $category->name }}
-                                                </a>
-                                            </li>
-                                        @endforeach
-                                    </ul>
-                                </nav>
-                            </div>
-                        </div>
-                    @endif
+{{--                    @if(count($main_products_categories))--}}
+{{--                        <div class="page__item">--}}
+{{--                            <div class="b-nav">--}}
+{{--                                <nav class="b-nav__nav">--}}
+{{--                                    <ul class="b-nav__list list-reset">--}}
+{{--                                        @foreach($main_products_categories as $category)--}}
+{{--                                            <li class="b-nav__item">--}}
+{{--                                                <a class="b-nav__link {{ $category->isActive ? 'is-active' : '' }}"--}}
+{{--                                                   href="{{ $category->url }}" data-link="data-link">--}}
+{{--                                                    {{ $category->name }}--}}
+{{--                                                </a>--}}
+{{--                                            </li>--}}
+{{--                                        @endforeach--}}
+{{--                                    </ul>--}}
+{{--                                </nav>--}}
+{{--                            </div>--}}
+{{--                        </div>--}}
+{{--                    @endif--}}
                     <!--._item-->
                     <div class="page__item">
                         <!--.cat-view(x-data="{ listView: false }")-->
@@ -58,6 +58,8 @@
                                 <div class="cat-view__pagination">
                                     @include('paginations.with_pages', ['paginator' => $products])
                                 </div>
+                            @else
+                                <div>Ничего не найдено по запросу "{{ $s }}"</div>
                             @endif
                         </div>
                     </div>
