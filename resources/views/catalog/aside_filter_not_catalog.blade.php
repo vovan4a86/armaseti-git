@@ -38,42 +38,45 @@
                 </div>
             </div>
 
-{{--            @foreach($filters_list as $name => $filter)--}}
-{{--                <div class="b-filter__item">--}}
-{{--                <div class="b-filter__title">{{ $name }}</div>--}}
-{{--                <div class="b-filter__body">--}}
-{{--                    <div class="b-filter__boxes">--}}
-{{--                        @foreach($filter['values'] as $value)--}}
-{{--                            @if($loop->iteration <= 6)--}}
-{{--                                <label class="chbx">--}}
-{{--                                    <input class="chbx__input" type="checkbox" name="{{ $filter['translit'] }}[]" value="{{ $value }}" />--}}
-{{--                                    <span class="chbx__box"></span>--}}
-{{--                                    <span class="chbx__label">{{ $value }}</span>--}}
-{{--                                </label>--}}
-{{--                            @endif--}}
-{{--                        @endforeach--}}
-{{--                    </div>--}}
-{{--                    @if(count($filter['values']) > 6)--}}
-{{--                        <div class="b-filter__hidden">--}}
-{{--                            <div class="b-filter__boxes">--}}
-{{--                                @foreach($filter['values'] as $value)--}}
-{{--                                    @if($loop->iteration > 6)--}}
-{{--                                        <label class="chbx">--}}
-{{--                                            <input class="chbx__input" type="checkbox" name="{{ $filter['translit'] }}[]" value="{{ $value }}" />--}}
-{{--                                            <span class="chbx__box"></span>--}}
-{{--                                            <span class="chbx__label">{{ $value }}</span>--}}
-{{--                                        </label>--}}
-{{--                                    @endif--}}
-{{--                                @endforeach--}}
-{{--                            </div>--}}
-{{--                        </div>--}}
-{{--                        <div class="b-filter__action">--}}
-{{--                            <button class="b-filter__btn btn-reset" type="button" aria-label="Показать все">Показать все</button>--}}
-{{--                        </div>--}}
-{{--                    @endif--}}
-{{--                </div>--}}
-{{--            </div>--}}
-{{--            @endforeach--}}
+            @foreach($filters_list as $name => $filter)
+                <div class="b-filter__item">
+                <div class="b-filter__title">{{ $name }}</div>
+                <div class="b-filter__body">
+                    <div class="b-filter__boxes">
+                        @foreach($filter['values'] as $value)
+                            @if($loop->iteration <= 6)
+                                <label class="chbx">
+                                    <input class="chbx__input" type="checkbox"
+                                           name="{{ $filter['translit'] }}[]" value="{{ $value }}" />
+                                    <span class="chbx__box"></span>
+                                    <span class="chbx__label">{{ $value }}</span>
+                                </label>
+                            @endif
+                        @endforeach
+                    </div>
+                    @if(count($filter['values']) > 6)
+                        <div class="b-filter__hidden">
+                            <div class="b-filter__boxes">
+                                @foreach($filter['values'] as $value)
+                                    @if($loop->iteration > 6)
+                                        <label class="chbx">
+                                            <input class="chbx__input" type="checkbox"
+                                                   name="{{ $filter['translit'] }}[]" value="{{ $value }}" />
+                                            <span class="chbx__box"></span>
+                                            <span class="chbx__label">{{ $value }}</span>
+                                        </label>
+                                    @endif
+                                @endforeach
+                            </div>
+                        </div>
+                        <div class="b-filter__action">
+                            <button class="b-filter__btn btn-reset"
+                                    type="button" aria-label="Показать все">Показать все</button>
+                        </div>
+                    @endif
+                </div>
+            </div>
+            @endforeach
 
             <div class="b-filter__actions">
                 <button class="b-filter__submit btn-reset" aria-label="Применить">

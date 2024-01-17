@@ -19,7 +19,8 @@
                                     <ul class="b-nav__list list-reset">
                                         @foreach($category->public_children as $category)
                                             <li class="b-nav__item">
-                                                <a class="b-nav__link {{ $category->isActive ? 'is-active' : '' }}" href="{{ $category->url }}" data-link="data-link">{{ $category->name }}</a>
+                                                <a class="b-nav__link {{ $category->isActive ? 'is-active' : '' }}"
+                                                   href="{{ $category->url }}" data-link="data-link">{{ $category->name }}</a>
                                             </li>
                                         @endforeach
                                     </ul>

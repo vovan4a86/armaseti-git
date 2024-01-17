@@ -2,8 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use Doctrine\DBAL\Query\QueryBuilder;
-use Fanky\Admin\Cart;
 use Fanky\Admin\Models\Catalog;
 use Fanky\Admin\Models\Page;
 use Fanky\Admin\Models\ParentCatalogFilter;
@@ -12,6 +10,7 @@ use Fanky\Admin\Models\ProductChar;
 use Fanky\Admin\Settings;
 use Fanky\Admin\Text;
 use Fanky\Auth\Auth;
+use phpDocumentor\Reflection\Types\Collection;
 use SEOMeta;
 use Request;
 use View;
@@ -105,6 +104,7 @@ class CatalogController extends Controller
         $reset_filter = request()->get('reset'); //нажали кнопку сброса фильтра
 
         $query_string = '';
+        $appends = [];
         if (!$reset_filter) {
             $query_string = '?price_from=' . $price_from . '&price_to=' . $price_to . '&in_stock=' . $in_stock;
             $appends = ['price_from' => $price_from, 'price_to' => $price_to, 'in_stock' => $in_stock];
@@ -118,6 +118,8 @@ class CatalogController extends Controller
 
         //если фильтровали по встроенным фильтрам (цена/наличие)
         if ($price_from || $price_to || $in_stock) {
+            \Debugbar::log('in');
+
             $products_query = Product::whereIn('catalog_id', $children_ids)
                 ->where('in_stock', $in_stock)
                 ->where('price', '>', $price_from)
@@ -159,10 +161,12 @@ class CatalogController extends Controller
                     ->appends($appends);
             }
         } else {
+            \Debugbar::log('clear');
             //чистая загрузка страницы без фильтрации
             $products = Product::whereIn('catalog_id', $children_ids)
                 ->public()
                 ->paginate(Settings::get('products_per_page', 9));
+            $query_string = '';
         }
 
         //макс цена для фильтра
@@ -240,9 +244,6 @@ class CatalogController extends Controller
         $product->ogGenerate();
         $product = $this->add_region_seo($product);
 
-//        $product_n = Product::where('id',1)->first(['id', 'name', 'price']);
-//        dd($product_n);
-
         Auth::init();
         if (Auth::user() && Auth::user()->isAdmin) {
             View::share('admin_edit_link', route('admin.catalog.productEdit', [$product->id]));
@@ -275,8 +276,6 @@ class CatalogController extends Controller
             ->with('images')
             ->get();
 
-//        dd($products);
-
         $products_categories = [];
         foreach ($products as $product) {
             $main_category = $product->findRootParentCatalog($product->catalog_id);
@@ -292,6 +291,22 @@ class CatalogController extends Controller
         //макс цена для фильтра
         $filter_max_price = $products->max('price');
 
+        //формирование массива фильтров
+        $filters_list = [];
+        foreach ($products as $product) {
+            foreach ($product->chars as $char) {
+                $filters_list[$char->name]['translit'] = $char->translit;
+                if (!isset($filters_list[$char->name]['values'])) {
+                    $filters_list[$char->name]['values'] = [];
+                }
+                if (!in_array($char->value, $filters_list[$char->name]['values'])) {
+                    $filters_list[$char->name]['values'][] = $char->value;
+                }
+            }
+        }
+        unset($filters_list['Наличие на складе'], $filters_list['Примечание']);
+//        dd($filters_list);
+
         return view(
             'catalog.new_products',
             [
@@ -300,6 +315,7 @@ class CatalogController extends Controller
                 'products' => $products,
                 'main_products_categories' => $main_products_categories,
                 'filter_max_price' => $filter_max_price,
+                'filters_list' => $filters_list,
                 'route' => route('new-products')
             ]
         );
@@ -307,6 +323,29 @@ class CatalogController extends Controller
 
     public function search()
     {
+        $bread[] = [
+            'url' => route('search'),
+            'name' => 'Поиск'
+        ];
+
+        $price_from = request()->get('price_from'); //встроенный фильтр
+        $price_to = request()->get('price_to'); //встроенный фильтр
+        $in_stock = request()->get('in_stock'); //встроенный фильтр
+        $reset_filter = request()->get('reset'); //нажали кнопку сброса фильтра
+
+        $query_string = '';
+        $appends = [];
+        if (!$reset_filter) {
+            $query_string = '&price_from=' . $price_from . '&price_to=' . $price_to . '&in_stock=' . $in_stock;
+            $appends = ['price_from' => $price_from, 'price_to' => $price_to, 'in_stock' => $in_stock];
+        }
+        //сброс кнопкой, цену/наличие не учитываем
+        if ($reset_filter == 1) {
+            $price_from = null;
+            $price_to = null;
+            $in_stock = null;
+        }
+
         if ($s = Request::get('s')) {
             $products_query = Product::public()
                 ->orWhere('name', 'LIKE', '%' . str_replace(' ', '%', $s) . '%')
@@ -315,12 +354,19 @@ class CatalogController extends Controller
             //макс цена для фильтра
             $filter_max_price = $products_query->max('price');
 
+            if ($price_from || $price_to || $in_stock) {
+                $products_query = $products_query
+                    ->where('price', '>', $price_from)
+                    ->where('price', '<=', $price_to)
+                    ->where('in_stock', '>', $in_stock);
+            }
+
             $products = $products_query
                 ->paginate(Settings::get('search_per_page', 9))
                 ->appends(['s' => $s]);
         } else {
             $filter_max_price = 0;
-            $products = [];
+            $products = collect();
         }
 
         SEOMeta::setTitle('Результат поиска «' . $s . '»');
@@ -343,7 +389,7 @@ class CatalogController extends Controller
                 'items' => $view_items,
                 'btn' => $btn_paginate,
                 'paginate' => $paginate,
-                'current_url' => route('search') . '?' . $s . '&page=' . $products->currentPage()
+                'current_url' => route('search') . '?' . $s . $query_string . '&page=' . $products->currentPage()
             ];
         }
 
@@ -351,6 +397,7 @@ class CatalogController extends Controller
             'search.index',
             [
                 'products' => $products,
+                'bread' => $bread,
                 'h1' => 'Результат поиска «' . $s . '»',
                 'title' => 'Результат поиска «' . $s . '»',
                 's' => $s,
