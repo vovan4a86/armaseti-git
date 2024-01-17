@@ -115,7 +115,7 @@ class RosmaProducts extends Command
 //
 //            //загрузка первого изображения раздела
             $has_image = $sub_catalog_crawler->filter('.s-img')->count();
-            if($has_image && !$sub_catalog->image) {
+            if ($has_image && !$sub_catalog->image) {
                 $upload_path = Catalog::UPLOAD_URL;
                 $file_name = $sub_catalog->alias . '_' . $sub_catalog->id;
 
@@ -797,7 +797,7 @@ class RosmaProducts extends Command
                                     $count
                                 ); //убираем 1 столбец - тип и последний Цена = остальное - характеристики-название
 
-                                $fields = [];
+                                $products = [];
                                 $res = [];
 
                                 $section_block->filter('.product-table tbody tr')
@@ -807,25 +807,25 @@ class RosmaProducts extends Command
                                         }
                                     )
                                     ->each(
-                                        function (Crawler $tr, $i) use (&$fields, &$self_prop, &$res) {
+                                        function (Crawler $tr, $i) use (&$products, &$self_prop, &$res) {
                                             //строка с названием модели
                                             if ($tr->filter('th')->count()) {
                                                 $name = $tr->filter('th')->text();
-                                                $fields[$i][] = $name;
+                                                $products[$i][] = $name;
 
                                                 $tr->filter('td')->each(
-                                                    function (Crawler $td, $n) use (&$fields, $i, $name) {
+                                                    function (Crawler $td, $n) use (&$products, $i, $name) {
                                                         //если нет ОБЪЕДИНЕННЫХ СТРОК
                                                         if (!$rowspan = $td->attr('rowspan')) {
-                                                            $fields[$i][$n + 1] = $td->text(
+                                                            $products[$i][$n + 1] = $td->text(
                                                             ); //текущее значение запишем
                                                         } else {
-                                                            $fields[$i][$n + 1] = $td->text(
+                                                            $products[$i][$n + 1] = $td->text(
                                                             ); //запишем текущее значение
 
                                                             for ($j = 1; $j < $rowspan; $j++) { //+текущее значение для объеденных след. строк
-                                                                $fields[$i + $j][0] = $name;
-                                                                $fields[$i + $j][$n + 1] = $td->text();
+                                                                $products[$i + $j][0] = $name;
+                                                                $products[$i + $j][$n + 1] = $td->text();
                                                             }
                                                         }
                                                     }
@@ -833,12 +833,12 @@ class RosmaProducts extends Command
                                             } else {
                                                 //если это строка без заголовка th
                                                 $tr->filter('td')->each(
-                                                    function (Crawler $td, $k) use (&$res, &$self_prop, $i, &$fields) {
+                                                    function (Crawler $td, $k) use (&$res, &$self_prop, $i, &$products) {
                                                         if ($rowspan = $td->attr('rowspan')) {
-                                                            $fields[$i][3] = $td->text(); //запишем текущее значение
+                                                            $products[$i][3] = $td->text(); //запишем текущее значение
 
                                                             for ($j = 1; $j < $rowspan; $j++) { //+текущее значение для объеденных след. строк
-                                                                $fields[$i + $j][3] = $td->text();
+                                                                $products[$i + $j][3] = $td->text();
                                                             }
                                                         } else {
                                                             $res[$i][] = $td->text();
@@ -849,26 +849,26 @@ class RosmaProducts extends Command
                                         }
                                     );
 
-//                                dump($res);
+                                dump($res);
 //                                exit();
                                 //вбиваем пропущенные значения
-                                foreach ($fields as $n => $field) {
+                                foreach ($products as $n => $field) {
                                     if ($n > 0) {
-                                        for ($l = 0; $l <= count($fields[0]) - 1; $l++) {
+                                        for ($l = 0; $l <= count($products[0]) - 1; $l++) {
                                             if (!isset($field[$l]) && isset($res[$n])) {
                                                 $val = array_shift($res[$n]);
-                                                $fields[$n][$l] = $val;
+                                                $products[$n][$l] = $val;
                                             }
                                         }
                                     }
                                 }
-                                dump($fields);
+                                dd($products);
 
 
                                 exit();
                                 //добавляем все товары в БД + хар-ки
                                 $article_count = 1;
-                                foreach ($fields as $n => $field) {
+                                foreach ($products as $n => $field) {
                                     $last_elem_count = count($field) - 1;
                                     $product = Product::where('name', $field[0])->where(
                                         'price',
@@ -878,7 +878,7 @@ class RosmaProducts extends Command
                                     if (!$product) {
                                         $data = [];
                                         //добавляем циферки в конце имени, чтобы не дублировать имена и артикулы
-                                        if ($n !== 0 && $field[0] == $fields[$n - 1][0]) {
+                                        if ($n !== 0 && $field[0] == $products[$n - 1][0]) {
                                             $article_count++;
                                         } else {
                                             $article_count = 1;

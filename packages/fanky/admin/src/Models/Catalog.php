@@ -81,7 +81,7 @@ class Catalog extends Model
         'children_ids' => 'array',
     ];
 
-    const UPLOAD_URL = '/uploads/catalogs/';
+    const UPLOAD_URL = '/uploads/catalogs_test/';
     const DOC_IMAGE = '/adminlte/doc_icon.png';
     const UPLOAD_VIDEO_ICON = '/adminlte/video.png';
     const TOP_VIEW_DEFAULT = '/static/images/common/top-view--product.jpg';

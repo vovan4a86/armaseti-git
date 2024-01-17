@@ -600,24 +600,6 @@ class GremirProducts extends Command
                                 ]
                             );
                         }
-
-                        //старый вариант для таблицы catalog_filters
-//                        $cat_filter = CatalogFilter::where('catalog_id', $product->catalog_id)->where(
-//                            'name',
-//                            $name
-//                        )->first();
-//                        if (!$cat_filter) {
-//                            CatalogFilter::create(
-//                                [
-//                                    'catalog_id' => $product->catalog_id,
-//                                    'name' => $name,
-//                                    'order' => CatalogFilter::where('catalog_id', $product->catalog_id)->max(
-//                                            'order'
-//                                        ) + 1,
-//                                    'published' => 1
-//                                ]
-//                            );
-//                        }
                     }
                 );
             }

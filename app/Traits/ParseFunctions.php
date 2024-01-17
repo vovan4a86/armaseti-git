@@ -1,4 +1,5 @@
-<?php namespace App\Traits;
+<?php
+namespace App\Traits;
 
 use Carbon\Carbon;
 use Fanky\Admin\Models\Catalog;
@@ -8,7 +9,8 @@ use Fanky\Admin\Text;
 use GuzzleHttp\Cookie\CookieJar;
 use Symfony\Component\DomCrawler\Crawler;
 
-trait ParseFunctions {
+trait ParseFunctions
+{
 
     public $userAgents = [
         "Mozilla/5.0 (Windows NT 5.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.101 Safari/537.36",
@@ -52,95 +54,9 @@ trait ParseFunctions {
         "Mozilla/5.0 (Macintosh; Intel Mac OS X 13_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 YaBrowser/22.9.1 Yowser/2.5 Safari/537.36",
     ];
 
-    //парсим категории
-    public function parseCategory($categoryName, $categoryUrl, $parentId) {
-        $this->info($categoryName . ' => ' . $categoryUrl);
-        $catalog = $this->getCatalogByName($categoryName, $parentId);
-
-        //['beget' => 'begetok', 'PHPSESSID' => '1db29869cfa1ece545d452dc2aa9cc80']
-        $res = $this->client->get($categoryUrl);
-        $html = $res->getBody()->getContents();
-        $sectionCrawler = new Crawler($html); //section page from url
-
-        var_dump($html);
-    }
-
-    //парсим товары
-    public function parseListProducts($catalog, $categoryUrl, $subcatName) {
-        $this->info('Parse products from: ' . $catalog->name);
-        $res = $this->client->get($categoryUrl);
-        $html = $res->getBody()->getContents();
-        $crawler = new Crawler($html); //page from url
-
-        $table = $crawler->filter('.inner_wrapper')->first(); //table of products
-        $table->filter('.dark_link')
-//        ->reduce(function (Crawler $nnode, $i) {
-//            return ($i < 1); //по одному товару на странице
-//        })
-            ->each(function (Crawler $node, $n) use ($catalog) {
-                $data = [];
-                try {
-                    $url = $this->baseUrl . trim($node->attr('href'));
-                    $data['name'] = $this->getNameFromString($node->text());
-                    $data['h1'] = $node->text();
-                    $data['title'] = $node->text();
-                    $data['alias'] = Text::translit($node->text());
-                    $data['articul'] = $this->getArticulFromName($data['title']);
-
-                    $this->info(++$n . ') ' . $data['name']);
-
-                    $product = Product::whereParseUrl($url)->first();
-
-                    if (!$product) {
-                        $productPage = $this->client->get($url);
-                        $productHtml = $productPage->getBody()->getContents();
-                        $productCrawler = new Crawler($productHtml); //product page
-
-                        $propsTable = $productCrawler->filter('table.props_list');
-                        $propsTable->filter('tr')->each(function (Crawler $prop) use (&$data) {
-                            $propName = trim($prop->filter('.char_name span')->first()->text());
-                            $propValue = trim($prop->filter('.char_value span')->first()->text());
-                            if ($propName != 'Код') {
-                                $dbProp = $this->propsMap[$propName];
-                                if ($propName == 'Применяемость') {
-                                    $data[$dbProp] = $propValue;
-                                } else {
-                                    $data[$dbProp] = preg_replace("/[^,.0-9]/", '', $propValue);
-                                }
-                            }
-                        });
-                        $order = $catalog->products()->max('order') + 1;
-
-                        NewProduct::create(array_merge([
-                            'catalog_id' => $catalog->id,
-                            'parse_url' => $url,
-                            'published' => 1,
-                            'order' => $order,
-                        ], $data));
-                    } else {
-                        $product->update($data);
-                        $product->save();
-                    }
-                } catch (\Exception $e) {
-                    $this->warn('error: ' . $e->getMessage());
-                    $this->warn('see line: ' . $e->getLine());
-                }
-                sleep(rand(0, 2));
-            });
-
-//        проход по страницам
-        if ($nextUrl = $crawler->filter('a#navigation_1_next_page')) {
-            $pages = $crawler->filter('.navigation-pages a')->last()->text();
-            $currentPage = $crawler->filter('.navigation-pages .nav-current-page')->first()->text();
-
-            $nextUrl = $this->baseUrl . $nextUrl->attr('href');
-            $this->info('parse: ' . $nextUrl . ' (' . ++$currentPage . '/' . $pages . ')');
-            $this->parseListProducts($catalog, $nextUrl, $subcatName);
-        }
-    }
-
     //возвращает разрешение с точкой
-    public function getExtensionFromSrc(string $url): string {
+    public function getExtensionFromSrc(string $url): string
+    {
         $mark = strripos($url, '.');
         if ($mark) {
             return trim(substr($url, $mark));
@@ -153,7 +69,8 @@ trait ParseFunctions {
      * @param string $str
      * @return bool
      */
-    public function checkIsImageJpg(string $str): bool {
+    public function checkIsImageJpg(string $str): bool
+    {
         $imgEnds = ['.jpg', 'jpeg', 'png'];
         foreach ($imgEnds as $ext) {
             if (str_ends_with($str, $ext)) {
@@ -163,7 +80,8 @@ trait ParseFunctions {
         return false;
     }
 
-    public function checkIsFileDoc(string $str): bool {
+    public function checkIsFileDoc(string $str): bool
+    {
         $imgEnds = ['.pdf', '.doc', 'docx'];
         foreach ($imgEnds as $ext) {
             if (str_ends_with($str, $ext)) {
@@ -174,7 +92,8 @@ trait ParseFunctions {
     }
 
     //filename дб с разрешением
-    public function downloadJpgFile($url, $uploadPath, $fileName): bool {
+    public function downloadJpgFile($url, $uploadPath, $fileName): bool
+    {
         $safeUrl = str_replace(' ', '%20', $url);
         $this->info('Загрузка изображения: ' . $safeUrl);
         $file = file_get_contents($safeUrl);
@@ -192,7 +111,8 @@ trait ParseFunctions {
     }
 
     //filename дб с разрешением
-    public function downloadPdfFile($url, $uploadPath, $fileName): bool {
+    public function downloadPdfFile($url, $uploadPath, $fileName): bool
+    {
         $safeUrl = str_replace(' ', '%20', $url);
         $this->info('Загрузка файла PDF: ' . $safeUrl);
         $file = file_get_contents($safeUrl);
@@ -207,10 +127,10 @@ trait ParseFunctions {
             $this->warn('Ошибка загрузки файла: ' . $e->getMessage());
             return false;
         }
-
     }
 
-    public function downloadSvgFile($url, $uploadPath, $fileName): bool {
+    public function downloadSvgFile($url, $uploadPath, $fileName): bool
+    {
         $safeUrl = str_replace(' ', '%20', $url);
 
         $image = SVG::fromFile($this->baseUrl . $safeUrl);
@@ -227,7 +147,8 @@ trait ParseFunctions {
     }
 
     //скачиваем webp и конвертируем в png
-    public function downloadWebpFileWithConvert($url, $uploadPath, $fileName): bool {
+    public function downloadWebpFileWithConvert($url, $uploadPath, $fileName): bool
+    {
         $safeUrl = str_replace(' ', '%20', $url);
         $this->info('Загрузка .webp изображения: ' . $safeUrl);
         $fileName .= '.png';
@@ -238,7 +159,7 @@ trait ParseFunctions {
 
         try {
             $file = imagecreatefromwebp($safeUrl);
-            if(!is_file(public_path($uploadPath . $fileName))) {
+            if (!is_file(public_path($uploadPath . $fileName))) {
                 file_put_contents(public_path($uploadPath . $fileName), '');
             }
             $is_ok = imagepng($file, public_path($uploadPath . $fileName));
@@ -247,18 +168,23 @@ trait ParseFunctions {
                 return true;
             }
             return false;
-
         } catch (\Exception $e) {
             $this->warn('Ошибка загрузки изображения: ' . $e->getMessage());
             return false;
         }
     }
 
-    public function parseProductWallFromString($str, $productSize, $rectangle = null) {
-        if (!$productSize) return null;
+    public function parseProductWallFromString($str, $productSize, $rectangle = null)
+    {
+        if (!$productSize) {
+            return null;
+        }
         if (!$rectangle) {
             $sizePos = mb_stripos($str, $productSize); //находим место в строке с текущим размером
-            $subStr = mb_substr($str, $sizePos + mb_strlen($productSize) + 1); //вырезаем подстроку в которой есть размер стенки
+            $subStr = mb_substr(
+                $str,
+                $sizePos + mb_strlen($productSize) + 1
+            ); //вырезаем подстроку в которой есть размер стенки
             $charX = null;
         } else {
             //для прямоугольника, напр: 'трубы нерж. электросварные ЭСВ прямоугольные 30x15x1.5 шлиф';
@@ -284,7 +210,8 @@ trait ParseFunctions {
         }
     }
 
-    public function getKFromScriptUrl($scriptUrl) {
+    public function getKFromScriptUrl($scriptUrl)
+    {
         try {
             $scriptPage = $this->client->get($scriptUrl);
             $scriptHtml = $scriptPage->getBody()->getContents();
@@ -303,25 +230,29 @@ trait ParseFunctions {
      * @param int $parentId
      * @return Catalog
      */
-    private function getCatalogByName(string $categoryName, int $parentId): Catalog {
+    private function getCatalogByName(string $categoryName, int $parentId): Catalog
+    {
         $catalog = Catalog::whereName($categoryName)->where('parent_id', $parentId)->first();
         if (!$catalog) {
-            $catalog = Catalog::create([
-                'name' => $categoryName,
-                'title' => $categoryName,
-                'h1' => $categoryName,
-                'parent_id' => $parentId,
-                'alias' => Text::translit($categoryName),
-                'slug' => Text::translit($categoryName),
-                'order' => Catalog::whereParentId($parentId)->max('order') + 1,
-                'published' => 1,
-            ]);
+            $catalog = Catalog::create(
+                [
+                    'name' => $categoryName,
+                    'title' => $categoryName,
+                    'h1' => $categoryName,
+                    'parent_id' => $parentId,
+                    'alias' => Text::translit($categoryName),
+                    'slug' => Text::translit($categoryName),
+                    'order' => Catalog::whereParentId($parentId)->max('order') + 1,
+                    'published' => 1,
+                ]
+            );
             $this->info('+++ ' . ' Новый раздел: ' . $categoryName);
         }
         return $catalog;
     }
 
-    private function updateCatalogUpdatedAt(Catalog $catalog) {
+    private function updateCatalogUpdatedAt(Catalog $catalog)
+    {
         $catalog->updated_at = Carbon::now();
         $catalog->save();
         if ($catalog->parent_id !== 0) {
@@ -330,7 +261,8 @@ trait ParseFunctions {
         }
     }
 
-    public function getInnerSiteScript($node): string {
+    public function getInnerSiteScript($node): string
+    {
         $idt = $node->attr('idt');
         $idf = $node->attr('idf');
         $idb = $node->attr('idb');
@@ -338,7 +270,8 @@ trait ParseFunctions {
         return 'mc.ru//pages/blocks/add_basket.asp/id/' . $idt . '/idf/' . $idf . '/idb/' . $idb;
     }
 
-    public function getArticulFromName(string $name): string {
+    public function getArticulFromName(string $name): string
+    {
         $start = stripos($name, '[');
         $end = stripos($name, ']');
         if ($start && $end) {
@@ -346,23 +279,27 @@ trait ParseFunctions {
         } else {
             return $name;
         }
-
     }
 
-    public function getNameFromString(string $name): string {
+    public function getNameFromString(string $name): string
+    {
         $mark = stripos($name, '[');
         if ($mark) {
             return trim(substr($name, 0, $mark));
         } else {
             return $name;
         }
-
     }
 
-    public function getTextWithNewImage(string $text, string $imgUrl): string {
-        if ($text == null) return '';
+    public function getTextWithNewImage(string $text, string $imgUrl): string
+    {
+        if ($text == null) {
+            return '';
+        }
         $start = stripos($text, '<img');
-        if (!$start) return $text;
+        if (!$start) {
+            return $text;
+        }
 
         $end = stripos($text, '>', $start);
         $searchString = substr($text, $start, $end - $start + 1);
@@ -370,15 +307,21 @@ trait ParseFunctions {
         return str_replace($searchString, $img, $text);
     }
 
-    public function getUpdatedTextWithNewImages(string $text, array $imgSrc, array $imgArr): string {
-        if ($text == null) return '';
-        if (count($imgArr) == 0) return $text;
+    public function getUpdatedTextWithNewImages(string $text, array $imgSrc, array $imgArr): string
+    {
+        if ($text == null) {
+            return '';
+        }
+        if (count($imgArr) == 0) {
+            return $text;
+        }
 
         return str_replace($imgSrc, $imgArr, $text);
     }
 
     //чтобы найти название файла на русском для последующей замены
-    public function encodeUrlFileName($url) {
+    public function encodeUrlFileName($url)
+    {
         $start = strripos($url, '/') + 1;
         $end = strripos($url, '.');
         if ($start && $end) {
@@ -389,7 +332,8 @@ trait ParseFunctions {
         }
     }
 
-    public function curlGetData(string $url): string {
+    public function curlGetData(string $url): string
+    {
         $ch = curl_init($url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
@@ -399,7 +343,8 @@ trait ParseFunctions {
         return $response;
     }
 
-    public function curlSaveDataToFile(string $url, string $fileName) {
+    public function curlSaveDataToFile(string $url, string $fileName)
+    {
         $uploadPath = '/data-site/';
         $ch = curl_init($url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
@@ -414,28 +359,40 @@ trait ParseFunctions {
     }
 
     //used only for https://rus-kab.ru
-    public function extractCableProductName(string $name) {
-        if (!stripos($name, ' ')) return $name;
+    public function extractCableProductName(string $name)
+    {
+        if (!stripos($name, ' ')) {
+            return $name;
+        }
 
         $result = explode(' ', $name);
         return $result[0];
     }
 
-    public function addProductParamName($name) {
+    public function addProductParamName($name)
+    {
         $param = Param::whereName($name)->first();
         if (!$param) {
-            $param = Param::create([
-                'name' => $name,
-            ]);
+            $param = Param::create(
+                [
+                    'name' => $name,
+                ]
+            );
         }
         return $param->id;
     }
 
     //заменить запятую в цене на точку, иначе не сохр. во FLOAT
-    public function replaceFloatValue(string $str) {
+    public function replaceFloatValue(string $str)
+    {
         if (stripos($str, ',')) {
             return str_replace(',', '.', $str);
         }
         return $str;
+    }
+
+    public function generateArticle($start_number, $prefix = null): string
+    {
+        return $prefix . '.' . $start_number;
     }
 }
