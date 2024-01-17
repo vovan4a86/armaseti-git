@@ -379,3 +379,39 @@ export const sendRequest = () => {
     })
 }
 sendRequest();
+
+//Добавить в избранное
+export const addToFavorites = () => {
+    $('[data-favorites]').click(function () {
+        const url = '/ajax/favorites';
+        const form = $(this).closest('form');
+        const id = $(form).find('.prod-card__data--order').data('id');
+        const header_favorites = $('[data-header-favorites]');
+
+        sendAjax(url, {id}, function (json) {
+            if (json.success) {
+                header_favorites.replaceWith(json.header_favorites);
+            }
+        });
+
+    })
+}
+addToFavorites();
+
+//Добавить в сравнение
+export const addToCompare = () => {
+    $('[data-compare]').click(function () {
+        const url = '/ajax/compare';
+        const form = $(this).closest('form');
+        const id = $(form).find('.prod-card__data--order').data('id');
+        const header_compare = $('[data-header-compare]');
+
+        sendAjax(url, {id}, function (json) {
+            if (json.success) {
+                header_compare.replaceWith(json.header_compare);
+            }
+        });
+
+    })
+}
+addToCompare();

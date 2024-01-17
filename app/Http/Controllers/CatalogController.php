@@ -66,6 +66,7 @@ class CatalogController extends Controller
 
     public function category($path)
     {
+//        session()->forget('favorites');
         $category = Catalog::getByPath($path);
         if (!$category || !$category->published) {
             abort(404, 'Страница не найдена');
@@ -118,8 +119,6 @@ class CatalogController extends Controller
 
         //если фильтровали по встроенным фильтрам (цена/наличие)
         if ($price_from || $price_to || $in_stock) {
-            \Debugbar::log('in');
-
             $products_query = Product::whereIn('catalog_id', $children_ids)
                 ->where('in_stock', $in_stock)
                 ->where('price', '>', $price_from)
@@ -161,7 +160,6 @@ class CatalogController extends Controller
                     ->appends($appends);
             }
         } else {
-            \Debugbar::log('clear');
             //чистая загрузка страницы без фильтрации
             $products = Product::whereIn('catalog_id', $children_ids)
                 ->public()

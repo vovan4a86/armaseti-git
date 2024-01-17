@@ -70,8 +70,8 @@ class SiteServiceProvider extends ServiceProvider
                     $current_city = City::whereAlias($city_alias)->first();
                 }
 
-                $favorites = session('favorites', []);
-                $compare = session('compare', []);
+//                $favorites = session('favorites', []);
+//                $compare = session('compare', []);
 
                 $view->with(
                     compact(
@@ -81,8 +81,6 @@ class SiteServiceProvider extends ServiceProvider
                             'mobile_menu',
                             'footer_menu',
                             'current_city',
-                            'favorites',
-                            'compare'
                         ]
                     )
                 );

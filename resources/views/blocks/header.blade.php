@@ -95,18 +95,8 @@
                 </div>
             </div>
             <div class="header__actions">
-                <div class="header__action">
-                    <a class="h-action" href="javascript:void(0)" title="Избранное">
-                        <span class="icon iconify" data-icon="lucide:heart" data-width="22"></span>
-                        <span class="h-action__counter">26</span>
-                    </a>
-                </div>
-                <div class="header__action">
-                    <a class="h-action" href="javascript:void(0)" title="Сравнение">
-                        <span class="icon iconify" data-icon="gg:menu-left-alt" data-rotate="270deg"
-                              data-width="22"></span>
-                    </a>
-                </div>
+                @include('blocks.header_favorites')
+                @include('blocks.header_compare')
                 @include('blocks.header_cart')
             </div>
         </div>

@@ -3418,6 +3418,8 @@ counter();
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   addToCompare: () => (/* binding */ addToCompare),
+/* harmony export */   addToFavorites: () => (/* binding */ addToFavorites),
 /* harmony export */   applyFilter: () => (/* binding */ applyFilter),
 /* harmony export */   loadMoreNews: () => (/* binding */ loadMoreNews),
 /* harmony export */   loadMoreProducts: () => (/* binding */ loadMoreProducts),
@@ -3809,6 +3811,42 @@ var sendRequest = function sendRequest() {
   });
 };
 sendRequest();
+
+//Добавить в избранное
+var addToFavorites = function addToFavorites() {
+  jquery__WEBPACK_IMPORTED_MODULE_0___default()('[data-favorites]').click(function () {
+    var url = '/ajax/favorites';
+    var form = jquery__WEBPACK_IMPORTED_MODULE_0___default()(this).closest('form');
+    var id = jquery__WEBPACK_IMPORTED_MODULE_0___default()(form).find('.prod-card__data--order').data('id');
+    var header_favorites = jquery__WEBPACK_IMPORTED_MODULE_0___default()('[data-header-favorites]');
+    sendAjax(url, {
+      id: id
+    }, function (json) {
+      if (json.success) {
+        header_favorites.replaceWith(json.header_favorites);
+      }
+    });
+  });
+};
+addToFavorites();
+
+//Добавить в сравнение
+var addToCompare = function addToCompare() {
+  jquery__WEBPACK_IMPORTED_MODULE_0___default()('[data-compare]').click(function () {
+    var url = '/ajax/compare';
+    var form = jquery__WEBPACK_IMPORTED_MODULE_0___default()(this).closest('form');
+    var id = jquery__WEBPACK_IMPORTED_MODULE_0___default()(form).find('.prod-card__data--order').data('id');
+    var header_compare = jquery__WEBPACK_IMPORTED_MODULE_0___default()('[data-header-compare]');
+    sendAjax(url, {
+      id: id
+    }, function (json) {
+      if (json.success) {
+        header_compare.replaceWith(json.header_compare);
+      }
+    });
+  });
+};
+addToCompare();
 
 /***/ }),
 

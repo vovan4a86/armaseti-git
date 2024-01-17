@@ -59,14 +59,10 @@ class AjaxController extends Controller
         }
 
         $header_cart = view('blocks.header_cart')->render();
-//        $btn = view('catalog.product_btn', ['name' => $product->name, 'in_cart' => true])->render();
-//        $card_btn = view('catalog.card_btn', ['product' => $product, 'in_cart' => true])->render();
 
         return [
             'success' => true,
             'header_cart' => $header_cart,
-//            'btn' => $btn,
-//            'card_btn' => $card_btn
         ];
     }
 
@@ -301,114 +297,7 @@ class AjaxController extends Controller
         }
     }
 
-    public function search(Request $request): array
-    {
-        $data = $request->only(['search']);
-
-        $items = null;
-
-        $page = Page::getByPath(['search']);
-        $bread = $page->getBread();
-
-        return [
-            'success' => true,
-            'redirect' => url(
-                '/search',
-                [
-                    'bread' => $bread,
-                    'items' => $items,
-                    'data' => $data,
-                ]
-            )
-        ];
-
-//        return view('search.index', [
-//            'bread' => $bread,
-//            'items' => $items,
-//            'data' => $data,
-//        ]);
-
-    }
-
-    public function postApplyFilter($category_id): array
-    {
-        $data_filter = request()->except(['price_from', 'price_to', 'in_stock']);
-        $price_from = request()->get('price_from');
-        $price_to = request()->get('price_to');
-        $in_stock = request()->get('in_stock');
-
-        \Debugbar::log($data_filter);
-
-        $catalog = Catalog::find($category_id);
-        $children_ids = $catalog->getRecurseChildrenIds();
-
-        //параметры для строки браузера
-        $query = '?price_from=' . $price_from . '&price_to=' . $price_to . '&in_stock=' . $in_stock;
-        $appends = ['price_from' => $price_from, 'price_to' => $price_to, 'in_stock' => $in_stock];
-
-        $products_query = Product::whereIn('catalog_id', $children_ids)
-            ->where('in_stock', $in_stock)
-            ->where('price', '>', $price_from)
-            ->where('price', '<=', $price_to);
-
-        if (!count($data_filter)) {
-            $products = $products_query
-                ->paginate(Settings::get('products_per_page', 9))
-                ->appends($appends);
-        } else {
-            $result_filters = [];
-            foreach ($data_filter as $name => $values) {
-                foreach ($values as $val) {
-                    $result_filters[] = ['value', $val];
-                    $query .= '&' . $name . '[]=' . $val;
-                    if (count($values) == 1) {
-                        $appends[$name] = $val;
-                    } else {
-                        $appends[$name][] = $val;
-                    }
-                }
-            }
-
-            $products = $products_query
-                ->with(['chars' => function ($query) use ($result_filters) {
-                    $query->orWhere($result_filters);
-                }])
-                ->paginate(Settings::get('products_per_page', 9))
-                ->appends($appends);
-        }
-
-        $page = $products->currentPage();
-        if ($page > 1) {
-            $query .= '&page=' . $page;
-        }
-
-        $view_items = [];
-        foreach ($products as $item) {
-            //добавляем новые элементы
-            $view_items[] = view(
-                'catalog.product_item_catalog',
-                [
-                    'product' => $item,
-                ]
-            )->render();
-        }
-
-        $btn_paginate = null;
-        if ($products->nextPageUrl()) {
-            $btn_paginate = view('paginations.load_more', ['paginator' => $products])->render();
-        }
-
-        $paginate = view('paginations.with_pages', ['paginator' => $products])->render();
-
-        return [
-            'items' => $view_items,
-            'btn' => $btn_paginate,
-            'paginate' => $paginate,
-            'current_url' => $catalog->url . $query
-        ];
-    }
-
-    public function postFavorite(): array
+    public function postFavorites(): array
     {
         $id = \request()->get('id');
 
@@ -418,7 +307,6 @@ class AjaxController extends Controller
 
         $favorites = \Session::get('favorites', []);
 
-        $add = true;
         if (count($favorites) == 0) {
             \Session::push('favorites', $id);
         } else {
@@ -432,11 +320,15 @@ class AjaxController extends Controller
                 }
                 \Session::forget('favorites');
                 \Session::put('favorites', $favorites);
-                $add = false;
             }
         }
 
-        return ['success' => true, 'count' => count(\Session::get('favorites')), 'add' => $add];
+        $header_favorites = view('blocks.header_favorites')->render();
+
+        return [
+            'success' => true,
+            'header_favorites' => $header_favorites
+        ];
     }
 
     public function postCompare(): array
@@ -449,7 +341,6 @@ class AjaxController extends Controller
 
         $compare = \Session::get('compare', []);
 
-        $add = true;
         if (count($compare) == 0) {
             \Session::push('compare', $id);
         } else {
@@ -463,11 +354,15 @@ class AjaxController extends Controller
                 }
                 \Session::forget('compare');
                 \Session::put('compare', $compare);
-                $add = false;
             }
         }
+        $header_compare = view('blocks.header_compare')->render();
 
-        return ['success' => true, 'count' => count(\Session::get('compare')), 'add' => $add];
+
+        return [
+            'success' => true,
+            'header_compare' => $header_compare
+        ];
     }
 
     public function postCompareDelete(): array

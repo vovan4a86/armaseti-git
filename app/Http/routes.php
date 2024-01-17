@@ -30,7 +30,7 @@ Route::group(
 
         Route::post('compare', 'AjaxController@postCompare')->name('compare');
         Route::post('compare-delete', 'AjaxController@postCompareDelete')->name('compare-delete');
-        Route::post('favorite', 'AjaxController@postFavorite')->name('favorite');
+        Route::post('favorites', 'AjaxController@postFavorites')->name('favorites');
 
 //        Route::post('apply-filter/{category_id}', 'AjaxController@postApplyFilter')->name('apply-filter');
     }
@@ -83,6 +83,9 @@ Route::group(
         Route::any('new-products', ['as' => 'new-products', 'uses' => 'CatalogController@new']);
 
         Route::any('search', ['as' => 'search', 'uses' => 'CatalogController@search']);
+
+        Route::any('compare', ['as' => 'compare', 'uses' => 'CatalogController@compare']);
+        Route::any('favorites', ['as' => 'favorites', 'uses' => 'CatalogController@favorites']);
 
         Route::any('{alias}', ['as' => 'default', 'uses' => 'PageController@page'])
             ->where('alias', '([A-Za-z0-9\-\/_]+)');
