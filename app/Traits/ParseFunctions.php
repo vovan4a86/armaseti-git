@@ -111,10 +111,10 @@ trait ParseFunctions
     }
 
     //filename дб с разрешением
-    public function downloadPdfFile($url, $uploadPath, $fileName): bool
+    public function downloadFile($url, $uploadPath, $fileName): bool
     {
         $safeUrl = str_replace(' ', '%20', $url);
-        $this->info('Загрузка файла PDF: ' . $safeUrl);
+        $this->info('Загрузка файла: ' . $safeUrl);
         $file = file_get_contents($safeUrl);
 
         if (!is_dir(public_path($uploadPath))) {

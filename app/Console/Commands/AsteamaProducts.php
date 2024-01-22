@@ -28,7 +28,7 @@ class AsteamaProducts extends Command
     public $client;
     public $log;
 
-    public $baseUrl = 'https://asteama.ru';
+    public $baseUrl = 'https://npoasta.ru/';
 
     public function __construct()
     {
@@ -47,6 +47,7 @@ class AsteamaProducts extends Command
     {
 //        $this->test_catalog();
 //        $this->test_product();
+//        exit();
 
         foreach ($this->catalogList() as $catName => $catUrl) {
             $this->parseCatalog($catName, $catUrl, 15);
@@ -151,54 +152,54 @@ class AsteamaProducts extends Command
 
                 $product->update(['article' => 'ast000' . $product->id]);
 
-                $has_main_photo = $product_crawler->filter('.product_photo')->count();
-                if ($has_main_photo) {
-                    $image_url = $product_crawler->filter('.product_photo a')->attr('href');
-                    $ext = $this->getExtensionFromSrc($image_url);
-                    $file_name = $product->article . $ext;
-                    $upload_path = ProductImage::UPLOAD_URL . $catalog->alias . '/';
-
-                    $res = $this->downloadJpgFile($image_url, $upload_path, $file_name);
-                    if ($res) {
-                        ProductImage::create(
-                            [
-                                'product_id' => $product->id,
-                                'image' => $file_name,
-                                'order' => 0
-                            ]
-                        );
-                    }
-                }
-
-                $has_dop_photo = $product_crawler->filter('.product_dop_photo .fancybox')->count();
-                if ($has_dop_photo) {
-                    $product_crawler->filter('.product_dop_photo .fancybox')
-                        //пропускаем первое фото в дополнительных, тк оно было главным
-                        ->reduce(
-                            function ($node, $i) {
-                                return ($i > 0);
-                            }
-                        )
-                        ->each(
-                            function (Crawler $image, $i) use ($data, $catalog, $product) {
-                                $image_url = $image->attr('href');
-                                $ext = $this->getExtensionFromSrc($image_url);
-                                $file_name = $product->article . '_' . ($i + 1) . $ext;
-                                $upload_path = ProductImage::UPLOAD_URL . $catalog->alias . '/';
-
-                                $res = $this->downloadJpgFile($image_url, $upload_path, $file_name);
-                                if ($res) {
-                                    ProductImage::create(
-                                        [
-                                            'product_id' => $product->id,
-                                            'image' => $file_name,
-                                            'order' => ($i + 1)
-                                        ]
-                                    );
-                                }
-                            }
-                        );
-                }
+//                $has_main_photo = $product_crawler->filter('.product_photo')->count();
+//                if ($has_main_photo) {
+//                    $image_url = $product_crawler->filter('.product_photo a')->attr('href');
+//                    $ext = $this->getExtensionFromSrc($image_url);
+//                    $file_name = $product->article . $ext;
+//                    $upload_path = ProductImage::UPLOAD_URL . $catalog->alias . '/';
+//
+//                    $res = $this->downloadJpgFile($image_url, $upload_path, $file_name);
+//                    if ($res) {
+//                        ProductImage::create(
+//                            [
+//                                'product_id' => $product->id,
+//                                'image' => $file_name,
+//                                'order' => 0
+//                            ]
+//                        );
+//                    }
+//                }
+//
+//                $has_dop_photo = $product_crawler->filter('.product_dop_photo .fancybox')->count();
+//                if ($has_dop_photo) {
+//                    $product_crawler->filter('.product_dop_photo .fancybox')
+//                        //пропускаем первое фото в дополнительных, тк оно было главным
+//                        ->reduce(
+//                            function ($node, $i) {
+//                                return ($i > 0);
+//                            }
+//                        )
+//                        ->each(
+//                            function (Crawler $image, $i) use ($data, $catalog, $product) {
+//                                $image_url = $image->attr('href');
+//                                $ext = $this->getExtensionFromSrc($image_url);
+//                                $file_name = $product->article . '_' . ($i + 1) . $ext;
+//                                $upload_path = ProductImage::UPLOAD_URL . $catalog->alias . '/';
+//
+//                                $res = $this->downloadJpgFile($image_url, $upload_path, $file_name);
+//                                if ($res) {
+//                                    ProductImage::create(
+//                                        [
+//                                            'product_id' => $product->id,
+//                                            'image' => $file_name,
+//                                            'order' => ($i + 1)
+//                                        ]
+//                                    );
+//                                }
+//                            }
+//                        );
+//                }
 
 //            короткое описание, есть и большое, но лучше просто скачать в документы Полное описание
 //            $has_short_description = $product_crawler->filter('.short_description')->count();
@@ -208,65 +209,64 @@ class AsteamaProducts extends Command
 //            }
 
 //            характеристики, есть не у всех . в описании есть полные - но они общей таблицей .
-                $has_chars = $product_crawler->filter('.dop_atr .prod_dop_option')->count();
-                if ($has_chars) {
-                    $product_crawler->filter('.dop_atr .prod_dop_option')->each(
-                        function (Crawler $row) use ($catalog, $product) {
-                            $string = trim($row->text());
-                            //получаем строку 'Имя: значение'
-                            $arr = explode(':', $string);
-                            if (count($arr) == 2) {
-                                $name = trim($arr[0]);
-                                $value = trim($arr[1]);
+//                $has_chars = $product_crawler->filter('.dop_atr .prod_dop_option')->count();
+//                if ($has_chars) {
+//                    $product_crawler->filter('.dop_atr .prod_dop_option')->each(
+//                        function (Crawler $row) use ($catalog, $product) {
+//                            $string = trim($row->text());
+//                            //получаем строку 'Имя: значение'
+//                            $arr = explode(':', $string);
+//                            if (count($arr) == 2) {
+//                                $name = trim($arr[0]);
+//                                $value = trim($arr[1]);
+//
+//                                if ($name && $value) {
+//                                    $char = ProductChar::where('product_id', $product->id)
+//                                        ->where('name', $name)->first();
+//
+//                                    if (!$char) {
+//                                        $char = ProductChar::create(
+//                                            [
+//                                                'catalog_id' => $catalog->id,
+//                                                'product_id' => $product->id,
+//                                                'name' => $name,
+//                                                'translit' => Text::translit($name),
+//                                                'value' => $value,
+//                                                'order' => ProductChar::where('product_id', $product->id)->max('order')
+//                                            ]
+//                                        );
+//                                    }
+//                                }
+//
+//                                //добавляем название характеристики в фильтр главного раздела
+//                                $root_cat = $catalog->findRootCategory();
+//
+//                                $parent_char = ParentCatalogFilter::where('catalog_id', $root_cat->id)
+//                                    ->where('name', $name)
+//                                    ->first();
+//
+//                                if (!$parent_char) {
+//                                    ParentCatalogFilter::create(
+//                                        [
+//                                            'catalog_id' => $root_cat->id,
+//                                            'name' => $char->name,
+//                                            'published' => 1,
+//                                            'order' => ParentCatalogFilter::where('catalog_id', $root_cat->id)
+//                                                    ->max('order') + 1
+//                                        ]
+//                                    );
+//                                }
+//                            }
+//                        }
+//                    );
+//                }
 
-                                if ($name && $value) {
-                                    $char = ProductChar::where('product_id', $product->id)
-                                        ->where('name', $name)->first();
-
-                                    if (!$char) {
-                                        $char = ProductChar::create(
-                                            [
-                                                'catalog_id' => $catalog->id,
-                                                'product_id' => $product->id,
-                                                'name' => $name,
-                                                'translit' => Text::translit($name),
-                                                'value' => $value,
-                                                'order' => ProductChar::where('product_id', $product->id)->max('order')
-                                            ]
-                                        );
-                                    }
-                                }
-
-                                //добавляем название характеристики в фильтр главного раздела
-                                $root_cat = $catalog->findRootCategory();
-
-                                $parent_char = ParentCatalogFilter::where('catalog_id', $root_cat->id)
-                                    ->where('name', $name)
-                                    ->first();
-
-                                if (!$parent_char) {
-                                    ParentCatalogFilter::create(
-                                        [
-                                            'catalog_id' => $root_cat->id,
-                                            'name' => $char->name,
-                                            'published' => 1,
-                                            'order' => ParentCatalogFilter::where('catalog_id', $root_cat->id)
-                                                    ->max('order') + 1
-                                        ]
-                                    );
-                                }
-                            }
-                        }
-                    );
-                }
-
-//            скачать описание 1(0) блок - описание
-                $has_description_block = $product_crawler->filter('.product_dop_modes_content')->eq(0)->count();
+//                скачать описание 1(0) блок - описание
+                $has_description_block = $product_crawler->filter('.product_dop_modes_content')
+                    ->eq(0)->count();
                 if ($has_description_block) {
-                    $doc_src = $product_crawler->filter('.product_dop_modes_content')->eq(0)->filter('a')->first(
-                    )->attr(
-                        'href'
-                    );
+                    $doc_src = $product_crawler->filter('.product_dop_modes_content')
+                        ->eq(0)->filter('a')->first()->attr('href');
                     $pdf_src = null;
                     if ($this->checkIsFileDoc($doc_src)) {
                         $pdf_src = $this->baseUrl . $doc_src;
@@ -278,16 +278,20 @@ class AsteamaProducts extends Command
                         $file_path = ProductDoc::UPLOAD_URL . $catalog->alias . '/';
 
                         try {
-                            $res = $this->downloadPdfFile($pdf_src, $file_path, $file_name);
-                            if ($res) {
-                                ProductDoc::create(
-                                    [
-                                        'product_id' => $product->id,
-                                        'name' => 'Полное описание',
-                                        'file' => $file_name,
-                                        'order' => 0
-                                    ]
-                                );
+                            $doc = ProductDoc::where('product_id', $product->id)
+                                ->where('file', $file_name)->first();
+                            if (!$doc) {
+                                $res = $this->downloadFile($pdf_src, $file_path, $file_name);
+                                if ($res) {
+                                    ProductDoc::create(
+                                        [
+                                            'product_id' => $product->id,
+                                            'name' => 'Полное описание',
+                                            'file' => $file_name,
+                                            'order' => 0
+                                        ]
+                                    );
+                                }
                             }
                         } catch (\Exception $e) {
                             $this->error('404, файл не найден!');
@@ -301,43 +305,79 @@ class AsteamaProducts extends Command
                 }
 
 //            техпаспорт
-//            $has_description_block = $product_crawler->filter('.product_dop_modes_content')->eq(1)->count();
-//            if ($has_description_block) {
-//                $doc_src = $product_crawler->filter('.product_dop_modes_content')->eq(1)->filter('a')->first()->attr(
-//                    'href'
-//                );
-//                $pdf_src = null;
-//                if ($this->checkIsFileDoc($doc_src)) {
-//                    $pdf_src = $this->baseUrl . $doc_src;
-//                }
-//
-//                if ($pdf_src) {
-//                    dump($pdf_src); //качаем описание pdf
-//                }
-//            }
+                $has_description_block = $product_crawler->filter('.product_dop_modes_content')
+                    ->eq(1)->count();
+                if ($has_description_block) {
+                    $doc_src = $product_crawler->filter('.product_dop_modes_content')
+                        ->eq(1)->filter('a')->first()->attr('href');
+                    $pdf_src = null;
+                    if ($this->checkIsFileDoc($doc_src)) {
+                        $pdf_src = $this->baseUrl . $doc_src;
+                    }
+                    $ext = $this->getExtensionFromSrc($pdf_src);
+                    $upload_path = ProductDoc::UPLOAD_URL . $catalog->alias . '/';
+                    $file_name = 'tech_passport_' . $product->article . $ext;
+
+                    if ($pdf_src) {
+                        $doc = ProductDoc::where('product_id', $product->id)
+                            ->where('file', $file_name)->first();
+                        if (!$doc) {
+                            $res = $this->downloadFile($pdf_src, $upload_path, $file_name);
+                            if ($res) {
+                                ProductDoc::create(
+                                    [
+                                        'product_id' => $product->id,
+                                        'name' => 'Техпаспорт',
+                                        'file' => $file_name,
+                                        'order' => ProductDoc::where('product_id', $product->id)->max('order') + 1
+                                    ]
+                                );
+                            }
+                        }
+                    }
+                }
 
                 //сертификаты
-//            $has_description_block = $product_crawler->filter('.product_dop_modes_content')->eq(2)->count();
-//            if ($has_description_block) {
-//                $product_crawler->filter('.product_dop_modes_content')->eq(2)->filter('a')->each(
-//                    function (Crawler $link) {
-//                        if ($name = $link->text()) {
-//                            $doc_src = $link->attr('href');
-//                            $pdf_src = null;
-//                            $name = trim(str_replace('Скачать', '', $name));
-//                            if ($this->checkIsFileDoc($doc_src)) {
-//                                $pdf_src = $this->baseUrl . $doc_src;
-//                            }
-//
-//                            if ($pdf_src) {
-//                                dump($name . ' : ' . $pdf_src); //качаем описание pdf
-//                            }
-//                        }
-//                    }
-//                );
-//            }
+                $has_description_block = $product_crawler->filter('.product_dop_modes_content')
+                    ->eq(2)->count();
+                if ($has_description_block) {
+                    $product_crawler->filter('.product_dop_modes_content')->eq(2)->filter('a')->each(
+                        function (Crawler $link) use ($product, $catalog) {
+                            if ($name = $link->text()) {
+                                $doc_src = $link->attr('href');
+                                $pdf_src = null;
+                                $name = trim(str_replace('Скачать', '', $name));
+                                if ($this->checkIsFileDoc($doc_src)) {
+                                    $pdf_src = $this->baseUrl . $doc_src;
+                                }
 
+                                if ($pdf_src) {
+                                    $ext = $this->getExtensionFromSrc($doc_src);
+                                    $file_name = $name . '_sertificat_' . $product->article . $ext;
+                                    $upload_path = ProductDoc::UPLOAD_URL . $catalog->alias . '/';
 
+                                    $doc = ProductDoc::where('product_id', $product->id)
+                                        ->where('file', $file_name)->first();
+                                    if (!$doc) {
+                                        $res = $this->downloadFile($pdf_src, $upload_path, $file_name);
+                                        if ($res) {
+                                            ProductDoc::create(
+                                                [
+                                                    'product_id' => $product->id,
+                                                    'name' => 'Сертификат',
+                                                    'file' => $file_name,
+                                                    'order' => ProductDoc::where('product_id', $product->id)->max(
+                                                            'order'
+                                                        ) + 1
+                                                ]
+                                            );
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    );
+                }
             }
         } catch (\Exception $e) {
             $this->error('Ошибка parseProduct: ' . $e->getMessage());
@@ -487,8 +527,8 @@ class AsteamaProducts extends Command
 //        }
 
         //скачать описание 1(0) блок - описание
-        $has_description_block = $product_crawler->filter('.product_dop_modes_content')->eq(0)->count();
-        if ($has_description_block) {
+//        $has_description_block = $product_crawler->filter('.product_dop_modes_content')->eq(0)->count();
+//        if ($has_description_block) {
 //            $doc_src = $product_crawler->filter('.product_dop_modes_content')->eq(0)->filter('a')->first()->attr('href');
 //            $pdf_src = null;
 //            if ($this->checkIsFileDoc($doc_src)) {
@@ -498,10 +538,9 @@ class AsteamaProducts extends Command
 //            if ($pdf_src) {
 //                dump($pdf_src); //качаем описание pdf
 //            }
-            $text = $product_crawler->filter('.product_dop_modes_content')->eq(0)->html();
-
-            dump($this->cutDescriptionFromTextHead($text));
-        }
+//            $text = $product_crawler->filter('.product_dop_modes_content')->eq(0)->html();
+//            dump($this->cutDescriptionFromTextHead($text));
+//        }
 
         //техпаспорт
 //        $has_description_block = $product_crawler->filter('.product_dop_modes_content')->eq(1)->count();
