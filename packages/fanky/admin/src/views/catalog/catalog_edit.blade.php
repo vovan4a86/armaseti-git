@@ -85,7 +85,7 @@
                 <div class="row">
                     <div class="form-group col-xs-3" style="display: flex; column-gap: 30px;">
                         <div class="catalog-image">
-                            <label for="catalog-image">Изображение раздела
+                            <label for="catalog-image">Изображение раздела (.png, 130x130)
                                 <i class="fa fa-question-circle fa-quest"></i>
                                 <img class="question1" src="/adminlte/questions/catalog_img.png" alt="question_1">
                             </label>

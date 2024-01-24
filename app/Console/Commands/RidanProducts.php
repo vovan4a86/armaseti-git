@@ -53,7 +53,7 @@ class RidanProducts extends Command
         // ВНИМАТЕЛЬНО!!!!! PARENT КАТАЛОГА КУДА КАЧАЕМ
         foreach ($this->catalogList() as $catName => $catUrl) {
 //            $this->parseCatalog($catName, $catUrl, 834); // РАБОЧИЙ PARENT!
-            $this->parseCatalog($catName, $catUrl, 2);
+            $this->parseCatalog($catName, $catUrl, 2); //Ридан
         }
 
         $this->info('The command was successful!');
@@ -71,14 +71,32 @@ class RidanProducts extends Command
 
     public function parseCatalog($categoryName, $categoryUrl, $parent = 0)
     {
-        $this->info('Парсим раздел: ' . $categoryName);
-        $this->info('Url раздела: ' . $categoryUrl);
+        $this->info('Парсим раздел: ' . $categoryName . ' (' . $categoryUrl . ')');
         $catalog = $this->getCatalogByName($categoryName, $parent);
 
         try {
             $res = $this->client->get($categoryUrl);
             $html = $res->getBody()->getContents();
             $catalog_crawler = new Crawler($html);
+
+            if (!$catalog->text) {
+                $text = $catalog_crawler->filter('.product-card__card-content .product-card__block')->eq(2)->html();
+                $catalog->update(['text' => $text]);
+            }
+
+            if (!$catalog->image) {
+                $image_url = $catalog_crawler->filter('.carousel-item.active')->attr('href');
+                if ($image_url) {
+                    $image_url = $this->baseUrl . $image_url;
+                    $upload_path = Catalog::UPLOAD_URL;
+                    $file_name = $catalog->alias . '_' . $catalog->id;
+
+                    $res = $this->downloadJpgFile($image_url, $upload_path, $file_name);
+                    if ($res) {
+                        $catalog->update(['image' => $file_name]);
+                    }
+                }
+            }
 
             $product_links = [];
             $n = 0;
@@ -95,6 +113,7 @@ class RidanProducts extends Command
                     }
                     if ($i % 2 != 0) {
                         $price = $row->filter('.series-products__price span[data-product-price]')->text();
+                        $price = str_replace(' ', '', $price);
                         $product_links[$n] = [$url, $article, $name, $price];
                         $n++;
                     }
@@ -102,12 +121,12 @@ class RidanProducts extends Command
 
             foreach ($product_links as $data) {
                 $url = $data[0];
-//                $product = Product::whereParseUrl($url)->first();
-//                if (!$product) {
+                $product = Product::whereParseUrl($url)->first();
+                if (!$product) {
                     $this->parseProduct($url, $catalog, $data);
-//                } else {
-//                    $product->update(['price' => $data[3], 'updated_at' => Carbon::now()]);
-//                }
+                } else {
+                    $product->update(['price' => $data[3], 'updated_at' => Carbon::now()]);
+                }
                 exit();
             }
 
@@ -239,7 +258,7 @@ class RidanProducts extends Command
                                         if (!is_file(
                                             public_path(ProductDoc::UPLOAD_URL . $catalog->alias . '/' . $filename)
                                         )) {
-                                            $this->downloadPdfFile(
+                                            $this->downloadFile(
                                                 $url,
                                                 ProductDoc::UPLOAD_URL . $catalog->alias . '/',
                                                 $filename
@@ -487,12 +506,18 @@ class RidanProducts extends Command
 
     public function test_product_list()
     {
-        $html = file_get_contents(public_path('test/catalog.html'));
+        $html = file_get_contents(public_path('test/catalog_ridan.html'));
 
 //        $productPage = $this->client->get('https://protection-chain.ru/catalog/tsepi-protivoskolzheniya/?PAGEN_1=2');
 //        $html = $productPage->getBody()->getContents();
 
         $product_list_crawler = new Crawler($html);
+
+        //описание раздела
+//        $text = $product_list_crawler->filter('.product-card__card-content .product-card__block')->eq(2)->html();
+        $image_url = $product_list_crawler->filter('.carousel-item.active')->attr('href');
+        $image_url = $this->baseUrl . $image_url;
+        dd($image_url);
 
         $links = [];
         $n = 0;
@@ -509,6 +534,7 @@ class RidanProducts extends Command
                 }
                 if ($i % 2 != 0) {
                     $price = $row->filter('.series-products__price span[data-product-price]')->text();
+                    $price = str_replace(' ', '', $price);
                     $links[$n] = [$url, $article, $name, $price];
                     $n++;
                 }
@@ -518,7 +544,7 @@ class RidanProducts extends Command
 
     public function test_product()
     {
-        $html = file_get_contents(public_path('test/product.html'));
+        $html = file_get_contents(public_path('test/product_ridan.html'));
         $product_crawler = new Crawler($html);
 
         //изображения
@@ -561,8 +587,9 @@ class RidanProducts extends Command
                             if ($i > 0) {
                                 $filename = $filename . '_' . $i;
                             }
+//                            dump($url);
 
-                            $this->downloadPdfFile($url, $upload_url, $filename);
+                            $this->downloadFile($url, $upload_url, $filename);
                         }
                     });
                 });

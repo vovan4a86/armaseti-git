@@ -46,7 +46,7 @@ class AdlProducts extends Command
     public function handle()
     {
 //        $this->test_product_list();
-        $this->test_product();
+//        $this->test_product();
         exit();
 
         $parent = Catalog::where('name', 'Вентили')->first();

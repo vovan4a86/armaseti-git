@@ -45,8 +45,9 @@ class RosmaProducts extends Command
 
     public function handle()
     {
-        $this->test_catalog();
+//        $this->test_catalog();
 //        $this->test_product();
+        $this->parse_table();
         exit();
 
         foreach ($this->catalogList() as $catName => $catUrl) {
@@ -833,7 +834,12 @@ class RosmaProducts extends Command
                                             } else {
                                                 //если это строка без заголовка th
                                                 $tr->filter('td')->each(
-                                                    function (Crawler $td, $k) use (&$res, &$self_prop, $i, &$products) {
+                                                    function (Crawler $td, $k) use (
+                                                        &$res,
+                                                        &$self_prop,
+                                                        $i,
+                                                        &$products
+                                                    ) {
                                                         if ($rowspan = $td->attr('rowspan')) {
                                                             $products[$i][3] = $td->text(); //запишем текущее значение
 
@@ -1021,6 +1027,74 @@ class RosmaProducts extends Command
                     }
                 }
             );
+        }
+    }
+
+    public function parse_table()
+    {
+        $html = file_get_contents(public_path('test/page_with_table.html'));
+        $section_crawler = new Crawler($html);
+
+        //товары из таблицы
+        $exclude_headers = ['Дополнительные опции']; //исключаемые блоки
+        $has_product_sections = $section_crawler->filter('.product-section')->count();
+        if ($has_product_sections) {
+            $section_crawler->filter('.product-section')
+                ->reduce(
+                    function (Crawler $node, $i) {
+                        return ($i == 1);
+                    }
+                )
+                ->each(
+                    function (Crawler $section_block) use ($exclude_headers) {
+                        //проверяем на пустоту, есть скрытые пустые блоки
+                        if ($section_block->filter('.caption h2')->count()) {
+                            $section_name = $section_block->filter('.caption h2')->text();
+                            if (!in_array($section_name, $exclude_headers)) {
+                                //парсим таблицу
+                                $headers = [];
+                                $section_block->filter('.product-table thead th')->each(
+                                    function (Crawler $head_cell) use (&$headers) {
+                                        $headers[] = $head_cell->text();
+                                    }
+                                );
+
+                                $products = [];
+                                //строка
+                                $section_block->filter('tbody tr')
+                                    ->each(
+                                        function (Crawler $tr, $row_i) use (&$products) {
+                                            if ($tr->filter('th')->count()) {
+                                                if ($span_count = $tr->filter('th')->attr('rowspan')) {
+                                                    for ($span_count_i = 1; $span_count_i < $span_count; $span_count_i++) {
+                                                        $products[$row_i + $span_count_i][] = $tr->filter('th')->text();
+                                                    }
+                                                }
+                                                $products[$row_i][] = $tr->filter('th')->text();
+                                            }
+                                        });
+
+                                $section_block->filter('tbody tr')
+                                    ->each(
+                                        function (Crawler $tr, $row_i) use (&$products, $headers) {
+                                            //столбцы
+                                            $tr->filter('td')->each(
+                                                function (Crawler $td, $td_i) use (&$products, $row_i, $headers) {
+                                                    //если столбец объединен
+                                                    if ($span_count = $td->attr('rowspan')) {
+                                                        for ($span_count_i = 1; $span_count_i < $span_count; $span_count_i++) {
+                                                            $products[$row_i + $span_count_i][] = $td->text();
+                                                        }
+                                                    }
+                                                    $products[$row_i][] = $td->text();
+                                                }
+                                            );
+                                        });
+                                dd($products);
+                            }
+                        }
+                    }
+                );
         }
     }
 }
