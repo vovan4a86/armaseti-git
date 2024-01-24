@@ -568,38 +568,10 @@ class GremirProducts extends Command
                     function (Crawler $tr, $i) use ($product, $catalog) {
                         $name_text = trim($tr->filter('td.name')->text());
                         $name = preg_replace("/:/", '', $name_text);
+                        $value = trim($tr->filter('td.value')->text());
 
-                        $char = ProductChar::where('product_id', $product->id)->where('name', $name)->first();
-                        if (!$char) {
-                            $value = trim($tr->filter('td.value')->text());
-                            $char = ProductChar::create(
-                                [
-                                    'catalog_id' => $product->catalog_id,
-                                    'product_id' => $product->id,
-                                    'name' => $name,
-                                    'translit' => Text::translit($name),
-                                    'value' => $value,
-                                    'order' => ProductChar::where('product_id', $product->id)->max('order') + 1
-                                ]
-                            );
-                        }
-                        //добавляем название характеристики в фильтр главного раздела
-                        $root_cat = $catalog->findRootCategory();
-
-                        $parent_char = ParentCatalogFilter::where('catalog_id', $root_cat->id)
-                            ->where('name', $char->name)
-                            ->first();
-
-                        if (!$parent_char) {
-                            ParentCatalogFilter::create(
-                                [
-                                    'catalog_id' => $root_cat->id,
-                                    'name' => $char->name,
-                                    'published' => 1,
-                                    'order' => ParentCatalogFilter::where('catalog_id', $root_cat->id)->max('order') + 1
-                                ]
-                            );
-                        }
+                        //создаем хар-ки для товара и родит.каталога(для фильтра)
+                        $this->createProductCharWithParentCatalog($name, $value, $product, $catalog);
                     }
                 );
             }
@@ -617,23 +589,22 @@ class GremirProducts extends Command
 
                     if ($url_raw) {
                         $url = $this->baseUrl . $url_raw;
-                        $url_arr = explode('.', $url_raw);
-                        $ext = array_pop($url_arr);
-                        $file_name = $data['article'] . '.' . $ext;
-                        $this->uploadProductImage($url, $file_name, $product->id, $catalog->alias);
+                        $ext = $this->getExtensionFromSrc($url);
+                        $file_name = $data['article'] . $ext;
+
+                        $this->uploadProductImage($url, $file_name, $product);
                     }
                 }
 
                 // больше 1 изображения
                 if ($product_crawler->filter('.imgs .more-images .image')->count() > 1) {
                     $product_crawler->filter('.imgs .more-images .image')->each(
-                        function (Crawler $image, $i) use ($product, $data, $catalog) {
+                        function (Crawler $image, $i) use ($product) {
                             $url_raw = $image->filter('a')->attr('href');
                             $url = $this->baseUrl . $url_raw;
-                            $url_arr = explode('.', $url_raw);
-                            $ext = array_pop($url_arr);
-                            $file_name = $data['article'] . '_' . ($i + 1) . '.' . $ext;
-                            $this->uploadProductImage($url, $file_name, $product->id, $catalog->alias);
+                            $ext = $this->getExtensionFromSrc($url);
+                            $file_name = $product->article . '_' . ($i + 1) . $ext;
+                            $this->uploadProductImage($url, $file_name, $product);
                         }
                     );
                 }
@@ -709,23 +680,6 @@ class GremirProducts extends Command
             Log::channel('parser')->error($e->getMessage());
             Log::channel('parser')->error($e->getTraceAsString());
             exit();
-        }
-    }
-
-    public function uploadProductImage($url, $file_name, $product_id, $catalog_alias)
-    {
-        if (!is_file(public_path(ProductImage::UPLOAD_URL . $catalog_alias . '/' . $file_name))) {
-            $this->downloadJpgFile($url, ProductImage::UPLOAD_URL . $catalog_alias . '/', $file_name);
-        }
-        $img = ProductImage::where('product_id', $product_id)->where('image', $file_name)->first();
-        if (!$img) {
-            ProductImage::create(
-                [
-                    'product_id' => $product_id,
-                    'image' => $file_name,
-                    'order' => ProductImage::where('product_id', $product_id)->max('order') + 1
-                ]
-            );
         }
     }
 

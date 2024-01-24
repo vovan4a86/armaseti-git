@@ -169,17 +169,17 @@ class RidanProducts extends Command
             $has_images = $product_crawler->filter('.carousel-item')->count();
             if ($has_images) {
                 $product_crawler->filter('.carousel-item')
-                    ->each(function (Crawler $img, $i) use ($data, $product, $catalog) {
+                    ->each(function (Crawler $img, $i) use ($product) {
                         $url = $this->baseUrl . $img->attr('href');
                         $ext = $this->getExtensionFromSrc($url);
 
-                        $file_name = $data['article'];
+                        $file_name = $product->article;
                         if ($i > 0) {
-                            $file_name = $data['article'] . '_' . ($i + 1);
+                            $file_name = $product->article . '_' . ($i + 1);
                         }
                         $file_name .= $ext;
 
-                        $this->uploadProductImage($url, $file_name, $product->id, $catalog->alias);
+                        $this->uploadProductImage($url, $file_name, $product);
                     });
             }
 
@@ -188,38 +188,9 @@ class RidanProducts extends Command
                 ->each(function (Crawler $dt) use ($product, $catalog) {
                     try {
                         $name = trim($dt->text());
-                        $val = trim($dt->nextAll()->eq(0)->text());
+                        $value = trim($dt->nextAll()->eq(0)->text());
 
-                        $char = ProductChar::where('product_id', $product->id)->where('name', $name)->first();
-                        if (!$char) {
-                            $char = ProductChar::create(
-                                [
-                                    'catalog_id' => $product->catalog_id,
-                                    'product_id' => $product->id,
-                                    'name' => $name,
-                                    'translit' => Text::translit($name),
-                                    'value' => $val,
-                                    'order' => ProductChar::where('product_id', $product->id)->max('order') + 1
-                                ]
-                            );
-                        }
-                        //добавляем название характеристики в фильтр главного раздела
-                        $root_cat = $catalog->findRootCategory();
-
-                        $parent_char = ParentCatalogFilter::where('catalog_id', $root_cat->id)
-                            ->where('name', $char->name)
-                            ->first();
-
-                        if (!$parent_char) {
-                            ParentCatalogFilter::create(
-                                [
-                                    'catalog_id' => $root_cat->id,
-                                    'name' => $char->name,
-                                    'published' => 1,
-                                    'order' => ParentCatalogFilter::where('catalog_id', $root_cat->id)->max('order') + 1
-                                ]
-                            );
-                        }
+                        $this->createProductCharWithParentCatalog($name, $value, $product, $catalog);
 
                     } catch (\Exception $e) {
                         $this->error('Ошибка парсинга характеристик: ' . $e->getMessage());
@@ -291,23 +262,6 @@ class RidanProducts extends Command
             Log::channel('parser')->error($e->getMessage());
             Log::channel('parser')->error($e->getTraceAsString());
             exit();
-        }
-    }
-
-    public function uploadProductImage($url, $file_name, $product_id, $catalog_alias)
-    {
-        if (!is_file(public_path(ProductImage::UPLOAD_URL . $catalog_alias . '/' . $file_name))) {
-            $this->downloadJpgFile($url, ProductImage::UPLOAD_URL . $catalog_alias . '/', $file_name);
-        }
-        $img = ProductImage::where('product_id', $product_id)->where('image', $file_name)->first();
-        if (!$img) {
-            ProductImage::create(
-                [
-                    'product_id' => $product_id,
-                    'image' => $file_name,
-                    'order' => ProductImage::where('product_id', $product_id)->max('order') + 1
-                ]
-            );
         }
     }
 

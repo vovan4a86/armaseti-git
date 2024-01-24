@@ -3,7 +3,10 @@ namespace App\Traits;
 
 use Carbon\Carbon;
 use Fanky\Admin\Models\Catalog;
+use Fanky\Admin\Models\ParentCatalogFilter;
 use Fanky\Admin\Models\Product;
+use Fanky\Admin\Models\ProductChar;
+use Fanky\Admin\Models\ProductDoc;
 use Fanky\Admin\Models\ProductImage;
 use Fanky\Admin\Text;
 use GuzzleHttp\Cookie\CookieJar;
@@ -110,10 +113,12 @@ trait ParseFunctions
         }
     }
 
-    //filename дб с разрешением
+    //filename дб c разрешением
     public function downloadFile($url, $uploadPath, $fileName): bool
     {
-        $safeUrl = str_replace(' ', '%20', $url);
+        $url = rawurlencode($url);
+        $safeUrl = str_replace(array('%3A','%2F'), array(':','/'), $url);
+//        $safeUrl = str_replace(' ', '%20', $url);
         $this->info('Загрузка файла: ' . $safeUrl);
         $file = file_get_contents($safeUrl);
 
@@ -165,11 +170,12 @@ trait ParseFunctions
             $is_ok = imagepng($file, public_path($uploadPath . $fileName));
             if ($is_ok) {
                 imagedestroy($file);
+
                 return true;
             }
             return false;
         } catch (\Exception $e) {
-            $this->warn('Ошибка загрузки изображения: ' . $e->getMessage());
+            $this->warn('Ошибка загрузки .webp изображения: ' . $e->getMessage());
             return false;
         }
     }
@@ -394,5 +400,82 @@ trait ParseFunctions
     public function generateArticle($start_number, $prefix = null): string
     {
         return $prefix . '.' . $start_number;
+    }
+
+    //создаем хар-ку для товара с дублированием для родит.каталога(фильтр)
+    public function createProductCharWithParentCatalog($name, $value, Product $product, Catalog $catalog)
+    {
+        $char = ProductChar::where('product_id', $product->id)
+            ->where('name', $name)
+            ->first();
+        if (!$char) {
+            $char = ProductChar::create(
+                [
+                    'catalog_id' => $product->catalog_id,
+                    'product_id' => $product->id,
+                    'name' => $name,
+                    'translit' => Text::translit($name),
+                    'value' => $value,
+                    'order' => ProductChar::where('product_id', $product->id)->max('order') + 1
+                ]
+            );
+        }
+        //добавляем название характеристики в фильтр главного раздела
+        $root_cat = $catalog->findRootCategory();
+
+        $parent_char = ParentCatalogFilter::where('catalog_id', $root_cat->id)
+            ->where('name', $char->name)
+            ->first();
+
+        if (!$parent_char) {
+            ParentCatalogFilter::create(
+                [
+                    'catalog_id' => $root_cat->id,
+                    'name' => $name,
+                    'published' => 1,
+                    'order' => ParentCatalogFilter::where('catalog_id', $root_cat->id)
+                            ->max('order') + 1
+                ]
+            );
+        }
+    }
+
+    public function uploadProductImage($url, $file_name, Product $product)
+    {
+        if (!is_file(public_path(ProductImage::UPLOAD_URL . $product->catalog->alias . '/' . $file_name))) {
+            $this->downloadJpgFile($url, ProductImage::UPLOAD_URL . $product->catalog->alias . '/', $file_name);
+        }
+        $img = ProductImage::where('product_id', $product->id)
+            ->where('image', $file_name)
+            ->first();
+        if (!$img) {
+            ProductImage::create(
+                [
+                    'product_id' => $product->id,
+                    'file' => $file_name,
+                    'order' => ProductImage::where('product_id', $product->id)->max('order') + 1
+                ]
+            );
+        }
+    }
+
+    public function uploadProductDoc($url, $file_name, $name, Product $product)
+    {
+        if (!is_file(public_path(ProductDoc::UPLOAD_URL . $product->catalog->alias . '/' . $file_name))) {
+            $this->downloadFile($url, ProductDoc::UPLOAD_URL . $product->catalog->alias . '/', $file_name);
+        }
+        $doc = ProductDoc::where('product_id', $product->id)
+            ->where('file', $file_name)
+            ->first();
+        if (!$doc) {
+            ProductDoc::create(
+                [
+                    'product_id' => $product->id,
+                    'file' => $file_name,
+                    'name' => $name,
+                    'order' => ProductDoc::where('product_id', $product->id)->max('order') + 1
+                ]
+            );
+        }
     }
 }
