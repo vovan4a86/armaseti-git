@@ -452,7 +452,7 @@ trait ParseFunctions
             ProductImage::create(
                 [
                     'product_id' => $product->id,
-                    'file' => $file_name,
+                    'image' => $file_name,
                     'order' => ProductImage::where('product_id', $product->id)->max('order') + 1
                 ]
             );
