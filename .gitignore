@@ -8,3 +8,4 @@
 .env
 .idea/
 .yarn
+/storage/logs/*.log

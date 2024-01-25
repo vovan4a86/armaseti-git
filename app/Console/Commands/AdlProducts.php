@@ -47,7 +47,7 @@ class AdlProducts extends Command
     {
 //        $this->test_product_list();
 //        $this->test_product();
-        exit();
+//        exit();
 
         $parent = Catalog::where('name', 'Вентили')->first();
         foreach ($this->catalogList() as $catName => $catUrl) {
@@ -77,14 +77,18 @@ class AdlProducts extends Command
             $has_items = $catalog_crawler->filter('.item.box__item')->count();
             if ($has_items) {
                 $catalog_crawler->filter('.item.box__item')
-                    ->reduce(function (Crawler $node, $i) {
-                        return ($i == 0);
-                    })
-                    ->each(function (Crawler $section) use ($catalog) {
-                        $name = $section->filter('.name a')->text();
-                        $url = $this->baseUrl . $section->filter('.name a')->attr('href');
-                        $this->parseCatalog($name, $url, $catalog);
-                    });
+                    ->reduce(
+                        function (Crawler $node, $i) {
+                            return ($i == 0);
+                        }
+                    )
+                    ->each(
+                        function (Crawler $section) use ($catalog) {
+                            $name = $section->filter('.name a')->text();
+                            $url = $this->baseUrl . $section->filter('.name a')->attr('href');
+                            $this->parseCatalog($name, $url, $catalog);
+                        }
+                    );
             }
         } catch (\Exception $e) {
             $this->error('Ошибка parseSection: ' . $e->getMessage());
@@ -134,11 +138,69 @@ class AdlProducts extends Command
             $has_chars = $catalog_list_crawler->filter('.catalog-element-characteristics-table tr')->count();
             if ($has_chars) {
                 $catalog_list_crawler->filter('.catalog-element-characteristics-table tr')
-                    ->each(function (Crawler $tr) use (&$common_chars) {
-                        $name = $tr->children()->eq(0)->text();
-                        $val = $tr->children()->eq(1)->text();
-                        $common_chars[$name] = $val;
-                    });
+                    ->each(
+                        function (Crawler $tr) use (&$common_chars) {
+                            $name = $tr->children()->eq(0)->text();
+                            $val = $tr->children()->eq(1)->text();
+                            $common_chars[$name] = $val;
+                        }
+                    );
+            }
+
+            //товары вытягиваем ajax-ом
+            $tablep = $catalog_list_crawler->filter('#offers_table_container')->attr('date-tablep');
+//            $url = 'https://adl.ru/truboprovodnaya-armatura/ventili-zapornye-granvent-kv16.html';
+            $pagequery = 1;
+            $ajax_url = $categoryUrl . '?tablep=' . $tablep . '&' . $pagequery;
+
+            $ajax_res = $this->client->get($ajax_url);
+            $ajax_html = $ajax_res->getBody()->getContents();
+            $ajax_crawler = new Crawler($ajax_html);
+
+            $has_product_table = $ajax_crawler->filter('.table__intro tr')->count();
+            if ($has_product_table) {
+                $ajax_crawler->filter('.table__intro tr')->each(
+                    function (Crawler $tr) use (&$common_chars, $catalog, $categoryUrl) {
+                        $article = $tr->filter('.art_col_f span')->text(); //артикул
+                        $size = $tr->filter('td')->eq(1)->text(); //габариты
+                        $dn = $tr->filter('td')->eq(2)->text(); //DN
+                        $kv = $tr->filter('td')->eq(3)->text(); //KV
+                        $in_stock_text = trim($tr->filter('td')->eq(4)->text());
+                        $in_stock = $in_stock_text == 'В наличии' ? 1 : 0;
+                        $price = $tr->filter('.table_price')->text();
+                        $price = str_replace(' ', '', $price);
+
+                        //в общих характеристиках изменяем отдельные характеристики для товара
+                        $common_chars['DN'] = $dn;
+                        $common_chars['Kv, м3/ч'] = $kv;
+                        $common_chars['Габариты'] = $size;
+
+                        //добавляем товар в БД + хар-ки
+                        $product = Product::where('article', $article)->first();
+                        if (!$product) {
+                            $product = Product::create(
+                                [
+                                    'catalog_id' => $catalog->id,
+                                    'name' => $article,
+                                    'article' => $article,
+                                    'alias' => Text::translit($article),
+                                    'h1' => $article,
+                                    'title' => $article,
+                                    'price' => $price,
+                                    'in_stock' => $in_stock,
+                                    'published' => 1,
+                                    'order' => Product::where('catalog_id', $catalog->id)->max('order') + 1,
+                                    'parse_url' => $categoryUrl
+                                ]
+                            );
+
+                            //характеристики
+                            foreach ($common_chars as $name => $value) {
+                                $this->createProductCharWithParentCatalog($name, $value, $product, $catalog);
+                            }
+                        }
+                    }
+                );
             }
 
             //Документы
@@ -151,31 +213,36 @@ class AdlProducts extends Command
                 $has_files = $tab_crawler->filter('.list-model-files .elem-file')->count();
                 if ($has_files) {
                     $tab_crawler->filter('.list-model-files .elem-file')
-                        ->each(function (Crawler $node, $i) use ($catalog) {
-                            $name = $node->filter('a')->text();
-                            $url = $this->baseUrl . $node->filter('a')->attr('href');
-                            //убираем в конце url артефакт => '?'
-                            if ($url[strlen($url) - 1] == '?') {
-                                $url = substr($url, 0, -1);
-                            }
-                            $ext = $this->getExtensionFromSrc($url);
-                            $upload_path = CatalogDoc::UPLOAD_URL . $catalog->alias . '/';
-                            $file_name = $catalog->alias . '_' . $i;
-                            $file_name .= $ext;
+                        ->each(
+                            function (Crawler $node, $i) use ($catalog) {
+                                $name = $node->filter('a')->text();
+                                $url = $this->baseUrl . $node->filter('a')->attr('href');
+                                //убираем в конце url артефакт => '?'
+                                if ($url[strlen($url) - 1] == '?') {
+                                    $url = substr($url, 0, -1);
+                                }
+                                $ext = $this->getExtensionFromSrc($url);
+                                $upload_path = CatalogDoc::UPLOAD_URL . $catalog->alias . '/';
+                                $file_name = $catalog->alias . '_' . $i;
+                                $file_name .= $ext;
 
-                            $res = $this->downloadPdfFile($url, $upload_path, $file_name);
-                            if ($res) {
-                                $doc = CatalogDoc::where('catalog_id', $catalog->id)->where('name', $name)->first();
-                                if (!$doc) {
-                                    CatalogDoc::create([
-                                        'catalog_id' => $catalog->id,
-                                        'name' => $name,
-                                        'file' => $file_name,
-                                        'order' => CatalogDoc::where('catalog_id', $catalog->id)->max('order') + 1
-                                    ]);
+                                $res = $this->downloadFile($url, $upload_path, $file_name);
+                                if ($res) {
+                                    $doc = CatalogDoc::where('catalog_id', $catalog->id)->where('name', $name)->first();
+                                    if (!$doc) {
+                                        CatalogDoc::create(
+                                            [
+                                                'catalog_id' => $catalog->id,
+                                                'name' => $name,
+                                                'file' => $file_name,
+                                                'order' => CatalogDoc::where('catalog_id', $catalog->id)
+                                                        ->max('order') + 1
+                                            ]
+                                        );
+                                    }
                                 }
                             }
-                        });
+                        );
                 }
             }
         } catch (\Exception $e) {
@@ -260,7 +327,7 @@ class AdlProducts extends Command
                             if (!is_file(
                                 public_path(CatalogDoc::UPLOAD_URL . $catalog->alias . '/' . $url_full_file_name)
                             )) {
-                                $this->downloadPdfFile(
+                                $this->downloadFile(
                                     $url,
                                     CatalogDoc::UPLOAD_URL . $catalog->alias . '/',
                                     $url_full_file_name
@@ -542,7 +609,7 @@ class AdlProducts extends Command
                                 if (!is_file(
                                     public_path(ProductDoc::UPLOAD_URL . $catalog->alias . '/' . $url_full_file_name)
                                 )) {
-                                    $this->downloadPdfFile(
+                                    $this->downloadFile(
                                         $url,
                                         ProductDoc::UPLOAD_URL . $catalog->alias . '/',
                                         $url_full_file_name
@@ -630,17 +697,21 @@ class AdlProducts extends Command
         $has_items = $product_list_crawler->filter('.item.box__item')->count();
         if ($has_items) {
             $product_list_crawler->filter('.item.box__item')
-                ->reduce(function (Crawler $node, $i) {
-                    return ($i == 0);
-                })
-                ->each(function (Crawler $section, $i) {
-                    $name = $section->filter('.name a')->text();
-                    $url = $this->baseUrl . $section->filter('.name a')->attr('href');
+                ->reduce(
+                    function (Crawler $node, $i) {
+                        return ($i == 0);
+                    }
+                )
+                ->each(
+                    function (Crawler $section, $i) {
+                        $name = $section->filter('.name a')->text();
+                        $url = $this->baseUrl . $section->filter('.name a')->attr('href');
 
-                    $image = $this->baseUrl . $section->filter('.pic a img')->attr('src');
+                        $image = $this->baseUrl . $section->filter('.pic a img')->attr('src');
 
-                    $this->info($image);
-                });
+                        $this->info($image);
+                    }
+                );
         }
     }
 
@@ -650,41 +721,43 @@ class AdlProducts extends Command
         $product_crawler = new Crawler($html);
 
         //Описание
-        $description = $product_crawler->filter('#description')->html();
+//        $description = $product_crawler->filter('#description')->html();
 
         //Характеристики ?? общие раздела
         $common_chars = [];
         $has_chars = $product_crawler->filter('.catalog-element-characteristics-table tr')->count();
         if ($has_chars) {
             $product_crawler->filter('.catalog-element-characteristics-table tr')
-                ->each(function (Crawler $tr) use (&$common_chars) {
-                    $name = $tr->children()->eq(0)->text();
-                    $val = $tr->children()->eq(1)->text();
-                    $common_chars[$name] = $val;
-                });
+                ->each(
+                    function (Crawler $tr) use (&$common_chars) {
+                        $name = $tr->children()->eq(0)->text();
+                        $val = $tr->children()->eq(1)->text();
+                        $common_chars[$name] = $val;
+                    }
+                );
         }
 
         //Документы
         //проверяем что это вкладка Документы, а не Каталог
-        $tab = $product_crawler->filter('#characteristics')->nextAll()->first()->filter('b')->first()->text();
-        if ($tab !== 'Каталог') {
-            $tabDocs = $product_crawler->filter('#characteristics')->nextAll()->first()->html();
-            $tab_crawler = new Crawler($tabDocs);
-
-            $has_files = $tab_crawler->filter('.list-model-files .elem-file')->count();
-            if ($has_files) {
-                $tab_crawler->filter('.list-model-files .elem-file')->each(function (Crawler $node, $i) {
-                    $name = $node->filter('a')->text();
-                    $url = $this->baseUrl . $node->filter('a')->attr('href');
-                    //убираем в конце url артефакт => '?'
-                    if ($url[strlen($url) - 1] == '?') {
-                        $url = substr($url, 0, -1);
-                    }
-                    $this->info($name);
-                });
-            }
-        }
-        exit();
+//        $tab = $product_crawler->filter('#characteristics')->nextAll()->first()->filter('b')->first()->text();
+//        if ($tab !== 'Каталог') {
+//            $tabDocs = $product_crawler->filter('#characteristics')->nextAll()->first()->html();
+//            $tab_crawler = new Crawler($tabDocs);
+//
+//            $has_files = $tab_crawler->filter('.list-model-files .elem-file')->count();
+//            if ($has_files) {
+//                $tab_crawler->filter('.list-model-files .elem-file')->each(function (Crawler $node, $i) {
+//                    $name = $node->filter('a')->text();
+//                    $url = $this->baseUrl . $node->filter('a')->attr('href');
+//                    //убираем в конце url артефакт => '?'
+//                    if ($url[strlen($url) - 1] == '?') {
+//                        $url = substr($url, 0, -1);
+//                    }
+//                    $this->info($name);
+//                });
+//            }
+//        }
+//        exit();
 
         //товары вытягиваем ajax-ом
 //        $tablep = $product_crawler->filter('#offers_table_container')->attr('date-tablep');
@@ -698,24 +771,52 @@ class AdlProducts extends Command
         $ajax_html = file_get_contents(public_path('test/table.html'));
         $ajax_crawler = new Crawler($ajax_html);
 
+        $catalog = Catalog::where('name', 'Вентили запорные')->first();
+
         $has_product_table = $ajax_crawler->filter('.table__intro tr')->count();
         if ($has_product_table) {
-            $ajax_crawler->filter('.table__intro tr')->each(function (Crawler $tr) use ($common_chars) {
-                $article = $tr->filter('.art_col_f span')->text(); //артикул
-                $size = $tr->filter('td')->eq(1)->text(); //габариты
-                $dn = $tr->filter('td')->eq(2)->text(); //DN
-                $kv = $tr->filter('td')->eq(3)->text(); //KV
-                $in_stock_text = trim($tr->filter('td')->eq(4)->text());
-                $in_stock = $in_stock_text == 'В наличии' ? 1 : 0;
-                $price = $tr->filter('.table_price')->text();
+            $ajax_crawler->filter('.table__intro tr')->each(
+                function (Crawler $tr) use ($common_chars, $catalog) {
+                    $article = $tr->filter('.art_col_f span')->text(); //артикул
+                    $size = $tr->filter('td')->eq(1)->text(); //габариты
+                    $dn = $tr->filter('td')->eq(2)->text(); //DN
+                    $kv = $tr->filter('td')->eq(3)->text(); //KV
+                    $in_stock_text = trim($tr->filter('td')->eq(4)->text());
+                    $in_stock = $in_stock_text == 'В наличии' ? 1 : 0;
+                    $price = $tr->filter('.table_price')->text();
+                    $price = str_replace(' ', '', $price);
 
-                //в общих характеристиках изменяем отдельные характеристики для товара
-                $common_chars['DN'] = $dn;
-                $common_chars['Kv, м3/ч'] = $kv;
-                $common_chars['Габариты'] = $size;
+                    //в общих характеристиках изменяем отдельные характеристики для товара
+                    $common_chars['DN'] = $dn;
+                    $common_chars['Kv, м3/ч'] = $kv;
+                    $common_chars['Габариты'] = $size;
 
-                var_dump($common_chars);
-            });
+                    //добавляем товар в БД + хар-ки
+                    $product = Product::where('article', $article)->first();
+                    if (!$product) {
+                        $product = Product::create(
+                            [
+                                'catalog_id' => $catalog->id,
+                                'name' => $article,
+                                'article' => $article,
+                                'alias' => Text::translit($article),
+                                'h1' => $article,
+                                'title' => $article,
+                                'price' => $price,
+                                'in_stock' => $in_stock,
+                                'published' => 1,
+                                'order' => 0,
+                                'parse_url' => 'https://adl.ru/truboprovodnaya-armatura/ventili-zapornye-granvent-kv16.html'
+                            ]
+                        );
+
+                        //характеристики
+                        foreach ($common_chars as $name => $value) {
+                            $this->createProductCharWithParentCatalog($name, $value, $product, $catalog);
+                        }
+                    }
+                }
+            );
         }
     }
 }
