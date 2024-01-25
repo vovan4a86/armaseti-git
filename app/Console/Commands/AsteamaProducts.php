@@ -235,7 +235,36 @@ class AsteamaProducts extends Command
 
                     $text = $product_crawler->filter('.product_dop_modes_content')->eq(0)->html();
 
-                    $product->text = $this->cutDescriptionFromTextHead($text);
+                    $text = $this->cutDescriptionFromTextHead($text);
+
+                    $text_crawler = new Crawler($text);
+                    $i = $text_crawler->filter('img')->count();
+                    if ($i > 0) {
+                        $imgSrc = [];
+                        $imgArr = [];
+                        $uploadCatalogTextImagesPath = '/uploads/catalogs-content-test/' . $catalog->alias . '/';
+                        $text_crawler->filter('img')
+                            ->each(function (Crawler $image) use ($uploadCatalogTextImagesPath, &$imgArr, &$imgSrc) {
+                                $raw_url = $image->attr('src');
+                                $url = $this->baseUrl . $raw_url;
+                                $arr = explode('/', $raw_url);
+                                $file_name = array_pop($arr);
+                                $file_name = str_replace('%20', '_', $file_name);
+
+                                if ($this->checkIsImageJpg($file_name)) {
+                                    if (!is_file(public_path($uploadCatalogTextImagesPath . $file_name))) {
+                                        $this->downloadJpgFile($url, $uploadCatalogTextImagesPath, $file_name);
+                                    }
+
+                                    $imgSrc[] = $raw_url;
+                                    $imgArr[] = $uploadCatalogTextImagesPath . $file_name;
+                                }
+                            });
+                        $clean_text = $this->getUpdatedTextWithNewImages($text, $imgSrc, $imgArr);
+                        $product->text = $clean_text;
+                    } else {
+                        $product->text = $text;
+                    }
                     $product->save();
                 }
 
@@ -414,20 +443,47 @@ class AsteamaProducts extends Command
 //        }
 
         //скачать описание 1(0) блок - описание
-//        $has_description_block = $product_crawler->filter('.product_dop_modes_content')->eq(0)->count();
-//        if ($has_description_block) {
-//            $doc_src = $product_crawler->filter('.product_dop_modes_content')->eq(0)->filter('a')->first()->attr('href');
-//            $pdf_src = null;
-//            if ($this->checkIsFileDoc($doc_src)) {
-//                $pdf_src = $this->baseUrl . $doc_src;
-//            }
-//
-//            if ($pdf_src) {
-//                dump($pdf_src); //качаем описание pdf
-//            }
-//            $text = $product_crawler->filter('.product_dop_modes_content')->eq(0)->html();
-//            dump($this->cutDescriptionFromTextHead($text));
-//        }
+        $has_description_block = $product_crawler->filter('.product_dop_modes_content')->eq(0)->count();
+        if ($has_description_block) {
+            $doc_src = $product_crawler->filter('.product_dop_modes_content')->eq(0)->filter('a')->first()->attr('href');
+            $pdf_src = null;
+            if ($this->checkIsFileDoc($doc_src)) {
+                $pdf_src = $this->baseUrl . $doc_src;
+            }
+
+            if ($pdf_src) {
+                dump($pdf_src); //качаем описание pdf
+            }
+            $text = $product_crawler->filter('.product_dop_modes_content')->eq(0)->html();
+            $text = $this->cutDescriptionFromTextHead($text);
+
+            $text_crawler = new Crawler($text);
+            $i = $text_crawler->filter('img')->count();
+            if ($i > 0) {
+                $imgSrc = [];
+                $imgArr = [];
+                $uploadCatalogTextImagesPath = '/uploads/catalogs-content-test/';
+                $text_crawler->filter('img')
+                    ->each(function (Crawler $image) use ($uploadCatalogTextImagesPath, &$imgArr, &$imgSrc) {
+                    $raw_url = $image->attr('src');
+                    $url = $this->baseUrl . $raw_url;
+                    $arr = explode('/', $raw_url);
+                    $file_name = array_pop($arr);
+                    $file_name = str_replace('%20', '_', $file_name);
+
+                    if ($this->checkIsImageJpg($file_name)) {
+                        if (!is_file(public_path($uploadCatalogTextImagesPath . $file_name))) {
+                            $this->downloadJpgFile($url, $uploadCatalogTextImagesPath, $file_name);
+                        }
+
+                        $imgSrc[] = $raw_url;
+                        $imgArr[] = $uploadCatalogTextImagesPath . $file_name;
+                    }
+                });
+                $clean_text = $this->getUpdatedTextWithNewImages($text, $imgSrc, $imgArr);
+                dd($clean_text);
+            }
+        }
 
         //техпаспорт
 //        $has_description_block = $product_crawler->filter('.product_dop_modes_content')->eq(1)->count();
