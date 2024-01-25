@@ -44,8 +44,8 @@ class WellMixProducts extends Command
     public function handle()
     {
 //        $this->test_catalog();
-        $this->test_product();
-        exit();
+//        $this->test_product();
+//        exit();
 
         foreach ($this->catalogList() as $catName => $catUrl) {
             $this->parseCatalog($catName, $catUrl, 7);
@@ -157,7 +157,7 @@ class WellMixProducts extends Command
                             }
                         );
                 }
-                $text = $this->getUpdatedTextWithNewImages($text, $imgSrc, $imgArr);
+                $text = $this->getUpdatedTextWithNewImagesWellMix($text, $imgSrc, $imgArr);
             }
 
             //в скрипте находятся все данные по товарам на странице
@@ -198,44 +198,112 @@ class WellMixProducts extends Command
                 ];
             }
 
-            //заносим товары в БД
-            foreach ($prods as $json_prod) {
-                $product = Product::where('parse_url', $json_prod['parse_url'])->first();
-                if (!$product) {
-                    $data['name'] = $json_prod['name'];
-                    $data['catalog_id'] = $catalog->id;
-                    $data['alias'] = Text::translit($json_prod['name']);
-                    $data['h1'] = $json_prod['name'];
-                    $data['title'] = $json_prod['name'];
-                    $data['price'] = $json_prod['price'];
-                    $data['article'] = $json_prod['article'];
-                    $data['text'] = $text;
-                    $data['published'] = 1;
-                    $data['parse_url'] = $json_prod['parse_url'];
-                    $data['order'] = Product::where('catalog_id', $catalog->id)->max('order') + 1;
+            //общие документы - добавляем к каталогу
+            $has_common_docs = $product_crawler->filter('.files_block')->eq(0)->count();
+            if ($has_common_docs) {
+                $product_crawler->filter('.files_block')->eq(0)->each(
+                    function (Crawler $block) use ($catalog) {
+                        $block->filter('.row')->children()->each(
+                            function (Crawler $file) use ($catalog) {
+                                $name = trim($file->filter('.description a')->text());
+                                $url = $this->baseUrl . $file->filter('.description a')->attr('href');
 
-                    $product = Product::create($data);
-                    $this->info('Новый товар: ' . $product->name . ' (id=' . $product->id . ')');
+                                $catalog_doc = CatalogDoc::where('catalog_id', $catalog->id)
+                                    ->where('name', $name)->first();
+                                if (!$catalog_doc) {
+                                    $ext = $this->getExtensionFromSrc($url);
+                                    $file_name = Text::translit($name) . $ext;
+                                    $upload_path = CatalogDoc::UPLOAD_URL . $catalog->alias . '/';
 
-                    //создаем характеристики
-                    if (count($json_prod['chars'])) {
-                        foreach ($json_prod['chars'] as $i => $values) {
-                            $name = $values[0];
-                            $value = $values[1];
-                            $this->createProductCharWithParentCatalog($name, $value, $product, $catalog);
-                        }
+                                    $res = $this->downloadFile($url, $upload_path, $file_name);
+
+                                    if ($res) {
+                                        CatalogDoc::create(
+                                            [
+                                                'catalog_id' => $catalog->id,
+                                                'name' => $name,
+                                                'file' => $file_name,
+                                                'order' => CatalogDoc::where('catalog_id', $catalog->id)->max('order') + 1
+                                            ]
+                                        );
+                                    }
+                                }
+                            }
+                        );
                     }
+                );
+            }
 
-                    //скачаем изображения товара
-                    if (count($json_prod['images'])) {
-                        foreach ($json_prod['images'] as $i => $url) {
-                            $ext = $this->getExtensionFromSrc($url);
-                            $file_name = $product->article . '_' . $i;
-                            $file_name .= $ext;
-                            $this->uploadProductImage($url, $file_name, $product);
+            //все документы товаров - к каждому товару свой
+            $products_docs = [];
+            $has_products_docs = $product_crawler->filter('.files_block')->eq(1)->count();
+            if ($has_products_docs) {
+                $product_crawler->filter('.files_block')->eq(1)->each(
+                    function (Crawler $block) use (&$products_docs) {
+                        $block->filter('.row')->children()->each(
+                            function (Crawler $file) use (&$products_docs) {
+                                $name = trim($file->filter('.description a')->text());
+                                $url = $this->baseUrl . $file->filter('.description a')->attr('href');
+
+                                $products_docs[] = ['name' => $name, 'url' => $url];
+                            }
+                        );
+                    }
+                );
+            }
+
+            //проверим, что количество товаров = количеству документов, чтобы не перепутать товары-документы
+            if (count($products_docs) == count($prods)) {
+                //заносим товары в БД
+                foreach ($prods as $count => $json_prod) {
+                    $product = Product::where('parse_url', $json_prod['parse_url'])->first();
+                    if (!$product) {
+                        $data['name'] = $json_prod['name'];
+                        $data['catalog_id'] = $catalog->id;
+                        $data['alias'] = Text::translit($json_prod['name']);
+                        $data['h1'] = $json_prod['name'];
+                        $data['title'] = $json_prod['name'];
+                        $data['price'] = $json_prod['price'];
+                        $data['article'] = $json_prod['article'];
+                        $data['text'] = $text;
+                        $data['published'] = 1;
+                        $data['parse_url'] = $json_prod['parse_url'];
+                        $data['order'] = Product::where('catalog_id', $catalog->id)->max('order') + 1;
+
+                        $product = Product::create($data);
+                        $this->info('Новый товар: ' . $product->name . ' (id=' . $product->id . ')');
+
+                        //создаем характеристики
+                        if (count($json_prod['chars'])) {
+                            foreach ($json_prod['chars'] as $i => $values) {
+                                $name = $values[0];
+                                $value = $values[1];
+                                $this->createProductCharWithParentCatalog($name, $value, $product, $catalog);
+                            }
                         }
+
+                        //скачаем изображения товара
+                        if (count($json_prod['images'])) {
+                            foreach ($json_prod['images'] as $i => $url) {
+                                $ext = $this->getExtensionFromSrc($url);
+                                $file_name = $product->article . '_' . $i;
+                                $file_name .= $ext;
+                                $this->uploadProductImage($url, $file_name, $product);
+                            }
+                        }
+
+                        //загружаем соответствующий документ из массива
+                        $url = $products_docs[$count]['url'];
+                        $name = $products_docs[$count]['name'];
+                        $ext = $this->getExtensionFromSrc($url);
+                        $file_name = $product->alias .$ext;
+
+                        $this->uploadProductDoc($url, $file_name, $name, $product);
                     }
                 }
+            } else {
+                $this->error('Количество док-ов и товаров не равно!');
+                exit();
             }
             exit();
         } catch (\Exception $e) {
@@ -317,55 +385,77 @@ class WellMixProducts extends Command
 //        dump($name);
 
         //description
-        $has_descr = $product_crawler->filter('.descr-outer-wrapper .detail_text')->count();
-        if ($has_descr) {
-            $descr = $product_crawler->filter('.descr-outer-wrapper .detail_text')->html();
-
-            $descr_crawler = new Crawler($descr);
-
-            $has_images = $descr_crawler->filter('img')->count();
-            $imgSrc = [];
-            $imgArr = [];
-            if ($has_images) {
-                $upload_path = '/test/catalog/text/';
-                $descr_crawler->filter('img')
-                    ->each(
-                        function (Crawler $image, $i) use ($upload_path, &$imgSrc, &$imgArr) {
-                            $raw_url = $image->attr('data-src');
-                            $url = $this->baseUrl . $raw_url;
-                            $arr = explode('/', $url);
-                            $file_name = array_pop($arr);
-                            $file_name = str_replace('%20', '_', $file_name);
-
-                            if ($this->checkIsImageJpg($file_name)) {
-                                if (!is_file(public_path($upload_path . $file_name))) {
-                                    $this->downloadJpgFile($url, $upload_path, $file_name);
-                                }
-
-                                $imgSrc[] = $raw_url;
-                                $imgArr[] = $upload_path . $file_name;
-                            }
-                        }
-                    );
-            }
-            $text = $this->getUpdatedTextWithNewImagesWellMix($descr, $imgSrc, $imgArr);
-            dd($text);
-        }
-        exit();
-
-        //docs
-//        $has_docs = $product_crawler->filter('.files_block')->count();
-//        if ($has_docs) {
-//            $product_crawler->filter('.files_block')->each(function (Crawler $block) {
-//                $block->filter('.row')->children()->each(function (Crawler $file) {
-//                    $name = trim($file->filter('.description a')->text());
-//                    $url = $this->baseUrl . $file->filter('.description a')->attr('href');
-//                });
-//            });
+//        $has_descr = $product_crawler->filter('.descr-outer-wrapper .detail_text')->count();
+//        if ($has_descr) {
+//            $descr = $product_crawler->filter('.descr-outer-wrapper .detail_text')->html();
+//
+//            $descr_crawler = new Crawler($descr);
+//
+//            $has_images = $descr_crawler->filter('img')->count();
+//            $imgSrc = [];
+//            $imgArr = [];
+//            if ($has_images) {
+//                $upload_path = '/test/catalog/text/';
+//                $descr_crawler->filter('img')
+//                    ->each(
+//                        function (Crawler $image, $i) use ($upload_path, &$imgSrc, &$imgArr) {
+//                            $raw_url = $image->attr('data-src');
+//                            $url = $this->baseUrl . $raw_url;
+//                            $arr = explode('/', $url);
+//                            $file_name = array_pop($arr);
+//                            $file_name = str_replace('%20', '_', $file_name);
+//
+//                            if ($this->checkIsImageJpg($file_name)) {
+//                                if (!is_file(public_path($upload_path . $file_name))) {
+//                                    $this->downloadJpgFile($url, $upload_path, $file_name);
+//                                }
+//
+//                                $imgSrc[] = $raw_url;
+//                                $imgArr[] = $upload_path . $file_name;
+//                            }
+//                        }
+//                    );
+//            }
+//            $text = $this->getUpdatedTextWithNewImagesWellMix($descr, $imgSrc, $imgArr);
+//            dd($text);
 //        }
 
 
+        //общие документы - добавляем к каталогу
+        $has_common_docs = $product_crawler->filter('.files_block')->eq(0)->count();
+        if ($has_common_docs) {
+            $product_crawler->filter('.files_block')->eq(0)->each(
+                function (Crawler $block) {
+                    $block->filter('.row')->children()->each(
+                        function (Crawler $file) {
+                            $name = trim($file->filter('.description a')->text());
+                            $url = $this->baseUrl . $file->filter('.description a')->attr('href');
+                        }
+                    );
+                }
+            );
+        }
 
+        //все документы товаров - к каждому товару свой
+        $products_docs = [];
+        $has_products_docs = $product_crawler->filter('.files_block')->eq(1)->count();
+        if ($has_products_docs) {
+            $product_crawler->filter('.files_block')->eq(1)->each(
+                function (Crawler $block) use (&$products_docs) {
+                    $block->filter('.row')->children()->each(
+                        function (Crawler $file) use (&$products_docs) {
+                            $name = trim($file->filter('.description a')->text());
+                            $url = $this->baseUrl . $file->filter('.description a')->attr('href');
+
+                            $products_docs[] = ['name' => $name, 'url' => $url];
+                        }
+                    );
+                }
+            );
+        }
+        dd($products_docs);
+
+        exit();
 
         $js = $product_crawler->filter('.sku_props')->children()->last()->text();
         $start = strpos($js, 'OFFERS') + 8;
@@ -399,7 +489,7 @@ class WellMixProducts extends Command
                 'price' => $item['PRICE']['VALUE'],
                 'chars' => $chars_all,
                 'images' => $images_all,
-                'in_stock' => $item['COUNT_IN_ALL_WAREHOUSES'],
+                'in_stock' => $item['COUNT_IN_ALL_WAREHOUSES'] == 0 ? 0 : 1,
                 'parse_url' => $this->baseUrl . $item['URL']
             ];
 
@@ -411,8 +501,12 @@ class WellMixProducts extends Command
         var_dump($prods);
     }
 
-    public function getUpdatedTextWithNewImagesWellMix(string $text, array $imgSrc, array $imgArr): string
-    {
+    public
+    function getUpdatedTextWithNewImagesWellMix(
+        string $text,
+        array $imgSrc,
+        array $imgArr
+    ): string {
         if ($text == null) {
             return '';
         }
@@ -432,5 +526,4 @@ class WellMixProducts extends Command
 
         return $text;
     }
-
 }

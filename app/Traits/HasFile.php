@@ -22,6 +22,18 @@ trait HasFile{
         return $this->{$this->file_field} ? url(self::UPLOAD_URL . $alias . '/'  . $this->{$this->file_field}) : null;
     }
 
+    public function deleteSrcFile($alias = null) {
+        if(!$this->{$this->file_field}) return;
+
+        if(!$alias){
+            $upload_url_full = self::UPLOAD_URL;
+        } else {
+            $upload_url_full = self::UPLOAD_URL . $alias . '/';
+        }
+
+        @unlink(public_path($upload_url_full . $this->{$this->file_field}));
+    }
+
     /**
      * Converts bytes into human readable file size.
      *

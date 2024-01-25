@@ -12,6 +12,7 @@ use Fanky\Admin\Models\ProductDoc;
 use Fanky\Admin\Pagination;
 use Request;
 use Settings;
+use Symfony\Component\Debug\Debug;
 use Validator;
 use Text;
 use DB;
@@ -479,7 +480,7 @@ class AdminCatalogController extends AdminController
     {
         /** @var ProductImage $item */
         $item = ProductImage::findOrFail($id);
-        $item->deleteImage();
+        $item->deleteImage(null, $item->product->catalog->alias);
         $item->delete();
 
         return ['success' => true];
@@ -676,7 +677,7 @@ class AdminCatalogController extends AdminController
     public function postCatalogDelDoc($id): array
     {
         $item = CatalogDoc::findOrFail($id);
-        $item->deleteSrcFile();
+        $item->deleteSrcFile($item->catalog->alias);
         $item->delete();
 
         return ['success' => true];
@@ -745,7 +746,7 @@ class AdminCatalogController extends AdminController
     public function postProductDelDoc($id): array
     {
         $item = ProductDoc::findOrFail($id);
-        $item->deleteSrcFile();
+        $item->deleteSrcFile($item->catalog->alias);
         $item->delete();
 
         return ['success' => true];

@@ -16,14 +16,16 @@ trait HasImage{
 	public $image_field = 'image';
 	public $icon_field = 'menu_icon';
 
-	public function deleteImage($thumbs = null, $upload_url = null) {
+	public function deleteImage($thumbs = null, $alias = null) {
 		if(!$this->{$this->image_field}) return;
 		if(!$thumbs){
 			$thumbs = self::$thumbs;
 		}
-		if(!$upload_url){
+		if(!$alias){
 			$upload_url = self::UPLOAD_URL;
-		}
+		} else {
+            $upload_url = self::UPLOAD_URL . $alias . '/';
+        }
 
 		foreach ($thumbs as $thumb => $size){
 			$t = Thumb::url($upload_url . $this->{$this->image_field}, $thumb);
@@ -92,25 +94,6 @@ trait HasImage{
 		Thumb::make(self::UPLOAD_URL . $file_name, self::$thumbs);
 		return $file_name;
 	}
-
-    public static function uploadCustomImage($image) {
-        $file_name = md5(uniqid(rand(), true)) . '_' . time() . '.' . Str::lower($image->getClientOriginalExtension());
-        $image->move(public_path(self::UPLOAD_URL . 'custom/'), $file_name);
-        Image::make(public_path(self::UPLOAD_URL . 'custom/' . $file_name))
-            ->resize(1920, 1080, function ($constraint) {
-                $constraint->aspectRatio();
-                $constraint->upsize();
-            })
-            ->save(null, Settings::get('image_quality', 100));
-        Thumb::make(self::UPLOAD_URL . 'custom/' . $file_name, self::$thumbs);
-        return $file_name;
-    }
-
-    public static function uploadActionImage($image) {
-        $file_name = md5(uniqid(rand(), true)) . '_' . time() . '.' . Str::lower($image->getClientOriginalExtension());
-        $image->move(public_path(self::UPLOAD_URL), $file_name);
-        return $file_name;
-    }
 
     public static function uploadIcon($image) {
 		$file_name = md5(uniqid(rand(), true)) . '_' . time() . '.' . Str::lower($image->getClientOriginalExtension());

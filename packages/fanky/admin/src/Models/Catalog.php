@@ -64,7 +64,7 @@ use URL;
  */
 class Catalog extends Model
 {
-    use HasImage, HasFile, OgGenerate, HasH1, HasSeo, HasSeoOptimization, HasTopView;
+    use HasImage, HasFile, OgGenerate, HasH1, HasSeo, HasSeoOptimization;
 
     protected $table = 'catalogs';
     protected $_parents = [];
