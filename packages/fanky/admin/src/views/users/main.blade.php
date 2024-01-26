@@ -7,7 +7,11 @@
 
 @section('page_name')
 	<h1>Пользователи
-		<small><a href="{{ route('admin.users.edit') }}" onclick="popupAjax($(this).attr('href')); return false;">Добавить пользователя</a></small>
+		<small>
+			<a href="{{ route('admin.users.edit') }}" onclick="popupAjax($(this).attr('href')); return false;">
+				Добавить пользователя
+			</a>
+		</small>
 	</h1>
 @stop
 

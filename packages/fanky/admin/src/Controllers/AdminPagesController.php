@@ -2,6 +2,7 @@
 
 use Fanky\Admin\Models\Product;
 use Fanky\Admin\Models\SearchIndex;
+use Fanky\Auth\Auth;
 use Illuminate\Support\Str;
 use Request;
 use Validator;
@@ -80,13 +81,14 @@ class AdminPagesController extends AdminController {
 	}
 
 	public function postSave() {
-		$id = Request::input('id');
+        if (!Auth::user()->isAdmin) return ['alert' => 'Не хватает прав на действие!'];
+
+        $id = Request::input('id');
 		$data = Request::except(['setting', 'setting_group']);
 		$data = array_filter($data, function($key){
 			return !Str::startsWith($key, 'setting_file_');
 		}, ARRAY_FILTER_USE_KEY);
 		$image = Request::file('image');
-		$top_view = Request::file('top_view');
 		if (!array_get($data,'published')) $data['published'] = 0;
 		if (!array_get($data,'on_header')) $data['on_header'] = 0;
 		if (!array_get($data,'on_footer')) $data['on_footer'] = 0;
@@ -111,10 +113,7 @@ class AdminPagesController extends AdminController {
             $file_name = Page::uploadImage($image);
 			$data['image'] = $file_name;
 		}
-		if ($top_view) {
-            $file_name = Page::uploadTopView($top_view);
-			$data['top_view'] = $file_name;
-		}
+
 		// сохраняем страницу
 		if (!$page) {
 			$check_alias = false;
@@ -154,7 +153,11 @@ class AdminPagesController extends AdminController {
 			}
 		}
 
-		return ['success' => true, 'msg' => 'Изменения сохранены', 'row' => view('admin::pages.tree_item', ['item' => $page])->render()];
+		return [
+		    'success' => true,
+            'msg' => 'Изменения сохранены',
+            'row' => view('admin::pages.tree_item', ['item' => $page])->render()
+        ];
 	}
 
 	public function postReorder() {
@@ -172,7 +175,9 @@ class AdminPagesController extends AdminController {
 	}
 
 	public function postDelete($id) {
-		$page = Page::findOrFail($id);
+        if (!Auth::user()->isAdmin) return ['alert' => 'Не хватает прав на действие!'];
+
+        $page = Page::findOrFail($id);
 		if ($page->system == 1) {
 			return ['success' => false, 'msg' => 'Невозможно удалить системную страницу!'];
 		}
@@ -204,16 +209,4 @@ class AdminPagesController extends AdminController {
 	public function getImageManager() {
 		return view('admin::pages.imagemanager');
 	}
-
-    public function postTopViewDel($id): array
-    {
-        $page = Page::find($id);
-        if(!$page) return ['errors' => 'page not found'];
-
-        $page->deleteTopView();
-        $page->update(['top_view' => null]);
-
-        return ['success' => true];
-    }
-
 }

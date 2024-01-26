@@ -20,6 +20,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property string|null $deleted_at
  * @property-read mixed $role_name
  * @property-read mixed $status_name
+ * @property mixed isAdmin
+ * @property mixed isEditor
  * @method static bool|null forceDelete()
  * @method static \Illuminate\Database\Query\Builder|\App\User onlyTrashed()
  * @method static bool|null restore()
@@ -66,7 +68,7 @@ class User extends Model {
 
 	public static $roles = [
 		0 => '',
-		90 => 'Менеджер',
+		90 => 'Редактор',
 		100 => 'Администратор',
 	];
 
@@ -90,7 +92,13 @@ class User extends Model {
 		return isset(self::$statuses[$this->attributes['status']]) ? self::$statuses[$this->attributes['status']] : null;
 	}
 
-    public function getIsAdminAttribute() {
-        return true;
+    public function getIsAdminAttribute(): bool
+    {
+        return $this->role == 100;
+    }
+
+    public function getIsEditorAttribute(): bool
+    {
+        return $this->role == 90;
     }
 }

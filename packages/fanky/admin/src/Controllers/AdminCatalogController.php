@@ -10,6 +10,7 @@ use Fanky\Admin\Models\ParentCatalogFilter;
 use Fanky\Admin\Models\ProductChar;
 use Fanky\Admin\Models\ProductDoc;
 use Fanky\Admin\Pagination;
+use Fanky\Auth\Auth;
 use Request;
 use Settings;
 use Symfony\Component\Debug\Debug;
@@ -159,9 +160,10 @@ class AdminCatalogController extends AdminController
 
     public function postCatalogSave(): array
     {
+        if (!Auth::user()->isAdmin) return ['alert' => 'Не хватает прав на действие!'];
+
         $id = Request::input('id');
         $data = Request::except(['id', 'filters']);
-//        $filters = Request::get('filters');
 
         if (!array_get($data, 'alias')) {
             $data['alias'] = Text::translit($data['name']);
@@ -214,15 +216,6 @@ class AdminCatalogController extends AdminController
             $catalog->update($data);
         }
 
-        //сохраняем фильтры раздела
-//        foreach ($catalog->filters_list as $filter) {
-//            if (in_array($filter->id, $filters)) {
-//                $filter->update(['published' => 1]);
-//            } else {
-//                $filter->update(['published' => 0]);
-//            }
-//        }
-
         if ($redirect) {
             return ['redirect' => route('admin.catalog.catalogEdit', [$catalog->id])];
         } else {
@@ -251,6 +244,8 @@ class AdminCatalogController extends AdminController
      */
     public function postCatalogDelete($id): array
     {
+        if (!Auth::user()->isAdmin) return ['alert' => 'Не хватает прав на действие!'];
+
         $catalog = Catalog::findOrFail($id);
         $catalog->delete();
 
@@ -318,6 +313,8 @@ class AdminCatalogController extends AdminController
 
     public function postProductSave(): array
     {
+        if (!Auth::user()->isAdmin) return ['alert' => 'Не хватает прав на действие!'];
+
         $id = Request::get('id');
         $data = Request::except(['id']);
 
@@ -434,6 +431,8 @@ class AdminCatalogController extends AdminController
 
     public function postProductDelete($id): array
     {
+        if (!Auth::user()->isAdmin) return ['alert' => 'Не хватает прав на действие!'];
+
         $product = Product::findOrFail($id);
         foreach ($product->images as $item) {
             $item->deleteImage();

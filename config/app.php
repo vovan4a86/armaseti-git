@@ -114,8 +114,8 @@ return [
 		/*
 		 * Laravel Framework Service Providers...
 		 */
-		Illuminate\Auth\AuthServiceProvider::class,
-		Illuminate\Broadcasting\BroadcastServiceProvider::class,
+//		Illuminate\Auth\AuthServiceProvider::class,
+//		Illuminate\Broadcasting\BroadcastServiceProvider::class,
 		Illuminate\Cache\CacheServiceProvider::class,
 		Illuminate\Foundation\Providers\ConsoleSupportServiceProvider::class,
 		Illuminate\Cookie\CookieServiceProvider::class,
@@ -128,8 +128,8 @@ return [
 		Illuminate\Pagination\PaginationServiceProvider::class,
 		Illuminate\Pipeline\PipelineServiceProvider::class,
 		Illuminate\Queue\QueueServiceProvider::class,
-		Illuminate\Redis\RedisServiceProvider::class,
-		Illuminate\Auth\Passwords\PasswordResetServiceProvider::class,
+//		Illuminate\Redis\RedisServiceProvider::class,
+//		Illuminate\Auth\Passwords\PasswordResetServiceProvider::class,
 		Illuminate\Session\SessionServiceProvider::class,
 		Illuminate\Translation\TranslationServiceProvider::class,
 		Illuminate\Validation\ValidationServiceProvider::class,
@@ -153,14 +153,14 @@ return [
 		Barryvdh\Debugbar\ServiceProvider::class,
 		Unisharp\Laravelfilemanager\LaravelFilemanagerServiceProvider::class,
 		App\Providers\RouteServiceProvider::class,
-		App\Providers\BroadcastServiceProvider::class,
+//		App\Providers\BroadcastServiceProvider::class,
 		Intervention\Image\ImageServiceProvider::class,
 
 		/*
 		 * My Providers
 		 */
 		App\Providers\SiteServiceProvider::class,
-		Lavary\Menu\ServiceProvider::class,
+		Lavary\Menu\ServiceProvider::class
 	],
 
 	/*
@@ -176,7 +176,7 @@ return [
 
 	'aliases' => [
 
-		//'Auth'      => 'Illuminate\Support\Facades\Auth',
+//		'Auth'      => Illuminate\Support\Facades\Auth::class,
 		'App'       => Illuminate\Support\Facades\App::class,
 		'Artisan'   => Illuminate\Support\Facades\Artisan::class,
 		'Blade'     => Illuminate\Support\Facades\Blade::class,

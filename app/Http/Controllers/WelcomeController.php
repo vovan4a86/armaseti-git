@@ -19,7 +19,7 @@ class WelcomeController extends Controller {
 
         $catalog_on_main = Catalog::public()
             ->onMain()
-            ->with('public_children')
+            ->with(['public_children'])
             ->orderBy('order')
             ->get();
 

@@ -112,6 +112,7 @@ function catalogSave(form, e) {
             catalogImage = null;
             catalogIcon = null;
         }
+        if (json.alert) $(form).find('[type=submit]').after(autoHideMsg('red', urldecode(json.alert)));
     });
     return false;
 }
@@ -126,6 +127,8 @@ function catalogDel(elem) {
                 $(this).remove();
             });
         }
+        if (json.alert) alert(urldecode(json.alert));
+
     });
     return false;
 }
@@ -136,9 +139,6 @@ function productSave(form, e) {
     $.each($(form).serializeArray(), function (key, value) {
         data.append(value.name, value.value);
     });
-    if (specFile) {
-        data.append('spec', specFile);
-    }
     sendAjaxWithFile(url, data, function (json) {
         if (typeof json.errors != 'undefined') {
             applyFormValidate(form, json.errors);
@@ -150,9 +150,7 @@ function productSave(form, e) {
         }
         if (typeof json.redirect != 'undefined') document.location.href = urldecode(json.redirect);
         if (typeof json.msg != 'undefined') $(form).find('[type=submit]').after(autoHideMsg('green', urldecode(json.msg)));
-        if (typeof json.success != 'undefined' && json.success === true) {
-            specFile = null;
-        }
+        if (json.alert) $(form).find('[type=submit]').after(autoHideMsg('red', urldecode(json.alert)));
     });
     return false;
 }
@@ -162,11 +160,13 @@ function productDel(elem) {
     var url = $(elem).attr('href');
     sendAjax(url, {}, function (json) {
         if (typeof json.msg != 'undefined') alert(urldecode(json.msg));
-        if (typeof json.success != 'undefined' && json.success == true) {
+        if (typeof json.success != 'undefined' && json.success === true) {
             $(elem).closest('tr').fadeOut(300, function () {
                 $(this).remove();
             });
         }
+        if (json.alert) alert(urldecode(json.alert));
+
     });
     return false;
 }
@@ -273,8 +273,10 @@ $(document).ready(function () {
                         "action": function (obj) {
                             if (confirm("Действительно удалить страницу?")) {
                                 var url = '/admin/catalog/catalog-delete/' + $node.id;
-                                sendAjax(url, {}, function () {
-                                    document.location.href = '/admin/catalog';
+                                sendAjax(url, {}, function (json) {
+                                    // document.location.href = '/admin/catalog';
+                                    if (json.success) tree.delete_node($node);
+                                    if (json.alert) alert(urldecode(json.alert));
                                 })
                             }
                             // tree.delete_node($node);

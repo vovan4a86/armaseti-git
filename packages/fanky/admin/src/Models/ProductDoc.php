@@ -29,7 +29,7 @@ class ProductDoc extends Model {
 
     protected $table = 'product_docs';
 
-    const UPLOAD_URL = '/uploads/products-docs-test/';
+    const UPLOAD_URL = '/uploads/products-docs/';
     const DOC_ICON = '/adminlte/doc_icon.png';
 
     protected $guarded = ['id'];
@@ -38,7 +38,7 @@ class ProductDoc extends Model {
 
     public function product(): BelongsTo
     {
-        return $this->belongsTo(Product::class);
+        return $this->belongsTo(Product::class)->withDefault();
     }
 
 }

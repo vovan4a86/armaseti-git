@@ -29,7 +29,7 @@ class CatalogDoc extends Model {
 
     protected $table = 'catalog_docs';
 
-    const UPLOAD_URL = '/uploads/catalog-docs-test/';
+    const UPLOAD_URL = '/uploads/catalog-docs/';
     const DOC_ICON = '/adminlte/doc_icon.png';
 
     protected $guarded = ['id'];

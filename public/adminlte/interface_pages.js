@@ -1,6 +1,5 @@
 var newsImage = null;
 var fileGost = null;
-var topView = null;
 
 function newsImageAttache(elem, e){
     $.each(e.target.files, function(key, file)
@@ -16,37 +15,6 @@ function newsImageAttache(elem, e){
         }
     });
     $(elem).val('');
-}
-
-function topViewAttache(elem, e){
-    $.each(e.target.files, function(key, file)
-    {
-        if(file['size'] > max_file_size){
-            alert('Слишком большой размер файла. Максимальный размер 2Мб');
-        } else {
-            topView = file;
-            renderImage(file, function (imgSrc) {
-                var item = '<img class="img-polaroid" src="' + imgSrc + '" height="100" data-image="' + imgSrc + '" onclick="return popupImage($(this).data(\'image\'))">';
-                $('#top-view').html(item);
-            });
-        }
-    });
-    $(elem).val('');
-}
-
-function topViewDel(elem) {
-    if (!confirm('Удалить изображение?')) return false;
-    var url = $(elem).attr('href');
-    sendAjax(url, {}, function (json) {
-        if (typeof json.msg != 'undefined') alert(urldecode(json.msg));
-        if (typeof json.success != 'undefined' && json.success === true) {
-            const empty = '<p class="text-yellow">Изображение не загружено.</p>';
-            $(elem).closest('#top-view').fadeOut(300, function () {
-                $(this).html(empty);
-            });
-        }
-    });
-    return false;
 }
 
 function fileAttache(elem, e){
@@ -83,9 +51,6 @@ function pageSave(form, e) {
     if (newsImage) {
         data.append('image', newsImage);
     }
-    if (topView) {
-        data.append('top_view', topView);
-    }
     sendFiles(url, data, function (json) {
         if (typeof json.errors != 'undefined') {
             applyFormValidate(form, json.errors);
@@ -96,10 +61,10 @@ function pageSave(form, e) {
             $(form).find('[type=submit]').after(autoHideMsg('red', urldecode(errMsg.join(' '))));
         } else {
             newsImage = null;
-            topView = null;
         }
         if (typeof json.redirect != 'undefined') document.location.href = urldecode(json.redirect);
         if (typeof json.msg != 'undefined') $(form).find('[type=submit]').after(autoHideMsg('green', urldecode(json.msg)));
+        if (json.alert) $(form).find('[type=submit]').after(autoHideMsg('red', urldecode(json.alert)));
         if (typeof json.row != 'undefined') {
             var id = $('#page-id').val();
             $('#pages-tree li[data-id=' + id + '] .tree-item').replaceWith(urldecode(json.row));
@@ -114,7 +79,6 @@ function pageSave(form, e) {
                     $('#pages-tree li[data-id=' + parent + '] > ul').append(item);
                 }
             }
-            // console.log('id = ' + id + ', parent = ' + parent + ', cur_parent = ' + cur_parent);
         }
         if (typeof json.success != 'undefined' && json.success === true) {
             settingFiles = {};
@@ -128,11 +92,12 @@ function pageDel(elem) {
     var url = $(elem).attr('href');
     sendAjax(url, {}, function (json) {
         if (typeof json.msg != 'undefined') alert(urldecode(json.msg));
-        if (typeof json.success != 'undefined' && json.success == true) {
+        if (typeof json.success != 'undefined' && json.success === true) {
             $(elem).closest('li').fadeOut(300, function () {
                 $(this).remove();
             });
         }
+        if (json.alert) alert(urldecode(json.alert));
     });
     return false;
 }
@@ -223,15 +188,16 @@ $(document).ready(function () {
                         }
                     },
                     "Remove": {
-                        "_disabled": ($node.id == 1),
+                        "_disabled": ($node.id === 1),
                         "icon": "fa fa-trash text-red",
                         "label": "Удалить страницу",
                         "action": function (obj) {
                             if (confirm("Действительно удалить страницу?")) {
                                 var url = '/admin/pages/delete/' + $node.id;
-                                sendAjax(url, {}, function () {
+                                sendAjax(url, {}, function (json) {
                                     // document.location.href = '/admin/pages';
-                                    tree.delete_node($node);
+                                    if (json.success) tree.delete_node($node);
+                                    if (json.alert) alert(urldecode(json.alert));
                                 })
                             }
                             // tree.delete_node($node);

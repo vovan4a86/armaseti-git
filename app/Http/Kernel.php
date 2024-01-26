@@ -26,12 +26,13 @@ class Kernel extends HttpKernel {
 	 */
 	protected $routeMiddleware = [
 		'auth' => 'App\Http\Middleware\Authenticate',
-		'auth.basic' => 'Illuminate\Auth\Middleware\AuthenticateWithBasicAuth',
+//		'auth.basic' => 'Illuminate\Auth\Middleware\AuthenticateWithBasicAuth',
 		'auth.fanky' => 'Fanky\Auth\AuthMiddleware',
+		'admin.fanky' => 'Fanky\Auth\AdminMiddleware',
 		'guest' => 'App\Http\Middleware\RedirectIfAuthenticated',
 		'menu.admin' => 'Fanky\Admin\AdminMenuMiddleware',
 		'redirects' => 'App\Http\Middleware\RedirectsMiddleware',
-		'regions'	=> 'App\Http\Middleware\CityMiddleware'
+		'regions'	=> 'App\Http\Middleware\CityMiddleware',
 	];
 
 }

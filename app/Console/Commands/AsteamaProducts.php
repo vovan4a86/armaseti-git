@@ -45,9 +45,13 @@ class AsteamaProducts extends Command
 
     public function handle()
     {
+        $url = 'https://prompribor-kaluga.ru/local/ajax/ajax_item.php';
+        $response = $this->client->request('POST', $url);
+        dd($response);
+
 //        $this->test_catalog();
 //        $this->test_product();
-//        exit();
+        exit();
 
         foreach ($this->catalogList() as $catName => $catUrl) {
             $this->parseCatalog($catName, $catUrl, 15);
@@ -159,7 +163,6 @@ class AsteamaProducts extends Command
                     $file_name = $product->article . $ext;
 
                     $this->uploadProductImage($image_url, $file_name, $product);
-
                 }
 
                 $has_dop_photo = $product_crawler->filter('.product_dop_photo .fancybox')->count();
@@ -178,7 +181,6 @@ class AsteamaProducts extends Command
                                 $file_name = $product->article . '_' . $i . $ext;
 
                                 $this->uploadProductImage($image_url, $file_name, $product);
-
                             }
                         );
                 }
@@ -244,22 +246,24 @@ class AsteamaProducts extends Command
                         $imgArr = [];
                         $uploadCatalogTextImagesPath = '/uploads/catalogs-content-test/' . $catalog->alias . '/';
                         $text_crawler->filter('img')
-                            ->each(function (Crawler $image) use ($uploadCatalogTextImagesPath, &$imgArr, &$imgSrc) {
-                                $raw_url = $image->attr('src');
-                                $url = $this->baseUrl . $raw_url;
-                                $arr = explode('/', $raw_url);
-                                $file_name = array_pop($arr);
-                                $file_name = str_replace('%20', '_', $file_name);
+                            ->each(
+                                function (Crawler $image) use ($uploadCatalogTextImagesPath, &$imgArr, &$imgSrc) {
+                                    $raw_url = $image->attr('src');
+                                    $url = $this->baseUrl . $raw_url;
+                                    $arr = explode('/', $raw_url);
+                                    $file_name = array_pop($arr);
+                                    $file_name = str_replace('%20', '_', $file_name);
 
-                                if ($this->checkIsImageJpg($file_name)) {
-                                    if (!is_file(public_path($uploadCatalogTextImagesPath . $file_name))) {
-                                        $this->downloadJpgFile($url, $uploadCatalogTextImagesPath, $file_name);
+                                    if ($this->checkIsImageJpg($file_name)) {
+                                        if (!is_file(public_path($uploadCatalogTextImagesPath . $file_name))) {
+                                            $this->downloadJpgFile($url, $uploadCatalogTextImagesPath, $file_name);
+                                        }
+
+                                        $imgSrc[] = $raw_url;
+                                        $imgArr[] = $uploadCatalogTextImagesPath . $file_name;
                                     }
-
-                                    $imgSrc[] = $raw_url;
-                                    $imgArr[] = $uploadCatalogTextImagesPath . $file_name;
                                 }
-                            });
+                            );
                         $clean_text = $this->getUpdatedTextWithNewImages($text, $imgSrc, $imgArr);
                         $product->text = $clean_text;
                     } else {
@@ -283,7 +287,6 @@ class AsteamaProducts extends Command
                     $file_name = 'tech_passport_' . $product->article . $ext;
 
                     $this->uploadProductDoc($pdf_src, $file_name, $name, $product);
-
                 }
 
                 //сертификаты
@@ -445,7 +448,9 @@ class AsteamaProducts extends Command
         //скачать описание 1(0) блок - описание
         $has_description_block = $product_crawler->filter('.product_dop_modes_content')->eq(0)->count();
         if ($has_description_block) {
-            $doc_src = $product_crawler->filter('.product_dop_modes_content')->eq(0)->filter('a')->first()->attr('href');
+            $doc_src = $product_crawler->filter('.product_dop_modes_content')->eq(0)->filter('a')->first()->attr(
+                'href'
+            );
             $pdf_src = null;
             if ($this->checkIsFileDoc($doc_src)) {
                 $pdf_src = $this->baseUrl . $doc_src;
@@ -464,22 +469,24 @@ class AsteamaProducts extends Command
                 $imgArr = [];
                 $uploadCatalogTextImagesPath = '/uploads/catalogs-content-test/';
                 $text_crawler->filter('img')
-                    ->each(function (Crawler $image) use ($uploadCatalogTextImagesPath, &$imgArr, &$imgSrc) {
-                    $raw_url = $image->attr('src');
-                    $url = $this->baseUrl . $raw_url;
-                    $arr = explode('/', $raw_url);
-                    $file_name = array_pop($arr);
-                    $file_name = str_replace('%20', '_', $file_name);
+                    ->each(
+                        function (Crawler $image) use ($uploadCatalogTextImagesPath, &$imgArr, &$imgSrc) {
+                            $raw_url = $image->attr('src');
+                            $url = $this->baseUrl . $raw_url;
+                            $arr = explode('/', $raw_url);
+                            $file_name = array_pop($arr);
+                            $file_name = str_replace('%20', '_', $file_name);
 
-                    if ($this->checkIsImageJpg($file_name)) {
-                        if (!is_file(public_path($uploadCatalogTextImagesPath . $file_name))) {
-                            $this->downloadJpgFile($url, $uploadCatalogTextImagesPath, $file_name);
+                            if ($this->checkIsImageJpg($file_name)) {
+                                if (!is_file(public_path($uploadCatalogTextImagesPath . $file_name))) {
+                                    $this->downloadJpgFile($url, $uploadCatalogTextImagesPath, $file_name);
+                                }
+
+                                $imgSrc[] = $raw_url;
+                                $imgArr[] = $uploadCatalogTextImagesPath . $file_name;
+                            }
                         }
-
-                        $imgSrc[] = $raw_url;
-                        $imgArr[] = $uploadCatalogTextImagesPath . $file_name;
-                    }
-                });
+                    );
                 $clean_text = $this->getUpdatedTextWithNewImages($text, $imgSrc, $imgArr);
                 dd($clean_text);
             }

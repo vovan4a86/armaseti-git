@@ -1,99 +1,129 @@
-<?php namespace Fanky\Admin\Controllers;
+<?php
+namespace Fanky\Admin\Controllers;
 
 use Fanky\Admin\Models\NewsImage;
+use Fanky\Auth\Auth;
+use Illuminate\Support\Facades\Gate;
 use Request;
 use Validator;
 use Text;
 use Fanky\Admin\Models\News;
 
-class AdminNewsController extends AdminController {
+class AdminNewsController extends AdminController
+{
 
-	public function getIndex() {
-		$news = News::orderBy('date', 'desc')->paginate(100);
+    public function getIndex()
+    {
+        $news = News::orderBy('date', 'desc')->paginate(100);
 
-		return view('admin::news.main', ['news' => $news]);
+        return view('admin::news.main', ['news' => $news]);
 	}
 
-	public function getEdit($id = null) {
-		if (!$id || !($article = News::find($id))) {
-			$article = new News;
-			$article->date = date('Y-m-d');
-			$article->published = 1;
-		}
+    public function getEdit($id = null)
+    {
+        if (!$id || !($article = News::find($id))) {
+            $article = new News;
+            $article->date = date('Y-m-d');
+            $article->published = 1;
+        }
+        Gate::allows('edit-post', $article);
 
-		return view('admin::news.edit', ['article' => $article]);
-	}
+        return view('admin::news.edit', ['article' => $article]);
+    }
 
-	public function postSave() {
-		$id = Request::input('id');
-		$data = Request::only([
-            'date', 'name', 'aside',
-            'announce', 'text',
-            'published', 'alias',
-            'title', 'keywords',
-            'description', 'on_main']);
-		$image = Request::file('image');
-		$type = Request::get('type');
-		$data['type'] = array_get(['Новость', 'Статья', 'Акция'], $type);
+    public function postSave()
+    {
+        $id = Request::input('id');
+        $data = Request::only(
+            [
+                'date',
+                'name',
+                'aside',
+                'announce',
+                'text',
+                'published',
+                'alias',
+                'title',
+                'keywords',
+                'description',
+                'on_main'
+            ]
+        );
+        $image = Request::file('image');
+        $type = Request::get('type');
+        $data['type'] = array_get(['Новость', 'Статья', 'Акция'], $type);
 
-		if (!array_get($data, 'alias')) $data['alias'] = Text::translit($data['name']);
-		if (!array_get($data, 'title')) $data['title'] = $data['name'];
-		if (!array_get($data, 'published')) $data['published'] = 0;
-		if (!array_get($data, 'on_main')) $data['on_main'] = 0;
+        if (!array_get($data, 'alias')) {
+            $data['alias'] = Text::translit($data['name']);
+        }
+        if (!array_get($data, 'title')) {
+            $data['title'] = $data['name'];
+        }
+        if (!array_get($data, 'published')) {
+            $data['published'] = 0;
+        }
+        if (!array_get($data, 'on_main')) {
+            $data['on_main'] = 0;
+        }
 
-		// валидация данных
-		$validator = Validator::make(
-			$data,[
-				'name' => 'required',
-				'date' => 'required',
-			]);
-		if ($validator->fails()) {
-			return ['errors' => $validator->messages()];
-		}
+        // валидация данных
+        $validator = Validator::make(
+            $data,
+            [
+                'name' => 'required',
+                'date' => 'required',
+            ]
+        );
+        if ($validator->fails()) {
+            return ['errors' => $validator->messages()];
+        }
 
-		// Загружаем изображение
-		if ($image) {
-			$file_name = News::uploadImage($image);
-			$data['image'] = $file_name;
-		}
+        // Загружаем изображение
+        if ($image) {
+            $file_name = News::uploadImage($image);
+            $data['image'] = $file_name;
+        }
 
-		// сохраняем страницу
-		$article = News::find($id);
-		$redirect = false;
-		if (!$article) {
-			$article = News::create($data);
-			$redirect = true;
-		} else {
-			if ($article->image && isset($data['image'])) {
-				$article->deleteImage();
-			}
-			$article->update($data);
-		}
+        // сохраняем страницу
+        $article = News::find($id);
+        $redirect = false;
+        if (!$article) {
+            $article = News::create($data);
+            $redirect = true;
+        } else {
+            if ($article->image && isset($data['image'])) {
+                $article->deleteImage();
+            }
+            $article->update($data);
+        }
 
-		if($redirect){
-			return ['redirect' => route('admin.news.edit', [$article->id])];
-		} else {
-			return ['msg' => 'Изменения сохранены.'];
-		}
+        if ($redirect) {
+            return ['redirect' => route('admin.news.edit', [$article->id])];
+        } else {
+            return ['msg' => 'Изменения сохранены.'];
+        }
+    }
 
-	}
+    public function postDelete($id)
+    {
+        $article = News::find($id);
+        $article->delete();
 
-	public function postDelete($id) {
-		$article = News::find($id);
-		$article->delete();
+        return ['success' => true];
+    }
 
-		return ['success' => true];
-	}
+    public function postDeleteImage($id)
+    {
+        $news = News::find($id);
+        if (!$news) {
+            return ['error' => 'news_not_found'];
+        }
 
-	public function postDeleteImage($id) {
-		$news = News::find($id);
-		if(!$news) return ['error' => 'news_not_found'];
+        $news->deleteImage();
+        $news->update(['image' => null]);
 
-		$news->deleteImage();
-		$news->update(['image' => null]);
-
-		return ['success' => true];
-	}
+        return ['success' => true];
+    }
 
     public function postNewsImageUpload($news_id): array
     {

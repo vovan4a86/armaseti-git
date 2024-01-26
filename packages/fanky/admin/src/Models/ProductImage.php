@@ -33,16 +33,16 @@ class ProductImage extends Model {
 
 	public $timestamps = false;
 
-	const UPLOAD_URL = '/uploads/products_test/';
+	const UPLOAD_URL = '/uploads/products/';
 
 	public static $thumbs = [
 		1 => '100x100', //admin product
-		2 => '277x181', //card slider
+		2 => '273x178|fit', //card slider
 		3 => '306x306|fit', //single
 	];
 
     public function product(): BelongsTo
     {
-        return $this->belongsTo(Product::class);
+        return $this->belongsTo(Product::class)->withDefault();
     }
 }

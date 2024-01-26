@@ -1,7 +1,12 @@
 <?php namespace Fanky\Auth;
 
+use App\Policies\NewsPolicy;
+use App\Policies\UserPolicy;
+use Fanky\Admin\Models\News;
 use Illuminate\Support\ServiceProvider;
+//use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 use App\User;
+use Illuminate\Support\Facades\Gate;
 
 class AuthServiceProvider extends ServiceProvider {
 
@@ -20,7 +25,7 @@ class AuthServiceProvider extends ServiceProvider {
         {
             $user->remember_token = str_random(100);
         });
-        
+
         require __DIR__.'/routes.php';
     }
 

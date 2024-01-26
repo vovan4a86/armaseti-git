@@ -1,4 +1,4 @@
- {
+{
 	"name": "laravel/laravel",
 	"description": "The Laravel Framework.",
 	"keywords": ["framework", "laravel"],
@@ -30,7 +30,8 @@
 		"phpunit/phpunit": "~8.5",
 		"symfony/thanks": "^1.0",
 		"symfony/css-selector": "3.1.*",
-		"symfony/dom-crawler": "^5.4"
+		"symfony/dom-crawler": "^5.4",
+		"beyondcode/laravel-query-detector": "^1.8"
 	},
 	"autoload": {
         "files": [

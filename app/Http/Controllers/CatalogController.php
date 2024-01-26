@@ -127,6 +127,7 @@ class CatalogController extends Controller
             //фильтры товаров, кроме цены и наличия
             if (!count($data_filter)) {
                 $products = $products_query
+                    ->with(['images', 'catalog'])
                     ->paginate(Settings::get('products_per_page', 9))
                     ->appends($appends);
             } else {
@@ -151,6 +152,8 @@ class CatalogController extends Controller
                 $products = $products_query
                     ->with(
                         [
+                            'images',
+                            'catalog',
                             'chars' => function ($query) use ($result_filters) {
                                 $query->orWhere($result_filters);
                             }
@@ -163,6 +166,7 @@ class CatalogController extends Controller
             //чистая загрузка страницы без фильтрации
             $products = Product::whereIn('catalog_id', $children_ids)
                 ->public()
+                ->with(['images', 'catalog'])
                 ->paginate(Settings::get('products_per_page', 9));
             $query_string = '';
         }
