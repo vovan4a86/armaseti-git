@@ -47,7 +47,32 @@ class AdlProducts extends Command
     {
 //        $this->test_product_list();
 //        $this->test_product();
-//        exit();
+        exit();
+        $products = Product::with('chars')->get();
+        $total = count($products);
+        foreach ($products as $n => $product) {
+            $this->info(($n + 1) . ' / ' . $total);
+            $catalog_id = $product->catalog_id;
+            $chars = $product->chars;
+
+            if (count($chars)) {
+                foreach ($chars as $char) {
+                    $catalog_filter = CatalogFilter::whereCatalogId($catalog_id)
+                        ->whereName($char->name)
+                        ->first();
+
+                    if (!$catalog_filter) {
+                        CatalogFilter::create([
+                            'catalog_id' => $catalog_id,
+                            'name' => $char->name,
+                            'published' => 1,
+                            'order' => CatalogFilter::whereCatalogId($catalog_id)->max('order') + 1
+                        ]);
+                    }
+                }
+            }
+        }
+        exit();
 
         $parent = Catalog::where('name', 'Вентили')->first();
         foreach ($this->catalogList() as $catName => $catUrl) {

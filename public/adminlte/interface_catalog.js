@@ -79,6 +79,7 @@ function catalogContent(elem) {
 }
 
 function catalogSave(form, e) {
+    e.preventDefault();
     const url = $(form).attr('action');
     let data = new FormData();
     $.each($(form).serializeArray(), function (key, value) {
@@ -90,6 +91,24 @@ function catalogSave(form, e) {
     if (catalogIcon) {
         data.append('icon', catalogIcon);
     }
+    console.log(data);
+    return;
+    const filters = $('.filter input');
+    data.delete('filters[]');
+
+    $.each(filters, function (i, elem) {
+        let filter_array = [];
+        const id =  $(elem).val().toString();
+        if ($(elem).prop('checked')) {
+            filter_array = new Array(id, 1);
+        } else {
+            filter_array = new Array(id, 0);;
+        }
+        data.append('filters[]', filter_array);
+        console.log(filter_array);
+    });
+    // console.log(filter_array);
+    // return;
     sendFiles(url, data, function (json) {
         if (typeof json.row != 'undefined') {
             if ($('#users-list tr[data-id=' + json.id + ']').length) {

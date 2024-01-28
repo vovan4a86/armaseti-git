@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Fanky\Admin\Models\Catalog;
+use Fanky\Admin\Models\CatalogFilter;
 use Fanky\Admin\Models\Page;
 use Fanky\Admin\Models\ParentCatalogFilter;
 use Fanky\Admin\Models\Product;
@@ -174,12 +175,14 @@ class CatalogController extends Controller
         //макс цена для фильтра
         $filter_max_price = $category->getProductMaxPriceInCatalog();
 
-        //фильтры товаров
-        $root_category = $category->findRootCategory();
-        $all_filters = ParentCatalogFilter::where('catalog_id', $root_category->id)
-            ->public()
-            ->orderBy('order')
-            ->get();
+        //фильтры товаров старый вариант
+//        $root_category = $category->findRootCategory();
+//        $all_filters = ParentCatalogFilter::where('catalog_id', $root_category->id)
+//            ->public()
+//            ->orderBy('order')
+//            ->get();
+
+        $all_filters = $category->getPublicRecurseFilterList();
 
         $filters_list = [];
         foreach ($all_filters as $filter) {

@@ -119,9 +119,12 @@ class AdminCatalogController extends AdminController
 
 //        $catalogFiltersList = $catalog->parent_id == 0 ? $catalog->getRecurseFilterList() : [];
 
-        $catalogFiltersList = ParentCatalogFilter::where('catalog_id', $catalog->id)
-            ->orderBy('order')
-            ->get();
+//        $catalogFiltersList = ParentCatalogFilter::where('catalog_id', $catalog->id)
+//            ->orderBy('order')
+//            ->get();
+
+        $catalogFiltersList = $catalog->getRecurseFilterList();
+//        dd($catalogFiltersList);
 
 //        $show_catalog_filters = [];
 //        foreach ($catalogFiltersList as $name) {
@@ -160,7 +163,9 @@ class AdminCatalogController extends AdminController
 
     public function postCatalogSave(): array
     {
-        if (!Auth::user()->isAdmin) return ['alert' => 'Не хватает прав на действие!'];
+        if (!Auth::user()->isAdmin) {
+            return ['alert' => 'Не хватает прав на действие!'];
+        }
 
         $id = Request::input('id');
         $data = Request::except(['id', 'filters']);
@@ -180,6 +185,8 @@ class AdminCatalogController extends AdminController
 
         $image = Request::file('image');
         $icon = Request::file('icon');
+        $filters = Request::get('filters');
+        \Debugbar::log($filters);
 
         // валидация данных
         $validator = Validator::make(
@@ -214,6 +221,16 @@ class AdminCatalogController extends AdminController
             $redirect = true;
         } else {
             $catalog->update($data);
+
+//            if (!count($catalog->children)) {
+                $catalog_filters = $catalog->filters_list()->pluck('id');
+                CatalogFilter::whereIn('id', $catalog_filters)->update(['published' => 1]);
+                foreach ($catalog_filters as $filter_id) {
+                    if (!in_array($filter_id, $filters)) {
+                        CatalogFilter::whereId($filter_id)->update(['published' => 0]);
+                    }
+                }
+//            }
         }
 
         if ($redirect) {
@@ -244,7 +261,9 @@ class AdminCatalogController extends AdminController
      */
     public function postCatalogDelete($id): array
     {
-        if (!Auth::user()->isAdmin) return ['alert' => 'Не хватает прав на действие!'];
+        if (!Auth::user()->isAdmin) {
+            return ['alert' => 'Не хватает прав на действие!'];
+        }
 
         $catalog = Catalog::findOrFail($id);
         $catalog->delete();
@@ -313,7 +332,9 @@ class AdminCatalogController extends AdminController
 
     public function postProductSave(): array
     {
-        if (!Auth::user()->isAdmin) return ['alert' => 'Не хватает прав на действие!'];
+        if (!Auth::user()->isAdmin) {
+            return ['alert' => 'Не хватает прав на действие!'];
+        }
 
         $id = Request::get('id');
         $data = Request::except(['id']);
@@ -395,7 +416,7 @@ class AdminCatalogController extends AdminController
                         [
                             'catalog_id' => $product->catalog_id,
                             'name' => array_get($char, 'name'),
-                            'published' => 0,
+                            'published' => 1,
                             'order' => CatalogFilter::where('catalog_id', $product->catalog_id)->max('order') + 1
                         ]
                     );
@@ -431,7 +452,9 @@ class AdminCatalogController extends AdminController
 
     public function postProductDelete($id): array
     {
-        if (!Auth::user()->isAdmin) return ['alert' => 'Не хватает прав на действие!'];
+        if (!Auth::user()->isAdmin) {
+            return ['alert' => 'Не хватает прав на действие!'];
+        }
 
         $product = Product::findOrFail($id);
         foreach ($product->images as $item) {
@@ -494,7 +517,7 @@ class AdminCatalogController extends AdminController
 
         $hasLastCharName = ProductChar::where('name', $char->name)->count() == 1;
 
-        if($hasLastCharName) {
+        if ($hasLastCharName) {
             $c_filter = CatalogFilter::where('name', $char->name)
                 ->where('catalog_id', $char->catalog_id)->first();
             $c_filter->delete();
@@ -514,11 +537,16 @@ class AdminCatalogController extends AdminController
         return ['success' => true];
     }
 
-    public function postProductUpdateOrderFilter(): array
+    public function postCatalogFilterUpdateOrder(): array
     {
         $sorted = Request::input('sorted', []);
+        $catalog_id = Request::get('catalog_id');
+        \Debugbar::log($catalog_id);
         foreach ($sorted as $order => $id) {
-            DB::table('catalog_parent_filters')->where('id', $id)->update(array('order' => $order));
+            DB::table('catalog_filters')
+                ->where('catalog_id', $catalog_id)
+                ->where('id', $id)
+                ->update(array('order' => $order));
         }
 
         return ['success' => true];
@@ -599,9 +627,11 @@ class AdminCatalogController extends AdminController
     public function postProductToggleIsNew($id): array
     {
         $product = Product::find($id);
-        if(!$product) return ['success' => false];
+        if (!$product) {
+            return ['success' => false];
+        }
 
-        if($product->is_new) {
+        if ($product->is_new) {
             $product->update(['is_new' => 0]);
         } else {
             $product->update(['is_new' => 1]);
@@ -613,9 +643,11 @@ class AdminCatalogController extends AdminController
     public function postProductToggleIsHit($id): array
     {
         $product = Product::find($id);
-        if(!$product) return ['success' => false];
+        if (!$product) {
+            return ['success' => false];
+        }
 
-        if($product->is_hit) {
+        if ($product->is_hit) {
             $product->update(['is_hit' => 0]);
         } else {
             $product->update(['is_hit' => 1]);

@@ -25,9 +25,9 @@
             <li class="{{ isset($tab) && $tab === 'docs' ? 'active' : '' }}"><a href="#tab_docs" data-toggle="tab">Документы
                     ({{ count($catalog->docs) }})</a></li>
 
-            @if($catalog->parent_id == 0)
+{{--            @if($catalog->parent_id == 0)--}}
                 <li><a href="#tab_3" data-toggle="tab">Фильтры раздела</a></li>
-            @endif
+{{--            @endif--}}
 
             @if($catalog->id)
                 <li class="pull-right">
@@ -145,7 +145,7 @@
                 @include('admin::catalog.tabs_catalog.tab_docs')
             </div>
 
-            @if($catalog->parent_id == 0)
+{{--            @if($catalog->parent_id == 0)--}}
                 <div class="tab-pane" id="tab_3">
                     @if(count($catalogFiltersList))
                         <div style="display: flex; flex-direction: column;" class="catalog_filters">
@@ -157,8 +157,7 @@
                                     </div>
                                     <div class="form-group">
                                         <input type="checkbox" name="filters[]" id="f_{{ $item->id }}"
-                                               value="{{ $item->id }}" {{ $item->published ? 'checked' : '' }}
-                                               onclick="updateCatalogFilter(this)">
+                                               value="{{ $item->id }}" {{ $item->published ? 'checked' : '' }}>
                                         <label for="f_{{ $item->id }}"
                                                style="margin-right: 10px;">{{ $item->name }}</label>
                                     </div>
@@ -168,9 +167,10 @@
                         <script type="text/javascript">
                             $(".catalog_filters").sortable({
                                 update: function () {
-                                    let url = "{{ route('admin.catalog.product-update-order-filter') }}";
+                                    let url = "{{ route('admin.catalog.catalog-filter-update-order') }}";
                                     let data = {};
                                     data.sorted = $('.catalog_filters').sortable("toArray", {attribute: 'data-id'});
+                                    data.catalog_id = $('input[name=id]').val();
                                     sendAjax(url, data);
                                 },
                             }).disableSelection();
@@ -184,7 +184,7 @@
                         <p>Нет фильтров</p>
                     @endif
                 </div>
-            @endif
+{{--            @endif--}}
 
             <div class="box-footer">
                 <button type="submit" class="btn btn-primary">Сохранить</button>

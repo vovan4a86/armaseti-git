@@ -180,37 +180,35 @@ class Catalog extends Model
         if (!count($this->children)) {
             return $this->filters_list()
                 ->groupBy('name')
+                ->orderBy('order')
                 ->get();
         }
-
-//            ->select('id', 'name', 'published')
-//            ->pluck('name', 'id')
-//            ->all();
 
         $children_ids = $this->getRecurseChildrenIds();
 
         return CatalogFilter::whereIn('catalog_id', $children_ids)
             ->groupBy('name')
+            ->orderBy('order')
             ->get();
-//       $res = [];
-//       foreach ($f as $elem) {
-//           $res[] = [$elem->id, $elem->name];
-//       }
-//       return $res;
+    }
 
-//        $show_catalog_filters = [];
-//        foreach ($f as $name) {
-//             $arr = ProductChar::whereIn('catalog_id', $children_ids)
-//                ->where('name', $name)
-//                ->select('value')
-//                ->distinct()
-//                ->pluck('value')
-//                ->all();
-//
-//            natsort($arr);
-//            $show_catalog_filters[$name] = $arr;
-//        }
+    public function getPublicRecurseFilterList()
+    {
+        if (!count($this->children)) {
+            return $this->filters_list()
+                ->public()
+                ->groupBy('name')
+                ->orderBy('order')
+                ->get();
+        }
 
+        $children_ids = $this->getRecurseChildrenIds();
+
+        return CatalogFilter::whereIn('catalog_id', $children_ids)
+            ->public()
+            ->groupBy('name')
+            ->orderBy('order')
+            ->get();
     }
 
     public function scopePublic($query)
