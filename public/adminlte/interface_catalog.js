@@ -91,24 +91,17 @@ function catalogSave(form, e) {
     if (catalogIcon) {
         data.append('icon', catalogIcon);
     }
-    console.log(data);
-    return;
     const filters = $('.filter input');
     data.delete('filters[]');
 
     $.each(filters, function (i, elem) {
-        let filter_array = [];
-        const id =  $(elem).val().toString();
+        const id = $(elem).val();
         if ($(elem).prop('checked')) {
-            filter_array = new Array(id, 1);
+            data.append('filters[]', [id, 1]);
         } else {
-            filter_array = new Array(id, 0);;
+            data.append('filters[]', [id, 0]);
         }
-        data.append('filters[]', filter_array);
-        console.log(filter_array);
     });
-    // console.log(filter_array);
-    // return;
     sendFiles(url, data, function (json) {
         if (typeof json.row != 'undefined') {
             if ($('#users-list tr[data-id=' + json.id + ']').length) {
@@ -242,7 +235,7 @@ function updateCatalogFilter(elem) {
     const id = $(elem).val();
     const url = '/ajax/update-catalog-filter';
 
-    sendAjax(url, {id}, function(json) {
+    sendAjax(url, {id}, function (json) {
         if (json.success) {
             if (typeof json.msg != 'undefined') $(elem).closest('form').find('[type=submit]').after(autoHideMsg('green', urldecode(json.msg)));
 
@@ -251,6 +244,41 @@ function updateCatalogFilter(elem) {
         }
     })
 }
+
+function catalogFilterEdit(elem, e) {
+    e.preventDefault();
+    const filter_id = $(elem).closest('.form-group').find('input').val();
+    const url = $(elem).attr('href');
+    popupAjaxWithData(url, {filter_id});
+}
+
+function catalogFilterSaveData(form, e) {
+    e.preventDefault();
+    const url = $(form).attr('action');
+    const data = $(form).serialize();
+    sendAjax(url, data, function (json) {
+        if (typeof json.success != 'undefined' && json.success === true) {
+            popupClose();
+            location.href = json.redirect;
+        }
+    });
+}
+
+function catalogFilterDelete(elem) {
+    if (!confirm('Удаление фильтра также произойдет во всех вложенных разделах, а так же удалиться соответствующая характеристика у всех товаров разделов. Удаляем?')) return false;
+    const filter_id = $(elem).closest('.form-group').find('input').val();
+    const url = $(elem).attr('href');
+    sendAjax(url, {filter_id}, function (json) {
+        if (typeof json.msg != 'undefined') alert(urldecode(json.msg));
+        if (typeof json.success != 'undefined' && json.success === true) {
+            $(elem).closest('.filter').fadeOut(300, function () {
+                $(this).remove();
+            });
+        }
+    });
+    return false;
+}
+
 
 $(document).ready(function () {
     $('#pages-tree').jstree({
@@ -321,13 +349,12 @@ $(document).ready(function () {
 });
 
 //doc catalog
-function catalogDocUpload(elem, e){
+function catalogDocUpload(elem, e) {
     var url = $(elem).data('url');
     files = e.target.files;
     var data = new FormData();
-    $.each(files, function(key, value)
-    {
-        if(value['size'] > max_file_size){
+    $.each(files, function (key, value) {
+        if (value['size'] > max_file_size) {
             alert('Слишком большой размер файла. Максимальный размер 10Мб');
         } else {
             data.append('docs[]', value);
@@ -335,36 +362,38 @@ function catalogDocUpload(elem, e){
     });
     $(elem).val('');
 
-    sendFiles(url, data, function(json){
+    sendFiles(url, data, function (json) {
         if (typeof json.html != 'undefined') {
             $('.docs_list').append(urldecode(json.html));
         }
     });
 }
 
-function catalogDocDel(elem){
+function catalogDocDel(elem) {
     if (!confirm('Удалить документ?')) return false;
     var url = $(elem).attr('href');
-    sendAjax(url, {}, function(json){
+    sendAjax(url, {}, function (json) {
         if (typeof json.msg != 'undefined') alert(urldecode(json.msg));
         if (typeof json.success != 'undefined' && json.success === true) {
-            $(elem).closest('.docs_item').fadeOut(300, function(){ $(this).remove(); });
+            $(elem).closest('.docs_item').fadeOut(300, function () {
+                $(this).remove();
+            });
         }
     });
     return false;
 }
 
-function catalogDocEdit(elem, e){
+function catalogDocEdit(elem, e) {
     e.preventDefault();
     var url = $(elem).attr('href');
     popupAjax(url);
 }
 
-function catalogDocDataSave(form, e){
+function catalogDocDataSave(form, e) {
     e.preventDefault();
     var url = $(form).attr('action');
     var data = $(form).serialize();
-    sendAjax(url, data, function(json){
+    sendAjax(url, data, function (json) {
         if (typeof json.success != 'undefined' && json.success === true) {
             popupClose();
             location.href = json.redirect;
@@ -373,13 +402,12 @@ function catalogDocDataSave(form, e){
 }
 
 //doc product
-function productDocUpload(elem, e){
+function productDocUpload(elem, e) {
     var url = $(elem).data('url');
     files = e.target.files;
     var data = new FormData();
-    $.each(files, function(key, value)
-    {
-        if(value['size'] > max_file_size){
+    $.each(files, function (key, value) {
+        if (value['size'] > max_file_size) {
             alert('Слишком большой размер файла. Максимальный размер 10Мб');
         } else {
             data.append('docs[]', value);
@@ -387,36 +415,38 @@ function productDocUpload(elem, e){
     });
     $(elem).val('');
 
-    sendFiles(url, data, function(json){
+    sendFiles(url, data, function (json) {
         if (typeof json.html != 'undefined') {
             $('.docs_list').append(urldecode(json.html));
         }
     });
 }
 
-function productDocDel(elem){
+function productDocDel(elem) {
     if (!confirm('Удалить документ?')) return false;
     var url = $(elem).attr('href');
-    sendAjax(url, {}, function(json){
+    sendAjax(url, {}, function (json) {
         if (typeof json.msg != 'undefined') alert(urldecode(json.msg));
         if (typeof json.success != 'undefined' && json.success == true) {
-            $(elem).closest('.images_item').fadeOut(300, function(){ $(this).remove(); });
+            $(elem).closest('.images_item').fadeOut(300, function () {
+                $(this).remove();
+            });
         }
     });
     return false;
 }
 
-function productDocEdit(elem, e){
+function productDocEdit(elem, e) {
     e.preventDefault();
     var url = $(elem).attr('href');
     popupAjax(url);
 }
 
-function productDocDataSave(form, e){
+function productDocDataSave(form, e) {
     e.preventDefault();
     var url = $(form).attr('action');
     var data = $(form).serialize();
-    sendAjax(url, data, function(json){
+    sendAjax(url, data, function (json) {
         if (typeof json.success != 'undefined' && json.success === true) {
             popupClose();
             location.href = json.redirect;
@@ -429,7 +459,7 @@ function addProductChar(link, e) {
     e.preventDefault();
     let container = $(link).prev();
     let row = container.find('.row:last');
-     let $newRow = $(document.createElement('div'));
+    let $newRow = $(document.createElement('div'));
     $newRow.addClass('row row-chars');
     $newRow.html(row.html());
     row.before($newRow);
@@ -440,7 +470,7 @@ function delProductChar(elem, e) {
     if (!confirm('Удалить характеристику?')) return false;
     const url = $(elem).attr('href');
     sendAjax(url, {}, function (json) {
-        if(json.success) {
+        if (json.success) {
             $(elem).closest('.row').fadeOut(300, function () {
                 $(this).remove();
             });
@@ -549,32 +579,32 @@ function deleteProductsImage(btn, e, catalogId) {
     })
 }
 
-function toggleIsNew(elem){
+function toggleIsNew(elem) {
     const id = $(elem).closest('tr').data('id');
     const url = '/admin/catalog/product-toggle-is-new/' + id;
 
-    sendAjax(url, {}, function(json) {
-       if(json.success) {
-           if(json.active) {
-               $(elem).prop('checked', 'checked')
-           } else {
-               $(elem).prop('checked', false)
-           }
-       }
+    sendAjax(url, {}, function (json) {
+        if (json.success) {
+            if (json.active) {
+                $(elem).prop('checked', 'checked')
+            } else {
+                $(elem).prop('checked', false)
+            }
+        }
     });
 }
 
-function toggleIsHit(elem){
+function toggleIsHit(elem) {
     const id = $(elem).closest('tr').data('id');
     const url = '/admin/catalog/product-toggle-is-hit/' + id;
 
-    sendAjax(url, {}, function(json) {
-       if(json.success) {
-           if(json.active) {
-               $(elem).prop('checked', 'checked')
-           } else {
-               $(elem).prop('checked', false)
-           }
-       }
+    sendAjax(url, {}, function (json) {
+        if (json.success) {
+            if (json.active) {
+                $(elem).prop('checked', 'checked')
+            } else {
+                $(elem).prop('checked', false)
+            }
+        }
     });
 }

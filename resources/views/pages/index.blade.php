@@ -50,12 +50,17 @@
                                                     <div class="s-card__count">{{ $category->getRecurseProductsCountWithEnd() }}</div>
                                                     <div class="s-card__view">
                                                         <picture>
-                                                            <source srcset="/static/images/common/cat-10.webp"
-                                                                    type="image/webp"/>
-                                                            <img class="s-card__pic"
-                                                                 src="/static/images/common/cat-10.png"
-                                                                 width="130" height="130" alt="{{ $category->name }}"
-                                                                 loading="lazy"/>
+                                                            @if($category->image)
+                                                                <img class="s-card__pic"
+                                                                     src="{{ $category->thumb(2) }}"
+                                                                     width="130" height="130" alt="{{ $category->name }}"
+                                                                     loading="lazy"/>
+                                                            @else
+                                                                <img class="s-card__pic"
+                                                                     src="{{ \Fanky\Admin\Models\Catalog::NO_CATALOG_IMAGE }}"
+                                                                     width="130" height="130" alt="{{ $category->name }}"
+                                                                     loading="lazy"/>
+                                                            @endif
                                                         </picture>
                                                     </div>
                                                 </div>

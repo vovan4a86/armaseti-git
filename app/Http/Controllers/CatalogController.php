@@ -128,7 +128,7 @@ class CatalogController extends Controller
             //фильтры товаров, кроме цены и наличия
             if (!count($data_filter)) {
                 $products = $products_query
-                    ->with(['images', 'catalog'])
+//                    ->with(['images', 'catalog'])
                     ->paginate(Settings::get('products_per_page', 9))
                     ->appends($appends);
             } else {
@@ -148,13 +148,14 @@ class CatalogController extends Controller
                         $appends[$name] = $values;
                     }
                 }
+                \Debugbar::log($result_filters);
 
                 //фильтруем по характеристикам товара
                 $products = $products_query
                     ->with(
                         [
-                            'images',
-                            'catalog',
+//                            'images',
+//                            'catalog',
                             'chars' => function ($query) use ($result_filters) {
                                 $query->orWhere($result_filters);
                             }
@@ -174,13 +175,6 @@ class CatalogController extends Controller
 
         //макс цена для фильтра
         $filter_max_price = $category->getProductMaxPriceInCatalog();
-
-        //фильтры товаров старый вариант
-//        $root_category = $category->findRootCategory();
-//        $all_filters = ParentCatalogFilter::where('catalog_id', $root_category->id)
-//            ->public()
-//            ->orderBy('order')
-//            ->get();
 
         $all_filters = $category->getPublicRecurseFilterList();
 

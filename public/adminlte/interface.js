@@ -188,6 +188,12 @@ function popupAjax(url){
 	}, 'html');
 }
 
+function popupAjaxWithData(url, data){
+	sendAjax(url, data, function(html){
+		popup(html);
+	}, 'html');
+}
+
 function urldecode(str) {
    return decodeURIComponent((str+'').replace(/\+/g, '%20'));
 }

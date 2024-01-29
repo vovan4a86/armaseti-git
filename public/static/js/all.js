@@ -3582,9 +3582,12 @@ var applyFilter = function applyFilter() {
     jquery__WEBPACK_IMPORTED_MODULE_0___default()(btn).hide();
     sendAjax(ajax_url, data, function (json) {
       history.pushState('', '', json.current_url);
-      if (json.items) {
-        jquery__WEBPACK_IMPORTED_MODULE_0___default()(news_list).empty();
+      jquery__WEBPACK_IMPORTED_MODULE_0___default()(news_list).empty();
+      if (json.items.length > 0) {
         jquery__WEBPACK_IMPORTED_MODULE_0___default()(news_list).append(json.items);
+      } else {
+        var no_products_msg = '<div>Нет подходящих товаров</div>';
+        jquery__WEBPACK_IMPORTED_MODULE_0___default()(news_list).append(no_products_msg);
       }
       if (json.btn) {
         jquery__WEBPACK_IMPORTED_MODULE_0___default()(btn).replaceWith(json.btn);

@@ -117,31 +117,15 @@ class AdminCatalogController extends AdminController
             ->pluck('id', 'name')
             ->all();
 
-//        $catalogFiltersList = $catalog->parent_id == 0 ? $catalog->getRecurseFilterList() : [];
-
-//        $catalogFiltersList = ParentCatalogFilter::where('catalog_id', $catalog->id)
-//            ->orderBy('order')
-//            ->get();
-
+        $tab = Request::get('tab');
         $catalogFiltersList = $catalog->getRecurseFilterList();
-//        dd($catalogFiltersList);
 
-//        $show_catalog_filters = [];
-//        foreach ($catalogFiltersList as $name) {
-//            $show_catalog_filters[$name] = $catalog->product_chars()
-//                ->where('name', $name)
-//                ->select('value')
-//                ->distinct()
-//                ->pluck('value')
-//                ->all();
-//        }
-//        dd($catalog->getRecurseFilterList());
-//
         return view(
             'admin::catalog.catalog_edit',
             [
                 'catalog' => $catalog,
                 'catalogs' => $catalogs,
+                'tab' => $tab,
                 'catalogProducts' => $catalogProducts,
                 'catalogFiltersList' => $catalogFiltersList
             ]
@@ -186,7 +170,6 @@ class AdminCatalogController extends AdminController
         $image = Request::file('image');
         $icon = Request::file('icon');
         $filters = Request::get('filters');
-        \Debugbar::log($filters);
 
         // валидация данных
         $validator = Validator::make(
@@ -222,7 +205,8 @@ class AdminCatalogController extends AdminController
         } else {
             $catalog->update($data);
 
-//            if (!count($catalog->children)) {
+            //обновление фильтров для каталога без родителей
+            if (!count($catalog->children)) {
                 $catalog_filters = $catalog->filters_list()->pluck('id');
                 CatalogFilter::whereIn('id', $catalog_filters)->update(['published' => 1]);
                 foreach ($catalog_filters as $filter_id) {
@@ -230,7 +214,17 @@ class AdminCatalogController extends AdminController
                         CatalogFilter::whereId($filter_id)->update(['published' => 0]);
                     }
                 }
-//            }
+            } else {
+                //обновляем значение и у всех вложенных каталогов
+                $children_ids = $catalog->getRecurseChildrenIds();
+                foreach ($filters as $value) {
+                    [$id, $published] = explode(',', $value);
+                    $catalog_filter = CatalogFilter::select('name')->find($id);
+                    CatalogFilter::whereIn('catalog_id', $children_ids)
+                        ->where('name', $catalog_filter->name)
+                        ->update(['published' => $published]);
+                }
+            }
         }
 
         if ($redirect) {
@@ -253,6 +247,73 @@ class AdminCatalogController extends AdminController
         }
 
         return ['success' => true];
+    }
+
+    public function postCatalogFilterEdit($id) {
+        $filter_id = Request::get('filter_id');
+        $catalog_filter = CatalogFilter::findOrFail($filter_id);
+        return view('admin::catalog.catalog_filter_edit', [
+            'item' => $catalog_filter,
+            'catalog_id' => $id
+        ]);
+    }
+
+    public function postCatalogFilterSaveData($id): array
+    {
+        $catalog = Catalog::find($id);
+        if (count($catalog->children)) {
+            $children_ids = $catalog->getRecurseChildrenIds();
+        } else {
+            $children_ids = $catalog->id;
+        }
+        $name = Request::get('name');
+        $filter_id = Request::get('id');
+        $current_filter = CatalogFilter::select('name')->find($filter_id);
+        $old_name = $current_filter->name;
+
+        CatalogFilter::whereIn('catalog_id', $children_ids)
+            ->where('name', $old_name)
+            ->update(['name' => $name]);
+        ProductChar::whereIn('catalog_id', $children_ids)
+            ->where('name', $old_name)
+            ->update(['name' => $name]);
+
+
+        return [
+            'success' => true,
+            'redirect' => route('admin.catalog.catalogEdit', [
+                'id' => $id,
+                'tab' => 'filters'
+            ])
+        ];
+    }
+
+    public function postCatalogFilterDelete($id): array
+    {
+        $catalog = Catalog::find($id);
+        if (count($catalog->children)) {
+            $children_ids = $catalog->getRecurseChildrenIds();
+        } else {
+            $children_ids = $catalog->id;
+        }
+        $filter_id = Request::get('filter_id');
+        $current_filter = CatalogFilter::select('name')->find($filter_id);
+        $old_name = $current_filter->name;
+
+        CatalogFilter::whereIn('catalog_id', $children_ids)
+            ->where('name', $old_name)
+            ->delete();
+        ProductChar::whereIn('catalog_id', $children_ids)
+            ->where('name', $old_name)
+            ->delete();
+
+        return [
+            'success' => true,
+            'redirect' => route('admin.catalog.catalogEdit', [
+                'id' => $id,
+                'tab' => 'filters'
+            ])
+        ];
     }
 
 

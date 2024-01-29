@@ -147,9 +147,12 @@ export const applyFilter = () => {
 
         sendAjax(ajax_url, data, function (json) {
             history.pushState('', '', json.current_url);
-            if (json.items) {
-                $(news_list).empty();
+            $(news_list).empty();
+            if (json.items.length > 0) {
                 $(news_list).append(json.items);
+            } else {
+                const no_products_msg = '<div>Нет подходящих товаров</div>'
+                $(news_list).append(no_products_msg);
             }
             if (json.btn) {
                 $(btn).replaceWith(json.btn);

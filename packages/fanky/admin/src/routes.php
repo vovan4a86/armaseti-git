@@ -89,6 +89,15 @@ Route::group(['namespace' => 'Fanky\Admin\Controllers', 'prefix' => 'admin', 'as
         Route::post('catalog-filter-update-order', $controller . 'postCatalogFilterUpdateOrder')
             ->name('.catalog-filter-update-order');
 
+        Route::post('catalog-filter-edit/{id}', $controller . 'postCatalogFilterEdit')
+            ->name('.catalog-filter-edit');
+
+        Route::post('catalog-filter-delete/{id}', $controller . 'postCatalogFilterDelete')
+            ->name('.catalog-filter-delete');
+
+        Route::post('catalog-filter-save-data/{id}', $controller . 'postCatalogFilterSaveData')
+            ->name('.catalog-filter-save-data');
+
 		Route::get('product-edit/{id?}', $controller . 'getProductEdit')
 			->name('.productEdit');
 

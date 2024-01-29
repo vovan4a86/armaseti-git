@@ -83,11 +83,12 @@ class Catalog extends Model
 
     const UPLOAD_URL = '/uploads/catalogs/';
     const DOC_IMAGE = '/adminlte/doc_icon.png';
-    const UPLOAD_VIDEO_ICON = '/adminlte/video.png';
+    const NO_CATALOG_IMAGE = '/adminlte/no-catalog-image.png';
+    const NO_CATALOG_ICON = '/adminlte/no-catalog-icon.png';
 
     public static $thumbs = [
         1 => '100x100|fit', //admin
-        2 => '353x210|fit', //list
+        2 => '130x130|fit', //catalog image
     ];
 
     public static function boot()

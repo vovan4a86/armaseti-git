@@ -20,14 +20,14 @@
 
     <div class="nav-tabs-custom">
         <ul class="nav nav-tabs">
-            <li class="active"><a href="#tab_1" data-toggle="tab">Параметры</a></li>
+            <li class="{{ isset($tab) ? '' : 'active' }}"><a href="#tab_1" data-toggle="tab">Параметры</a></li>
             <li><a href="#tab_2" data-toggle="tab">Тексты</a></li>
-            <li class="{{ isset($tab) && $tab === 'docs' ? 'active' : '' }}"><a href="#tab_docs" data-toggle="tab">Документы
-                    ({{ count($catalog->docs) }})</a></li>
-
-{{--            @if($catalog->parent_id == 0)--}}
-                <li><a href="#tab_3" data-toggle="tab">Фильтры раздела</a></li>
-{{--            @endif--}}
+            <li class="{{ isset($tab) && $tab === 'docs' ? 'active' : '' }}">
+                <a href="#tab_docs" data-toggle="tab">Документы ({{ count($catalog->docs) }})</a>
+            </li>
+            <li class="{{ isset($tab) && $tab === 'filters' ? 'active' : '' }}">
+                <a href="#tab_filters" data-toggle="tab">Фильтры раздела</a>
+            </li>
 
             @if($catalog->id)
                 <li class="pull-right">
@@ -36,7 +36,7 @@
             @endif
         </ul>
         <div class="tab-content">
-            <div class="tab-pane active" id="tab_1">
+            <div class="tab-pane {{ isset($tab) ? '' : 'active' }}" id="tab_1">
 
                 {!! Form::groupText('name', $catalog->name, 'Название') !!}
                 {!! Form::groupText('h1', $catalog->h1, 'H1') !!}
@@ -90,6 +90,7 @@
                                 <img class="question1" src="/adminlte/questions/catalog_img.png" alt="question_1">
                             </label>
                             <input id="catalog-image" type="file" name="image" value=""
+                                   accept=".png"
                                    onchange="return catalogImageAttache(this, event)">
                             <div id="catalog-image-block">
                                 @if ($catalog->image)
@@ -111,11 +112,12 @@
 
                     <div class="form-group col-xs-3" style="display: flex; column-gap: 30px;">
                         <div class="catalog-image">
-                            <label for="catalog-icon">Иконка в меню сайдбара
+                            <label for="catalog-icon">Иконка в сайдбаре (.png, .svg, 28x28)
                                 <i class="fa fa-question-circle fa-quest"></i>
                                 <img class="question2" src="/adminlte/questions/catalog_side.png" alt="question_2">
                             </label>
                             <input id="catalog-icon" type="file" name="icon" value=""
+                                   accept=".png,.svg"
                                    onchange="return catalogIconAttache(this, event)">
                             <div id="catalog-icon-block">
                                 @if ($catalog->menu_icon)
@@ -145,8 +147,7 @@
                 @include('admin::catalog.tabs_catalog.tab_docs')
             </div>
 
-{{--            @if($catalog->parent_id == 0)--}}
-                <div class="tab-pane" id="tab_3">
+                <div class="tab-pane {{ isset($tab) && $tab === 'filters' ? 'active' : '' }}" id="tab_filters">
                     @if(count($catalogFiltersList))
                         <div style="display: flex; flex-direction: column;" class="catalog_filters">
                             @foreach($catalogFiltersList as $item)
@@ -160,6 +161,16 @@
                                                value="{{ $item->id }}" {{ $item->published ? 'checked' : '' }}>
                                         <label for="f_{{ $item->id }}"
                                                style="margin-right: 10px;">{{ $item->name }}</label>
+                                        <a class="filter-edit"
+                                           href="{{ route('admin.catalog.catalog-filter-edit', [$catalog->id]) }}"
+                                           onclick="return catalogFilterEdit(this, event)">
+                                            <span class="glyphicon glyphicon-edit"></span>
+                                        </a>
+                                        <a class="filter-delete"
+                                           href="{{ route('admin.catalog.catalog-filter-delete', [$catalog->id]) }}"
+                                           onclick="return catalogFilterDelete(this, event)">
+                                            <span class="glyphicon glyphicon-trash text-red"></span>
+                                        </a>
                                     </div>
                                 </div>
                             @endforeach
@@ -184,7 +195,6 @@
                         <p>Нет фильтров</p>
                     @endif
                 </div>
-{{--            @endif--}}
 
             <div class="box-footer">
                 <button type="submit" class="btn btn-primary">Сохранить</button>

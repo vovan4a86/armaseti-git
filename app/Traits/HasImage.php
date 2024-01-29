@@ -50,6 +50,10 @@ trait HasImage{
         return $this->{$this->image_field} ? url(self::UPLOAD_URL . $this->{$this->image_field}) : null;
     }
 
+	public function iconSrc() {
+        return $this->{$this->icon_field} ? url(self::UPLOAD_URL . $this->{$this->icon_field}) : null;
+    }
+
 //	public function getImageSrcAttribute() {
 //		return $this->{$this->image_field} ? url(self::getImagePathAttribute() . $this->{$this->image_field}) : null;
 //	}
