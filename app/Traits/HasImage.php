@@ -1,16 +1,9 @@
 <?php namespace App\Traits;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Str;
 use Image;
 use Settings;
 use Thumb;
-
-/**
- * Created by PhpStorm.
- * User: aleks
- * Date: 19.12.2017
- * Time: 11:09
- */
-
 
 trait HasImage{
 	public $image_field = 'image';
@@ -83,23 +76,28 @@ trait HasImage{
 	}
 
 	/**
-	 * @param \Illuminate\Http\UploadedFile $image
+	 * @param UploadedFile $image
 	 * @return string
 	 */
-	public static function uploadImage($image) {
+	public static function uploadImage(UploadedFile $image, $alias = null): string
+    {
+	    $upload_path = self::UPLOAD_URL;
+	    if ($alias) $upload_path .= $alias . '/';
+
 		$file_name = md5(uniqid(rand(), true)) . '_' . time() . '.' . Str::lower($image->getClientOriginalExtension());
-		$image->move(public_path(self::UPLOAD_URL), $file_name);
-		Image::make(public_path(self::UPLOAD_URL . $file_name))
+		$image->move(public_path($upload_path), $file_name);
+		Image::make(public_path($upload_path . $file_name))
 			->resize(1920, 1080, function ($constraint) {
 				$constraint->aspectRatio();
 				$constraint->upsize();
 			})
 			->save(null, Settings::get('image_quality', 100));
-		Thumb::make(self::UPLOAD_URL . $file_name, self::$thumbs);
+		Thumb::make($upload_path . $file_name, self::$thumbs);
 		return $file_name;
 	}
 
-    public static function uploadIcon($image) {
+    public static function uploadIcon($image): string
+    {
 		$file_name = md5(uniqid(rand(), true)) . '_' . time() . '.' . Str::lower($image->getClientOriginalExtension());
 		$image->move(public_path(self::UPLOAD_URL), $file_name);
 		return $file_name;

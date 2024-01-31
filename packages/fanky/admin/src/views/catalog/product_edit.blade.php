@@ -24,7 +24,7 @@
             <li><a href="#tab_3" data-toggle="tab">Характеристики ({{ count($product->chars) }})</a></li>
             <li class="{{ isset($tab) && $tab === 'docs' ? 'active' : '' }}"><a href="#tab_docs" data-toggle="tab">Документы
                     ({{ count($product->docs) }})</a></li>
-            <li><a href="#tab_4" data-toggle="tab">Изображения ({{ count($product->images()->get()) }})</a></li>
+            <li><a href="#tab_4" data-toggle="tab">Изображения ({{ count($product->images) }})</a></li>
             <li class="pull-right">
                 <a href="{{ route('admin.catalog.products', [$product->catalog_id]) }}"
                    onclick="return catalogContent(this)">К списку товаров</a>
@@ -91,7 +91,7 @@
                     </div>
 
                     <div class="images_list">
-                        @foreach ($product->images()->get() as $image)
+                        @foreach ($product->images as $image)
                             @include('admin::catalog.product_image', ['image' => $image, 'alias' => $product->catalog->alias])
                         @endforeach
                     </div>

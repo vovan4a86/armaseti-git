@@ -45,7 +45,7 @@
                                         @endforeach
                                     </div>
                                 @else
-                                    <div>Нет товаров</div>
+                                    <p>Нет товаров</p>
                                 @endif
                             </div>
                             <!--._load-->
@@ -65,20 +65,17 @@
 
                             {!! $text !!}
 
-                            <div class="text-block__gallery">
-                                <a class="text-block__gallery-item" href="/static/images/common/gal-1.png" data-fancybox="gallery" data-caption="caption">
-                                    <img class="text-block__pic" src="/static/images/common/gal-1.png" width="116" height="186" alt="name" loading="lazy">
-                                </a>
-                                <a class="text-block__gallery-item" href="/static/images/common/gal-2.png" data-fancybox="gallery" data-caption="caption">
-                                    <img class="text-block__pic" src="/static/images/common/gal-2.png" width="116" height="186" alt="name" loading="lazy">
-                                </a>
-                                <a class="text-block__gallery-item" href="/static/images/common/gal-3.png" data-fancybox="gallery" data-caption="caption">
-                                    <img class="text-block__pic" src="/static/images/common/gal-3.png" width="116" height="186" alt="name" loading="lazy">
-                                </a>
-                            </div>
+                            @if(count($gallery))
+                                <div class="text-block__gallery">
+                                    @foreach($gallery as $item)
+                                        <a class="text-block__gallery-item" href="{{ $item->imageSrc($item->catalog->alias) }}" data-fancybox="gallery" data-caption="caption">
+                                            <img class="text-block__pic" src="{{ $item->thumb(2, $item->catalog->alias) }}" width="116" height="186" alt="name" loading="lazy">
+                                        </a>
+                                    @endforeach
+                                </div>
+                            @endif
 
-                            <p>Арматура может управляться вручную, а&nbsp;также задвижка может быть оснащена пневмоприводом или электроприводом до&nbsp;380В, например&nbsp;&mdash;
-                                <a href="#">Задвижка шиберная ножевая DN.ru PN16&nbsp;с электроприводом DN.ru 380В</a>. Монтаж производится на&nbsp;горизонтальных и&nbsp;вертикальных трубопроводах. Различают муфтовые, флан...</p>
+                            {!! $text_after !!}
                         </div>
                     </div>
                 </div>

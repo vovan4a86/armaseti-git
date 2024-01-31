@@ -145,6 +145,40 @@ function catalogDel(elem) {
     return false;
 }
 
+function catalogGalleryImageUpload(elem, e) {
+    var url = $(elem).data('url');
+    let files = e.target.files;
+    let data = new FormData();
+    $.each(files, function (key, value) {
+        if (value['size'] > max_file_size) {
+            alert('Слишком большой размер файла. Максимальный размер 10Мб');
+        } else {
+            data.append('images[]', value);
+        }
+    });
+    $(elem).val('');
+
+    sendFiles(url, data, function (json) {
+        if (typeof json.html != 'undefined') {
+            $('.images_list').append(urldecode(json.html));
+        }
+    });
+}
+
+function catalogGalleryImageDelete(elem) {
+    if (!confirm('Удалить изображение?')) return false;
+    var url = $(elem).attr('href');
+    sendAjax(url, {}, function (json) {
+        if (typeof json.msg != 'undefined') alert(urldecode(json.msg));
+        if (typeof json.success != 'undefined' && json.success === true) {
+            $(elem).closest('.images_item').fadeOut(300, function () {
+                $(this).remove();
+            });
+        }
+    });
+    return false;
+}
+
 function productSave(form, e) {
     var url = $(form).attr('action');
     var data = new FormData();

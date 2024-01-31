@@ -151,7 +151,7 @@ export const applyFilter = () => {
             if (json.items.length > 0) {
                 $(news_list).append(json.items);
             } else {
-                const no_products_msg = '<div>Нет подходящих товаров</div>'
+                const no_products_msg = '<p>Нет товаров</p>'
                 $(news_list).append(no_products_msg);
             }
             if (json.btn) {
@@ -192,6 +192,44 @@ export const resetFilter = () => {
     });
 }
 resetFilter();
+
+//переключение Дешевые/Дорогие
+export const toggleCostSort = () => {
+    $('.b-sort__action.btn-reset').click(function () {
+        const url = $('.b-filter').attr('action');
+        const current = $(this);
+        const news_list = $('.cat-view__list');
+        const btn = $('.cat-view__load .b-loader');
+        const pagination = $('.cat-view__pagination .b-pagination')
+
+        $(btn).hide();
+
+        let price_order = '';
+        if (current.hasClass('is-active')) return;
+        else {
+            $(current).closest('.b-sort__actions').find('.is-active').removeClass('is-active');
+            current.addClass('is-active');
+            price_order = $(current).data('price-order');
+        }
+
+        if (price_order) {
+            sendAjax(url, {price_order}, function (json) {
+                // history.pushState('', '', json.current_url);
+                if (json.items) {
+                    $(news_list).empty();
+                    $(news_list).append(json.items);
+                }
+                if (json.btn) {
+                    $(btn).replaceWith(json.btn);
+                    $(btn).show();
+                    loadMoreProducts();
+                }
+                $(pagination).replaceWith(json.paginate)
+            });
+        }
+    });
+}
+toggleCostSort();
 
 //добавление товара со страницы товара
 $('.prod__cart .btn-cart').click(function () {

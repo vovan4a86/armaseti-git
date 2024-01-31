@@ -5,6 +5,7 @@ namespace Fanky\Admin\Controllers;
 use Exception;
 use Fanky\Admin\Models\CatalogDoc;
 use Fanky\Admin\Models\CatalogFilter;
+use Fanky\Admin\Models\CatalogImage;
 use Fanky\Admin\Models\Page;
 use Fanky\Admin\Models\ParentCatalogFilter;
 use Fanky\Admin\Models\ProductChar;
@@ -247,6 +248,49 @@ class AdminCatalogController extends AdminController
         }
 
         return ['success' => true];
+    }
+
+    public function postCatalogGalleryImageUpload($catalog_id): array
+    {
+        $catalog = Catalog::find($catalog_id);
+        $images = Request::file('images');
+        $items = [];
+        if ($images) {
+            foreach ($images as $image) {
+                $file_name = CatalogImage::uploadImage($image, $catalog->alias);
+                $order = CatalogImage::where('catalog_id', $catalog_id)->max('order') + 1;
+                $item = CatalogImage::create(['catalog_id' => $catalog_id, 'image' => $file_name, 'order' => $order]);
+                $items[] = $item;
+            }
+        }
+
+        $html = '';
+        foreach ($items as $item) {
+            $html .= view('admin::catalog.catalog_gallery_image', ['image' => $item, 'alias' => $catalog->alias]);
+        }
+
+        return ['html' => $html];
+    }
+
+    public function postCatalogGalleryImageOrder(): array
+    {
+        $sorted = Request::get('sorted', []);
+        foreach ($sorted as $order => $id) {
+            CatalogImage::whereId($id)->update(['order' => $order]);
+        }
+
+        return ['success' => true];
+    }
+
+    public function postCatalogGalleryImageDelete($id): array
+    {
+        $item = CatalogImage::findOrFail($id);
+        if ($item) {
+            $item->deleteImage(null, $item->catalog->alias);
+            $item->delete();
+            return ['success' => true];
+        }
+        return ['success' => false, 'msg' => 'Изображение не найдено!'];
     }
 
     public function postCatalogFilterEdit($id) {

@@ -155,6 +155,13 @@ class Catalog extends Model
         return $this->hasMany(Product::class, 'catalog_id');
     }
 
+    public function images(): HasMany
+    {
+        return $this->hasMany(CatalogImage::class)
+            ->orderBy('order')
+            ->with(['catalog']);
+    }
+
     public function docs(): HasMany
     {
         return $this->hasMany(CatalogDoc::class);

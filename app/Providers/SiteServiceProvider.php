@@ -70,9 +70,6 @@ class SiteServiceProvider extends ServiceProvider
                     $current_city = City::whereAlias($city_alias)->first();
                 }
 
-//                $favorites = session('favorites', []);
-//                $compare = session('compare', []);
-
                 $view->with(
                     compact(
                         [

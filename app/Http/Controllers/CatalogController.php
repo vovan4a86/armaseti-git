@@ -11,6 +11,7 @@ use Fanky\Admin\Models\ProductChar;
 use Fanky\Admin\Settings;
 use Fanky\Admin\Text;
 use Fanky\Auth\Auth;
+use Illuminate\Database\Eloquent\Builder;
 use phpDocumentor\Reflection\Types\Collection;
 use SEOMeta;
 use Request;
@@ -103,6 +104,8 @@ class CatalogController extends Controller
         $price_from = request()->get('price_from'); //встроенный фильтр
         $price_to = request()->get('price_to'); //встроенный фильтр
         $in_stock = request()->get('in_stock'); //встроенный фильтр
+        $price_order = request()->get('price_order', session('price_order')); //сортировка
+        session(['price_order' => $price_order]);
         $reset_filter = request()->get('reset'); //нажали кнопку сброса фильтра
 
         $query_string = '';
@@ -125,10 +128,12 @@ class CatalogController extends Controller
                 ->where('price', '>', $price_from)
                 ->where('price', '<=', $price_to);
 
+            $products_query->orderBy('price', $price_order);
+
             //фильтры товаров, кроме цены и наличия
             if (!count($data_filter)) {
                 $products = $products_query
-//                    ->with(['images', 'catalog'])
+                    ->with(['images', 'catalog'])
                     ->paginate(Settings::get('products_per_page', 9))
                     ->appends($appends);
             } else {
@@ -138,29 +143,23 @@ class CatalogController extends Controller
                 foreach ($data_filter as $name => $values) {
                     if (is_array($values)) {
                         foreach ($values as $val) {
-                            $result_filters[] = ['value', $val];
+                            $result_filters[] = $val;
                             $query_string .= '&' . $name . '[]=' . $val;
                             $appends[$name][] = $val;
                         }
                     } else {
-                        $result_filters[] = ['value', $values];
+                        $result_filters[] = $values;
                         $query_string .= '&' . $name . '=' . $values;
                         $appends[$name] = $values;
                     }
                 }
-                \Debugbar::log($result_filters);
 
                 //фильтруем по характеристикам товара
                 $products = $products_query
-                    ->with(
-                        [
-//                            'images',
-//                            'catalog',
-                            'chars' => function ($query) use ($result_filters) {
-                                $query->orWhere($result_filters);
-                            }
-                        ]
-                    )
+                    ->with(['images', 'chars', 'catalog'])
+                    ->whereHas('chars', function(Builder $query) use ($result_filters) {
+                        $query->whereIn('value', $result_filters);
+                    })
                     ->paginate(Settings::get('products_per_page', 9))
                     ->appends($appends);
             }
@@ -168,6 +167,7 @@ class CatalogController extends Controller
             //чистая загрузка страницы без фильтрации
             $products = Product::whereIn('catalog_id', $children_ids)
                 ->public()
+                ->orderBy('price', $price_order)
                 ->with(['images', 'catalog'])
                 ->paginate(Settings::get('products_per_page', 9));
             $query_string = '';
@@ -218,13 +218,17 @@ class CatalogController extends Controller
         $data = [
             'bread' => $bread,
             'category' => $category,
+            'gallery' => $category->images,
             'h1' => $category->getH1(),
             'text' => $category->text,
+            'text_after' => $category->text_after,
             'canonical' => $canonical,
             'children' => $category->public_children,
             'products' => $products,
             'filters_list' => $filters_list,
             'filter_max_price' => $filter_max_price,
+            'in_stock' => $in_stock,
+            'data_filter' => $data_filter
         ];
 
         return view('catalog.category', $data);

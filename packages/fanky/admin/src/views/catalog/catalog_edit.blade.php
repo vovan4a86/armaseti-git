@@ -22,6 +22,7 @@
         <ul class="nav nav-tabs">
             <li class="{{ isset($tab) ? '' : 'active' }}"><a href="#tab_1" data-toggle="tab">Параметры</a></li>
             <li><a href="#tab_2" data-toggle="tab">Тексты</a></li>
+            <li><a href="#tab_images" data-toggle="tab">Изображения ({{ count($catalog->images) }})</a></li>
             <li class="{{ isset($tab) && $tab === 'docs' ? 'active' : '' }}">
                 <a href="#tab_docs" data-toggle="tab">Документы ({{ count($catalog->docs) }})</a>
             </li>
@@ -141,60 +142,86 @@
 
             <div class="tab-pane" id="tab_2">
                 {!! Form::groupRichtext('text', $catalog->text, 'Основной текст') !!}
+                {!! Form::groupRichtext('text_after', $catalog->text_after, 'Текст после слайдера') !!}
+            </div>
+
+            <div class="tab-pane" id="tab_images">
+                @if ($catalog->id)
+                    <div class="form-group">
+                        <label class="btn btn-success">
+                            <input id="offer_imag_upload" type="file" multiple
+                                   accept=".jpg,.jpeg,.png"
+                                   data-url="{{ route('admin.catalog.catalogGalleryImageUpload', $catalog->id) }}"
+                                   style="display:none;" onchange="catalogGalleryImageUpload(this, event)">
+                            Загрузить изображения
+                        </label>
+                    </div>
+
+                    <div class="images_list">
+                        @foreach ($catalog->images as $image)
+                            @include('admin::catalog.catalog_gallery_image', [
+                                    'image' => $image,
+                                    'alias' => $catalog->alias
+                                    ])
+                        @endforeach
+                    </div>
+                @else
+                    <p class="text-yellow">Изображения можно будет загрузить после сохранения каталога!</p>
+                @endif
             </div>
 
             <div class="tab-pane {{ isset($tab) && $tab === 'docs' ? 'active' : '' }}" id="tab_docs">
                 @include('admin::catalog.tabs_catalog.tab_docs')
             </div>
 
-                <div class="tab-pane {{ isset($tab) && $tab === 'filters' ? 'active' : '' }}" id="tab_filters">
-                    @if(count($catalogFiltersList))
-                        <div style="display: flex; flex-direction: column;" class="catalog_filters">
-                            @foreach($catalogFiltersList as $item)
-                                <div class="filter" data-id="{{ $item->id }}">
-                                    <div style="width: 50px;">
-                                        <i class="fa fa-ellipsis-v"></i>
-                                        <i class="fa fa-ellipsis-v"></i>
-                                    </div>
-                                    <div class="form-group">
-                                        <input type="checkbox" name="filters[]" id="f_{{ $item->id }}"
-                                               value="{{ $item->id }}" {{ $item->published ? 'checked' : '' }}>
-                                        <label for="f_{{ $item->id }}"
-                                               style="margin-right: 10px;">{{ $item->name }}</label>
-                                        <a class="filter-edit"
-                                           href="{{ route('admin.catalog.catalog-filter-edit', [$catalog->id]) }}"
-                                           onclick="return catalogFilterEdit(this, event)">
-                                            <span class="glyphicon glyphicon-edit"></span>
-                                        </a>
-                                        <a class="filter-delete"
-                                           href="{{ route('admin.catalog.catalog-filter-delete', [$catalog->id]) }}"
-                                           onclick="return catalogFilterDelete(this, event)">
-                                            <span class="glyphicon glyphicon-trash text-red"></span>
-                                        </a>
-                                    </div>
+            <div class="tab-pane {{ isset($tab) && $tab === 'filters' ? 'active' : '' }}" id="tab_filters">
+                @if(count($catalogFiltersList))
+                    <div style="display: flex; flex-direction: column;" class="catalog_filters">
+                        @foreach($catalogFiltersList as $item)
+                            <div class="filter" data-id="{{ $item->id }}">
+                                <div style="width: 50px;">
+                                    <i class="fa fa-ellipsis-v"></i>
+                                    <i class="fa fa-ellipsis-v"></i>
                                 </div>
-                            @endforeach
-                        </div>
-                        <script type="text/javascript">
-                            $(".catalog_filters").sortable({
-                                update: function () {
-                                    let url = "{{ route('admin.catalog.catalog-filter-update-order') }}";
-                                    let data = {};
-                                    data.sorted = $('.catalog_filters').sortable("toArray", {attribute: 'data-id'});
-                                    data.catalog_id = $('input[name=id]').val();
-                                    sendAjax(url, data);
-                                },
-                            }).disableSelection();
-                        </script>
-                        <style>
-                            .filter {
-                                display: flex;
-                            }
-                        </style>
-                    @else
-                        <p>Нет фильтров</p>
-                    @endif
-                </div>
+                                <div class="form-group">
+                                    <input type="checkbox" name="filters[]" id="f_{{ $item->id }}"
+                                           value="{{ $item->id }}" {{ $item->published ? 'checked' : '' }}>
+                                    <label for="f_{{ $item->id }}"
+                                           style="margin-right: 10px;">{{ $item->name }}</label>
+                                    <a class="filter-edit"
+                                       href="{{ route('admin.catalog.catalog-filter-edit', [$catalog->id]) }}"
+                                       onclick="return catalogFilterEdit(this, event)">
+                                        <span class="glyphicon glyphicon-edit"></span>
+                                    </a>
+                                    <a class="filter-delete"
+                                       href="{{ route('admin.catalog.catalog-filter-delete', [$catalog->id]) }}"
+                                       onclick="return catalogFilterDelete(this, event)">
+                                        <span class="glyphicon glyphicon-trash text-red"></span>
+                                    </a>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                    <script type="text/javascript">
+                        $(".catalog_filters").sortable({
+                            update: function () {
+                                let url = "{{ route('admin.catalog.catalog-filter-update-order') }}";
+                                let data = {};
+                                data.sorted = $('.catalog_filters').sortable("toArray", {attribute: 'data-id'});
+                                data.catalog_id = $('input[name=id]').val();
+                                sendAjax(url, data);
+                            },
+                        }).disableSelection();
+                    </script>
+                    <style>
+                        .filter {
+                            display: flex;
+                        }
+                    </style>
+                @else
+                    <p>Нет фильтров</p>
+                @endif
+            </div>
 
             <div class="box-footer">
                 <button type="submit" class="btn btn-primary">Сохранить</button>
@@ -202,3 +229,14 @@
         </div>
     </div>
 </form>
+
+<script type="text/javascript">
+    $(".images_list").sortable({
+        update: function (event, ui) {
+            var url = "{{ route('admin.catalog.catalogGalleryImageOrder') }}";
+            var data = {};
+            data.sorted = $('.images_list').sortable("toArray", {attribute: 'data-id'});
+            sendAjax(url, data);
+        },
+    }).disableSelection();
+</script>

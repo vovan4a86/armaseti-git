@@ -3432,6 +3432,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   sendAjaxWithFile: () => (/* binding */ sendAjaxWithFile),
 /* harmony export */   sendFiles: () => (/* binding */ sendFiles),
 /* harmony export */   sendRequest: () => (/* binding */ sendRequest),
+/* harmony export */   toggleCostSort: () => (/* binding */ toggleCostSort),
 /* harmony export */   updateCountDown: () => (/* binding */ updateCountDown),
 /* harmony export */   updateCountUp: () => (/* binding */ updateCountUp)
 /* harmony export */ });
@@ -3586,7 +3587,7 @@ var applyFilter = function applyFilter() {
       if (json.items.length > 0) {
         jquery__WEBPACK_IMPORTED_MODULE_0___default()(news_list).append(json.items);
       } else {
-        var no_products_msg = '<div>Нет подходящих товаров</div>';
+        var no_products_msg = '<p>Нет товаров</p>';
         jquery__WEBPACK_IMPORTED_MODULE_0___default()(news_list).append(no_products_msg);
       }
       if (json.btn) {
@@ -3627,6 +3628,42 @@ var resetFilter = function resetFilter() {
   });
 };
 resetFilter();
+
+//переключение Дешевые/Дорогие
+var toggleCostSort = function toggleCostSort() {
+  jquery__WEBPACK_IMPORTED_MODULE_0___default()('.b-sort__action.btn-reset').click(function () {
+    var url = jquery__WEBPACK_IMPORTED_MODULE_0___default()('.b-filter').attr('action');
+    var current = jquery__WEBPACK_IMPORTED_MODULE_0___default()(this);
+    var news_list = jquery__WEBPACK_IMPORTED_MODULE_0___default()('.cat-view__list');
+    var btn = jquery__WEBPACK_IMPORTED_MODULE_0___default()('.cat-view__load .b-loader');
+    var pagination = jquery__WEBPACK_IMPORTED_MODULE_0___default()('.cat-view__pagination .b-pagination');
+    jquery__WEBPACK_IMPORTED_MODULE_0___default()(btn).hide();
+    var price_order = '';
+    if (current.hasClass('is-active')) return;else {
+      jquery__WEBPACK_IMPORTED_MODULE_0___default()(current).closest('.b-sort__actions').find('.is-active').removeClass('is-active');
+      current.addClass('is-active');
+      price_order = jquery__WEBPACK_IMPORTED_MODULE_0___default()(current).data('price-order');
+    }
+    if (price_order) {
+      sendAjax(url, {
+        price_order: price_order
+      }, function (json) {
+        // history.pushState('', '', json.current_url);
+        if (json.items) {
+          jquery__WEBPACK_IMPORTED_MODULE_0___default()(news_list).empty();
+          jquery__WEBPACK_IMPORTED_MODULE_0___default()(news_list).append(json.items);
+        }
+        if (json.btn) {
+          jquery__WEBPACK_IMPORTED_MODULE_0___default()(btn).replaceWith(json.btn);
+          jquery__WEBPACK_IMPORTED_MODULE_0___default()(btn).show();
+          loadMoreProducts();
+        }
+        jquery__WEBPACK_IMPORTED_MODULE_0___default()(pagination).replaceWith(json.paginate);
+      });
+    }
+  });
+};
+toggleCostSort();
 
 //добавление товара со страницы товара
 jquery__WEBPACK_IMPORTED_MODULE_0___default()('.prod__cart .btn-cart').click(function () {

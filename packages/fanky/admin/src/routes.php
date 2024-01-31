@@ -98,6 +98,21 @@ Route::group(['namespace' => 'Fanky\Admin\Controllers', 'prefix' => 'admin', 'as
         Route::post('catalog-filter-save-data/{id}', $controller . 'postCatalogFilterSaveData')
             ->name('.catalog-filter-save-data');
 
+        Route::post('catalog-gallery-image-upload/{id}', $controller . 'postCatalogGalleryImageUpload')
+            ->name('.catalogGalleryImageUpload');
+
+        Route::post('catalog-gallery-image-delete/{id}', $controller . 'postCatalogGalleryImageDelete')
+            ->name('.catalogGalleryImageDelete');
+
+        Route::post('catalog-gallery-image-order', $controller . 'postCatalogGalleryImageOrder')
+            ->name('.catalogGalleryImageOrder');
+
+        Route::post('product-image-delete/{id}', $controller . 'postProductImageDelete')
+            ->name('.productImageDel');
+
+        Route::post('product-image-order', $controller . 'postProductImageOrder')
+            ->name('.productImageOrder');
+
 		Route::get('product-edit/{id?}', $controller . 'getProductEdit')
 			->name('.productEdit');
 
