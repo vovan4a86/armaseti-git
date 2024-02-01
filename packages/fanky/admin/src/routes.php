@@ -195,6 +195,11 @@ Route::group(['namespace' => 'Fanky\Admin\Controllers', 'prefix' => 'admin', 'as
             'uses' => $controller . 'postDeleteProductsImage'
         ]);
 
+        Route::post('add-products-images', [
+            'as' => '.add-products-images',
+            'uses' => $controller . 'postAddProductsImages'
+        ]);
+
         //toggle products checkbox
         Route::post('product-toggle-is-new/{id}', $controller . 'postProductToggleIsNew')
             ->name('.product-toggle-is-new');

@@ -225,7 +225,7 @@ html, body{
 }
 .tree-item-name{
   font-size: 15px;
-  margin-left: 2px; 
+  margin-left: 2px;
   vertical-align: middle;
 }
 .dont-show .tree-item-name{
@@ -304,4 +304,21 @@ html, body{
 
 table tbody.news-body td {
   vertical-align: middle;
+}
+
+.mass-images-list.loading {
+  position: relative;
+  /*height: 100px;*/
+  background: #c9c9c9;
+}
+.mass-images-list.loading .img-polaroid {
+  opacity: 0.2;
+}
+
+.msg {
+  color: orangered;
+  position: absolute;
+  font-size: 30px;
+  left: 30%;
+  top: 23%;
 }

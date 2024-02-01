@@ -410,6 +410,7 @@ class AdminCatalogController extends AdminController
             $product->catalog_id = Request::get('catalog');
             $product->order = Product::whereCatalogId(Request::get('catalog'))->max('order') + 1;
             $product->published = 1;
+            $product->in_stock = 1;
         }
         $catalogs = Catalog::getCatalogList();
         $tab = request()->get('tab');
@@ -694,7 +695,7 @@ class AdminCatalogController extends AdminController
 
                 if ($images) {
                     foreach ($images as $image) {
-                        $image->deleteImage();
+                        $image->deleteImage(null, $product->catalog->alias);
                         $image->delete();
                     }
                 }
@@ -704,6 +705,39 @@ class AdminCatalogController extends AdminController
         return ['success' => true];
     }
 
+    public function postAddProductsImages()
+    {
+        $images = Request::file('mass_images');
+        $ids = Request::get('product_ids');
+
+        if ($ids && $images) {
+            try {
+                foreach ($ids as $n => $id) {
+                    $product = Product::find($id);
+                    if ($product) {
+                        if (count($product->images)) {
+                            foreach ($product->images as $img) {
+                                $order = $img->order + count($images);
+                                $img->update(['order' => $order]);
+                            }
+                        }
+
+                        foreach ($images as $i => $image) {
+                            $file_name = ProductImage::uploadImage($image, $product->catalog->alias, count($ids) === $n + 1);
+                            ProductImage::create(['product_id' => $product->id, 'image' => $file_name, 'order' => $i]);
+                        }
+                    }
+                }
+            } catch(Exception $e) {
+                \Debugbar::error($e->getMessage());
+                return ['success' => false];
+            }
+        }
+
+        return ['success' => true];
+    }
+
+    //search
     public function search()
     {
         $q = Request::get('q');

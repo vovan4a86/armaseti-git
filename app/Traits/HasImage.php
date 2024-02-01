@@ -79,13 +79,23 @@ trait HasImage{
 	 * @param UploadedFile $image
 	 * @return string
 	 */
-	public static function uploadImage(UploadedFile $image, $alias = null): string
+	public static function uploadImage(UploadedFile $image, $alias = null, $last = false): string
     {
 	    $upload_path = self::UPLOAD_URL;
 	    if ($alias) $upload_path .= $alias . '/';
 
+	    if (!is_dir(public_path($upload_path))) {
+	        mkdir(public_path($upload_path));
+        }
+
 		$file_name = md5(uniqid(rand(), true)) . '_' . time() . '.' . Str::lower($image->getClientOriginalExtension());
-		$image->move(public_path($upload_path), $file_name);
+
+        if(!$last) {
+            copy($image, public_path($upload_path) . $file_name);
+        } else {
+            $image->move(public_path($upload_path), $file_name);
+        }
+
 		Image::make(public_path($upload_path . $file_name))
 			->resize(1920, 1080, function ($constraint) {
 				$constraint->aspectRatio();

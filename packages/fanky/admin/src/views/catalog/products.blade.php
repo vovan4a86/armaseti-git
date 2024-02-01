@@ -33,7 +33,13 @@
                     </button>
                     <button class="btn btn-danger btn-sm js-delete-btn"
                             onclick="deleteProductsImage(this, event, {{ $catalog->id }})"
+                            title="Удалить изображения у всех выделенных товаров"
                             disabled>Удалить IMGs
+                    </button>
+                    <button class="btn btn-success btn-sm js-add-btn"
+                            onclick="addProductsImages(this)"
+                            title="Добавить изображения всем выделенным товарам"
+                            disabled>Добавить IMGs
                     </button>
             @endif
             <div class="form-group form-inline pull-right" style="float: left; margin-left: 15px;">
@@ -47,6 +53,25 @@
                 </form>
             </div>
         </div>
+
+        <div class="mass-images" style="display: none;">
+            <div class="form-group">
+                <label class="btn btn-default btn-sm">
+                    <input id="offer_imag_upload" type="file" multiple
+                           accept=".jpeg,.jpg,.png"
+                           style="display:none;" onchange="massProductImageUpload(this, event)">
+                    Загрузить изображения
+                </label>
+                <button class="btn btn-success btn-sm send-images" disabled
+                        data-catalog-id="{{ $catalog->id }}"
+                        data-url="{{ route('admin.catalog.add-products-images') }}"
+                        onclick="sendAddedProductImages(this, event)"
+                >Применить</button>
+            </div>
+            <div class="mass-images-list">
+            </div>
+        </div>
+
         <form action="{{ route('admin.catalog.search') }}">
             <div class="input-group">
                 <input type="text" class="form-control" name="q" placeholder="Наименование"

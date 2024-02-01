@@ -1,5 +1,6 @@
 let catalogImage = null;
 let catalogIcon = null;
+var mass_images = [];
 
 function catalogImageAttache(elem, e) {
     $.each(e.target.files, function (key, file) {
@@ -522,9 +523,14 @@ function checkSelectProduct() {
     if (selected.length) {
         $('.js-move-btn').removeAttr('disabled');
         $('.js-delete-btn').removeAttr('disabled');
+        $('.js-add-btn').removeAttr('disabled');
     } else {
         $('.js-move-btn').attr('disabled', 'disabled');
         $('.js-delete-btn').attr('disabled', 'disabled');
+        $('.js-add-btn').attr('disabled', 'disabled');
+        $('.mass-images').hide('fast');
+        $('.mass-images-list').empty();
+        mass_images = [];
     }
 }
 
@@ -639,6 +645,68 @@ function toggleIsHit(elem) {
             } else {
                 $(elem).prop('checked', false)
             }
+        }
+    });
+}
+
+//mass images
+function addProductsImages(elem) {
+    $('.mass-images').fadeIn(1000);
+}
+
+function massProductImageUpload(elem, e) {
+    let url = $(elem).data('url');
+    let files = e.target.files;
+    // let data = new FormData();
+    $.each(files, function (key, value) {
+        if (value['size'] > max_file_size) {
+            alert('Слишком большой размер файла. Максимальный размер 10Мб');
+        } else {
+            // data.append('mass_images[]', value);
+            mass_images.push(value);
+            renderImage(value, function (imgSrc) {
+                let item = '<img class="img-polaroid" src="' + imgSrc + '" height="100" data-image="' + imgSrc + '" onclick="return popupImage($(this).data(\'image\'))">';
+                $('.mass-images-list').append(item);
+            });
+        }
+    });
+    $(elem).val('');
+    $('.send-images').removeAttr('disabled');
+}
+
+function sendAddedProductImages(elem, e) {
+    const catalogId = $(elem).data('catalog-id');
+    let url = $(elem).data('url');
+    let redirect = '/admin/catalog/products/' + catalogId;
+    let data = new FormData();
+    $.each(mass_images, function ($i, file) {
+        data.append('mass_images[]', file);
+    });
+
+    const selected = $('input.js_select:checked');
+    $(selected).each(function (n, el) {
+        data.append('product_ids[]', $(el).val())
+        $(el).closest('tr').animate({'backgroundColor': '#c9c9c9'}, 300);
+    });
+
+    $('.send-images').attr('disabled', 'disabled');
+    $('.mass-images-list').addClass('loading');
+    const message = '<div class="msg">Загрузка картинок...</div>';
+    $('.mass-images-list').append(message);
+
+    // setTimeout(function(){
+    //     $('.mass-images-list').removeClass('loading');
+    //     $('.send-images').removeAttr('disabled');
+    // }, 5000);
+
+    sendFiles(url, data, function (json) {
+        if (json.success) {
+            location.href = redirect;
+        } else {
+            checkDeselectAll();
+            $('.send-images').removeAttr('disabled');
+            alert('Ошибка при загрузке!')
+            console.log()
         }
     });
 }
