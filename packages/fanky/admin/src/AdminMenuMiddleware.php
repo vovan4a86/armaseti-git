@@ -5,6 +5,7 @@ namespace Fanky\Admin;
 use Auth;
 use Closure;
 use Illuminate\Http\Request;
+use Lavary\Menu\Builder;
 use Menu;
 
 class AdminMenuMiddleware
@@ -22,7 +23,7 @@ class AdminMenuMiddleware
         $cur_user = Auth::user();
         Menu::make(
             'main_menu',
-            function (\Lavary\Menu\Builder $menu) use ($cur_user, $request) {
+            function (Builder $menu) use ($cur_user, $request) {
                 if ($cur_user->isAdmin) {
                     $menu->add('Структура сайта', ['route' => 'admin.pages', 'icon' => 'fa-sitemap'])
                         ->active('/admin/pages/*');

@@ -18,17 +18,17 @@ trait HasFile{
 		return $this->{$this->file_field} ? url(self::UPLOAD_URL . $this->{$this->file_field}) : null;
 	}
 
-    public function fileSrc($alias) {
-        return $this->{$this->file_field} ? url(self::UPLOAD_URL . $alias . '/'  . $this->{$this->file_field}) : null;
+    public function fileSrc($slug) {
+        return $this->{$this->file_field} ? url(self::UPLOAD_URL . $slug . '/'  . $this->{$this->file_field}) : null;
     }
 
-    public function deleteSrcFile($alias = null) {
+    public function deleteSrcFile($slug = null) {
         if(!$this->{$this->file_field}) return;
 
-        if(!$alias){
+        if(!$slug){
             $upload_url_full = self::UPLOAD_URL;
         } else {
-            $upload_url_full = self::UPLOAD_URL . $alias . '/';
+            $upload_url_full = self::UPLOAD_URL . $slug . '/';
         }
 
         @unlink(public_path($upload_url_full . $this->{$this->file_field}));

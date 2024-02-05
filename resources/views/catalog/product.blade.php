@@ -48,11 +48,11 @@
                                     <div class="prod-view__wrapper swiper-wrapper">
                                         @foreach($product->images as $image)
                                             <a class="prod-view__slide swiper-slide"
-                                               href="{{ $image->imageSrc($product->catalog->alias) }}"
+                                               href="{{ $image->imageSrc($product->catalog->slug) }}"
                                                data-fancybox="prod-gallery" data-caption="{{ $product->name }}"
                                                title="{{ $product->name }}">
                                                 <img class="prod-view__pic no-select"
-                                                     src="{{ $image->thumb(3, $product->catalog->alias) }}"
+                                                     src="{{ $image->thumb(3, $product->catalog->slug) }}"
                                                      width="306" height="306" alt="{{ $product->name }}"
                                                      loading="lazy"/>
                                             </a>

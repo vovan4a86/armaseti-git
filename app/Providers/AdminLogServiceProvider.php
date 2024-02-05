@@ -12,6 +12,7 @@ use Fanky\Admin\Models\Page;
 use Fanky\Admin\Models\Product;
 use Fanky\Admin\Models\Sport;
 use Fanky\Admin\Models\Team;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\ServiceProvider;
 
 class AdminLogServiceProvider extends ServiceProvider {
@@ -29,6 +30,9 @@ class AdminLogServiceProvider extends ServiceProvider {
 
 		Page::updated(function($obj){
 			AdminLog::add('Отредактирована страница: ' . $obj->name);
+            if ($obj->isDirty('published')) {
+                Cache::flush();
+            }
 		});
 
 		Page::deleting(function($obj){
@@ -41,6 +45,9 @@ class AdminLogServiceProvider extends ServiceProvider {
 
 		Catalog::updated(function($obj){
 			AdminLog::add('Отредактирована категория: ' . $obj->name);
+            if ($obj->isDirty(['published', 'on_main'])) {
+                Cache::flush();
+            }
 		});
 
 		Catalog::deleting(function($obj){

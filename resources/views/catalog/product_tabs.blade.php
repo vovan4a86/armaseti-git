@@ -93,7 +93,7 @@
                 <div class="b-docs">
                     @foreach($product->docs as $doc)
                         <div class="b-docs__item">
-                            <a class="b-docs__view" href="{{ $doc->fileSrc($product->catalog->alias) }}"
+                            <a class="b-docs__view" href="{{ $doc->fileSrc($product->catalog->slug) }}"
                                data-fancybox="data-fancybox" data-caption="{{ $doc->name }}"
                                data-type="pdf" title="Сертификат диллера">
                                 <span class="b-docs__title">{{ $doc->name }}</span>
@@ -104,7 +104,7 @@
                                             </span>
                             </a>
                             <div class="b-docs__download">
-                                <a class="b-download" href="{{ $doc->fileSrc($product->catalog->alias) }}"
+                                <a class="b-download" href="{{ $doc->fileSrc($product->catalog->slug) }}"
                                    download="название_файла">
                                                 <span class="b-download__icon iconify"
                                                       data-icon="material-symbols:download" data-width="20"></span>

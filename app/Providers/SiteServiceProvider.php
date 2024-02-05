@@ -35,6 +35,7 @@ class SiteServiceProvider extends ServiceProvider
 
                 $catalog_menu = Cache::get('catalog_menu', collect());
                 if (!count($catalog_menu)) {
+                    \Debugbar::log('catalog_menu from DB');
                     $catalog_menu = Catalog::query()
                         ->public()
                         ->where('parent_id', 0)
@@ -42,6 +43,8 @@ class SiteServiceProvider extends ServiceProvider
                         ->with(['public_children'])
                         ->get();
                     Cache::add('catalog_menu', $catalog_menu, now()->addMinutes(60));
+                } else {
+                    \Debugbar::log('catalog_menu from cache');
                 }
 
                 $mobile_menu = Cache::get('mobile_menu', collect());

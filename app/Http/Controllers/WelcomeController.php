@@ -8,6 +8,7 @@ use Fanky\Admin\Models\Product;
 use Fanky\Admin\Models\Review;
 use Fanky\Admin\Settings;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Cache;
 
 class WelcomeController extends Controller {
 
@@ -17,11 +18,19 @@ class WelcomeController extends Controller {
         $page->ogGenerate();
         $page->setSeo();
 
-        $catalog_on_main = Catalog::public()
-            ->onMain()
-            ->with(['public_children'])
-            ->orderBy('order')
-            ->get();
+        $catalog_on_main = Cache::get('catalog_on_main', collect());
+        if (!count($catalog_on_main)) {
+            \Debugbar::log('catalog_on_main from DB');
+            $catalog_on_main = Catalog::query()
+                ->public()
+                ->onMain()
+                ->with(['public_children'])
+                ->orderBy('order')
+                ->get();
+            Cache::add('catalog_on_main', $catalog_on_main, now()->addMinutes(60));
+        } else {
+            \Debugbar::log('catalog_on_main from cache');
+        }
 
         $new_products = Product::public()
             ->where('is_new',1)

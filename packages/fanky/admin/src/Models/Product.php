@@ -51,6 +51,7 @@ use Carbon\Carbon;
  * @property-read mixed $image_src
  * @property-read mixed $url
  * @property-read Collection|ProductImage[] $images
+ * @property mixed slug
  * @method static bool|null forceDelete()
  * @method static Builder|Product onMain()
  * @method static Builder|Product public ()
@@ -335,5 +336,7 @@ class Product extends Model
         return number_format($this->price, 0, ',', ' ');
     }
 
-
+    public function getImagePath($image): string {
+        return self::UPLOAD_URL . $this->slug . '/' . $image;
+    }
 }

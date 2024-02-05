@@ -236,7 +236,6 @@ class CatalogController extends Controller
 
     public function product(Product $product)
     {
-        $category = Catalog::find($product->catalog_id);
         $bread = $product->getBread();
         $product->generateTitle();
         $product->generateDescription();
@@ -249,13 +248,13 @@ class CatalogController extends Controller
 
         Auth::init();
         if (Auth::user() && Auth::user()->isAdmin) {
-            View::share('admin_edit_link', route('admin.catalog.productEdit', [$product->id]));
+            View::share('admin_edit_link', route('admin.catalog.productEdit', $product->id));
         }
 
         return view(
             'catalog.product',
             [
-                'product' => $product,
+                'product' => $product->load('images', 'docs', 'chars', 'catalog'),
                 'h1' => $product->getH1(),
                 'bread' => $bread,
                 'text' => $product->text,

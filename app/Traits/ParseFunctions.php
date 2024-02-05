@@ -442,8 +442,8 @@ trait ParseFunctions
 
     public function uploadProductImage($url, $file_name, Product $product)
     {
-        if (!is_file(public_path(ProductImage::UPLOAD_URL . $product->catalog->alias . '/' . $file_name))) {
-            $this->downloadJpgFile($url, ProductImage::UPLOAD_URL . $product->catalog->alias . '/', $file_name);
+        if (!is_file(public_path(ProductImage::UPLOAD_URL . $product->catalog->slug . '/' . $file_name))) {
+            $this->downloadJpgFile($url, ProductImage::UPLOAD_URL . $product->catalog->slug . '/', $file_name);
         }
         $img = ProductImage::where('product_id', $product->id)
             ->where('image', $file_name)
@@ -461,8 +461,8 @@ trait ParseFunctions
 
     public function uploadProductDoc($url, $file_name, $name, Product $product)
     {
-        if (!is_file(public_path(ProductDoc::UPLOAD_URL . $product->catalog->alias . '/' . $file_name))) {
-            $this->downloadFile($url, ProductDoc::UPLOAD_URL . $product->catalog->alias . '/', $file_name);
+        if (!is_file(public_path(ProductDoc::UPLOAD_URL . $product->catalog->slug . '/' . $file_name))) {
+            $this->downloadFile($url, ProductDoc::UPLOAD_URL . $product->catalog->slug . '/', $file_name);
         }
         $doc = ProductDoc::where('product_id', $product->id)
             ->where('file', $file_name)

@@ -111,10 +111,10 @@
                             </div>
                         </td>
                         <td>
-                            @if ($img = $item->images()->first())
-                                <img src="{{ $img->thumb(1, $catalog->alias) }}" height="100" alt="thumb">
+                            @if ($img = $item->image)
+                                <img src="{{ $img->thumb(1, $catalog->slug) }}" height="100" alt="thumb">
                             @elseif($item->catalog->image)
-                                <img src="{{ \Fanky\Admin\Models\Catalog::UPLOAD_URL . $item->catalog->image }}" height="100" alt="thumb">
+                                <img src="{{ $item->catalog->image_src }}" height="100" alt="thumb">
                             @else
                                 <img src="{{ \Fanky\Admin\Models\Product::NO_IMAGE }}" height="100" alt="thumb">
                             @endif

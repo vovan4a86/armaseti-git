@@ -1,6 +1,6 @@
 <span class="docs_item" data-id="{{ $doc->id }}">
 	<div style="text-align: center; font-size: 12px; color: red">{{ $doc->name }}</div>
-	<a href="{{ $doc->fileSrc($catalog->alias) }}" target="_blank">
+	<a href="{{ $doc->fileSrc($catalog->slug) }}" target="_blank">
 		<img class="img-polaroid" src="{{ \Fanky\Admin\Models\ProductDoc::DOC_ICON }}" width="100"
 			 style="cursor:pointer;" title="Открыть в новом окне">
 	</a>

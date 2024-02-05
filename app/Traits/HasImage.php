@@ -55,23 +55,23 @@ trait HasImage{
 //		return $this->{$this->icon_field} ? url(self::getImagePathAttribute() . $this->{$this->icon_field}) : null;
 //	}
 
-	public function thumb($thumb, $alias = null) {
-	    if ($alias) $alias = $alias . '/';
+	public function thumb($thumb, $slug = null) {
+	    if ($slug) $slug = $slug . '/';
 		if (!$this->{$this->image_field}) {
 			return null;
 		} else {
-			$file = public_path(self::UPLOAD_URL . $alias . $this->{$this->image_field});
+			$file = public_path(self::UPLOAD_URL . $slug . $this->{$this->image_field});
 			$file = str_replace(['\\\\', '//'], DIRECTORY_SEPARATOR, $file);
 			$file = str_replace(['\\', '/'], DIRECTORY_SEPARATOR, $file);
 
-			if (!is_file(public_path(Thumb::url(self::UPLOAD_URL . $alias . $this->{$this->image_field}, $thumb)))) {
+			if (!is_file(public_path(Thumb::url(self::UPLOAD_URL . $slug . $this->{$this->image_field}, $thumb)))) {
 				if (!is_file($file))
 					return null; //нет исходного файла
 				//создание миниатюры
-				Thumb::make(self::UPLOAD_URL . $alias . $this->{$this->image_field}, self::$thumbs);
+				Thumb::make(self::UPLOAD_URL . $slug . $this->{$this->image_field}, self::$thumbs);
 			}
 
-			return url(Thumb::url(self::UPLOAD_URL . $alias . $this->{$this->image_field}, $thumb));
+			return url(Thumb::url(self::UPLOAD_URL . $slug . $this->{$this->image_field}, $thumb));
 		}
 	}
 
@@ -79,10 +79,10 @@ trait HasImage{
 	 * @param UploadedFile $image
 	 * @return string
 	 */
-	public static function uploadImage(UploadedFile $image, $alias = null, $last = false): string
+	public static function uploadImage(UploadedFile $image, $slug = null, $last = false): string
     {
 	    $upload_path = self::UPLOAD_URL;
-	    if ($alias) $upload_path .= $alias . '/';
+	    if ($slug) $upload_path .= $slug . '/';
 
 	    if (!is_dir(public_path($upload_path))) {
 	        mkdir(public_path($upload_path));
