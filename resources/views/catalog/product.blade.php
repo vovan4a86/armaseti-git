@@ -24,7 +24,8 @@
                             <div class="prod-view__utils">
                                 <div class="prod-view__utils-item">
                                     <!-- .is-active — active color state-->
-                                    <button class="utils-btn btn-reset" type="button" aria-label="Добавить к сравнению">
+                                    <button class="utils-btn btn-reset {{ in_array($product->id, session('compare', [])) ? 'is-active' : '' }}"
+                                            type="button" aria-label="Добавить к сравнению" data-compare data-id="{{ $product->id }}">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="17" height="18" fill="none">
                                             <path fill="currentColor"
                                                   d="M0 2.436c0-.587.544-1.063 1.214-1.063.67 0 1.215.476 1.215 1.063v13.812c0 .587-.544 1.063-1.215 1.063-.67 0-1.214-.476-1.214-1.063V2.436ZM7.286 5.623c0-.587.543-1.062 1.214-1.062.67 0 1.214.475 1.214 1.062v10.625c0 .587-.543 1.063-1.214 1.063-.67 0-1.214-.476-1.214-1.063V5.623ZM14.571 1.373c0-.587.544-1.062 1.215-1.062.67 0 1.214.475 1.214 1.062v14.875c0 .587-.544 1.063-1.214 1.063-.67 0-1.215-.476-1.215-1.063V1.373Z"
@@ -34,7 +35,8 @@
                                 </div>
                                 <div class="prod-view__utils-item">
                                     <!-- .is-active — active color state-->
-                                    <button class="utils-btn btn-reset" type="button" aria-label="Добавить в избранное">
+                                    <button class="utils-btn btn-reset {{ in_array($product->id, session('favorites', [])) ? 'is-active' : '' }}"
+                                            type="button" aria-label="Добавить в избранное" data-favorites data-id="{{ $product->id }}">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="22" height="19" fill="none">
                                             <path fill="currentColor"
                                                   d="M20.233 1.794a6.143 6.143 0 0 0-8.678 0L11 2.35l-.556-.556a6.142 6.142 0 0 0-8.676 0c-2.344 2.344-2.359 6.058-.036 8.641 2.12 2.355 8.37 7.442 8.634 7.658.18.146.397.217.612.217H11a.937.937 0 0 0 .633-.217c.266-.216 6.516-5.303 8.636-7.658 2.323-2.583 2.308-6.297-.035-8.64Zm-1.41 7.341C17.173 10.971 12.63 14.757 11 16.1c-1.63-1.343-6.17-5.128-7.823-6.964-1.62-1.802-1.636-4.367-.035-5.968a4.181 4.181 0 0 1 2.965-1.226 4.18 4.18 0 0 1 2.965 1.226l1.221 1.221a.94.94 0 0 0 .521.263c.312.067.65-.02.894-.262l1.221-1.222a4.198 4.198 0 0 1 5.93 0c1.601 1.6 1.586 4.166-.034 5.967Z"
@@ -43,7 +45,21 @@
                                     </button>
                                 </div>
                             </div>
-                            @if(count($product->images))
+                            @if($image)
+                                <div class="prod-view__slider swiper" data-prod-slider="data-prod-slider">
+                                    <div class="prod-view__wrapper swiper-wrapper">
+                                            <a class="prod-view__slide swiper-slide"
+                                               href="{{ $image }}"
+                                               data-fancybox="prod-gallery" data-caption="{{ $product->name }}"
+                                               title="{{ $product->name }}">
+                                                <img class="prod-view__pic no-select"
+                                                     src="{{ $image }}"
+                                                     width="306" height="306" alt="{{ $product->name }}"
+                                                     loading="lazy"/>
+                                            </a>
+                                    </div>
+                                </div>
+                            @else
                                 <div class="prod-view__slider swiper" data-prod-slider="data-prod-slider">
                                     <div class="prod-view__wrapper swiper-wrapper">
                                         @foreach($product->images as $image)
@@ -67,7 +83,7 @@
                     <div class="prod__data" data-id="{{ $product->id }}">
                         <div class="prod__meta">
                             <div class="prod__id">Артикул
-                                <span>{{ $product->article }}</span>
+                                <span>{{ $product->article ?: '-' }}</span>
                             </div>
                             <div class="prod__availability">
                                 <!-- .unactive - цвет нет в наличии-->
@@ -95,7 +111,9 @@
                         </div>
                         <div class="prod__pricing">
                             <div class="prod__price">{{ $product->getFormatPrice() }}&nbsp;₽</div>
-                            <div class="prod__price prod__price--old">3&nbsp;502&nbsp;₽</div>
+                            @if ($product->discount)
+                                <div class="prod__price prod__price--old">{{ $product->discount_price }}</div>
+                            @endif
                         </div>
                         <!--._actions(x-data="{ setOrder: false }")-->
                         <div class="prod__actions" x-data="{ orderDialog: false }">

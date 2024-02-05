@@ -344,10 +344,10 @@ class Catalog extends Model
         if ($current_city) {
             $path = $current_city->alias . $path;
         }
-        $bread[] = [
-            'name' => 'Каталог товаров',
-            'url' => url($path),
-        ];
+//        $bread[] = [
+//            'name' => 'Каталог товаров',
+//            'url' => url($path),
+//        ];
         return array_reverse($bread, true);
     }
 

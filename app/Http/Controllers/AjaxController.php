@@ -44,7 +44,7 @@ class AjaxController extends Controller
 
             $product_image = $product->images()->first();
             if ($product_image) {
-                $product_item['image'] = $product_image->thumb(1, $product->catalog->alias);
+                $product_item['image'] = $product_image->thumb(1, $product->catalog->slug);
             }
 //            else {
 //                $image = Catalog::whereId($product->catalog_id)->first()->image;

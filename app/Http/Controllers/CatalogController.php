@@ -104,8 +104,8 @@ class CatalogController extends Controller
         $price_from = request()->get('price_from'); //встроенный фильтр
         $price_to = request()->get('price_to'); //встроенный фильтр
         $in_stock = request()->get('in_stock'); //встроенный фильтр
-        $price_order = request()->get('price_order', session('price_order')); //сортировка
-        session(['price_order' => $price_order]);
+        $price_order = request()->get('price_order', session('price_order', 'asc')); //сортировка
+        session(['price_order' => $price_order ?? 'asc']);
         $reset_filter = request()->get('reset'); //нажали кнопку сброса фильтра
 
         $query_string = '';
@@ -245,6 +245,12 @@ class CatalogController extends Controller
         $product->setSeo();
         $product->ogGenerate();
         $product = $this->add_region_seo($product);
+        $product->load('images', 'docs', 'chars', 'catalog');
+
+        $image = null;
+        if (count($product->images) == 0) {
+            $image = Catalog::UPLOAD_URL . $product->catalog->image;
+        }
 
         Auth::init();
         if (Auth::user() && Auth::user()->isAdmin) {
@@ -254,10 +260,11 @@ class CatalogController extends Controller
         return view(
             'catalog.product',
             [
-                'product' => $product->load('images', 'docs', 'chars', 'catalog'),
+                'product' => $product,
                 'h1' => $product->getH1(),
                 'bread' => $bread,
                 'text' => $product->text,
+                'image' => $image
             ]
         );
     }

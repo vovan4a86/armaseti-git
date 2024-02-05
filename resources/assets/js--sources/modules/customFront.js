@@ -425,13 +425,14 @@ sendRequest();
 export const addToFavorites = () => {
     $('[data-favorites]').click(function () {
         const url = '/ajax/favorites';
-        const form = $(this).closest('form');
-        const id = $(form).find('.prod-card__data--order').data('id');
+        const elem = $(this);
+        const id = $(elem).data('id');
         const header_favorites = $('[data-header-favorites]');
 
         sendAjax(url, {id}, function (json) {
             if (json.success) {
                 header_favorites.replaceWith(json.header_favorites);
+                elem.toggleClass('is-active');
             }
         });
 
@@ -443,13 +444,14 @@ addToFavorites();
 export const addToCompare = () => {
     $('[data-compare]').click(function () {
         const url = '/ajax/compare';
-        const form = $(this).closest('form');
-        const id = $(form).find('.prod-card__data--order').data('id');
+        const elem = $(this);
+        const id = $(elem).data('id');
         const header_compare = $('[data-header-compare]');
 
         sendAjax(url, {id}, function (json) {
             if (json.success) {
                 header_compare.replaceWith(json.header_compare);
+                elem.toggleClass('is-active');
             }
         });
 

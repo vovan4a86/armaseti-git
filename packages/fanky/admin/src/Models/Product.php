@@ -52,6 +52,7 @@ use Carbon\Carbon;
  * @property-read mixed $url
  * @property-read Collection|ProductImage[] $images
  * @property mixed slug
+ * @property mixed discount
  * @method static bool|null forceDelete()
  * @method static Builder|Product onMain()
  * @method static Builder|Product public ()
@@ -110,7 +111,7 @@ class Product extends Model
     const UPLOAD_PATH = '/public/uploads/products/';
     const UPLOAD_URL = '/uploads/products/';
 
-    const NO_IMAGE = "/adminlte/no_image.png";
+    const NO_IMAGE = "/adminlte/no-catalog-image.png";
 
     public function catalog(): BelongsTo
     {
@@ -338,5 +339,21 @@ class Product extends Model
 
     public function getImagePath($image): string {
         return self::UPLOAD_URL . $this->slug . '/' . $image;
+    }
+
+    public function getDiscountPriceAttribute(): string {
+        if (!$this->discount) return '';
+
+        if (stripos($this->discount,'%')) {
+            if ($this->price) {
+                $dis = preg_replace('/\D/', '', $this->discount) / 100;
+                $res = $this->price + $this->price * $dis;
+                return number_format($res, 0, ',', ' ') . ' ₽';
+            } else {
+                return '';
+            }
+        } else {
+            return number_format($this->discount, 0, ',', ' ') . ' ₽';
+        }
     }
 }

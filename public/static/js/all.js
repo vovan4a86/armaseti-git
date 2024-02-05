@@ -3856,14 +3856,15 @@ sendRequest();
 var addToFavorites = function addToFavorites() {
   jquery__WEBPACK_IMPORTED_MODULE_0___default()('[data-favorites]').click(function () {
     var url = '/ajax/favorites';
-    var form = jquery__WEBPACK_IMPORTED_MODULE_0___default()(this).closest('form');
-    var id = jquery__WEBPACK_IMPORTED_MODULE_0___default()(form).find('.prod-card__data--order').data('id');
+    var elem = jquery__WEBPACK_IMPORTED_MODULE_0___default()(this);
+    var id = jquery__WEBPACK_IMPORTED_MODULE_0___default()(elem).data('id');
     var header_favorites = jquery__WEBPACK_IMPORTED_MODULE_0___default()('[data-header-favorites]');
     sendAjax(url, {
       id: id
     }, function (json) {
       if (json.success) {
         header_favorites.replaceWith(json.header_favorites);
+        elem.toggleClass('is-active');
       }
     });
   });
@@ -3874,14 +3875,15 @@ addToFavorites();
 var addToCompare = function addToCompare() {
   jquery__WEBPACK_IMPORTED_MODULE_0___default()('[data-compare]').click(function () {
     var url = '/ajax/compare';
-    var form = jquery__WEBPACK_IMPORTED_MODULE_0___default()(this).closest('form');
-    var id = jquery__WEBPACK_IMPORTED_MODULE_0___default()(form).find('.prod-card__data--order').data('id');
+    var elem = jquery__WEBPACK_IMPORTED_MODULE_0___default()(this);
+    var id = jquery__WEBPACK_IMPORTED_MODULE_0___default()(elem).data('id');
     var header_compare = jquery__WEBPACK_IMPORTED_MODULE_0___default()('[data-header-compare]');
     sendAjax(url, {
       id: id
     }, function (json) {
       if (json.success) {
         header_compare.replaceWith(json.header_compare);
+        elem.toggleClass('is-active');
       }
     });
   });

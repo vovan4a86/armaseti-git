@@ -49,7 +49,7 @@
 
                 <div style="display: flex; gap: 20px">
                     {!! Form::groupText('price', $product->price ?: 0, 'Цена') !!}
-                    {!! Form::groupText('is_discount', $product->is_discount, 'Скидка') !!}
+                    {!! Form::groupText('discount', $product->discount, 'Скидка (старая цена/процент скидки со знаком %)') !!}
                     {{--                    {!! Form::groupText('price', $product->product_count ?: 0, 'Наличие, шт') !!}--}}
                 </div>
 
@@ -92,7 +92,7 @@
 
                     <div class="images_list">
                         @foreach ($product->images as $image)
-                            @include('admin::catalog.product_image', ['image' => $image, 'alias' => $product->catalog->alias])
+                            @include('admin::catalog.product_image', ['image' => $image, 'alias' => $product->catalog->slug])
                         @endforeach
                     </div>
                 @else

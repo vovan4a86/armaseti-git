@@ -695,7 +695,7 @@ class AdminCatalogController extends AdminController
 
                 if ($images) {
                     foreach ($images as $image) {
-                        $image->deleteImage(null, $product->catalog->alias);
+                        $image->deleteImage(null, $product->catalog->slug);
                         $image->delete();
                     }
                 }
@@ -723,7 +723,7 @@ class AdminCatalogController extends AdminController
                         }
 
                         foreach ($images as $i => $image) {
-                            $file_name = ProductImage::uploadImage($image, $product->catalog->alias, count($ids) === $n + 1);
+                            $file_name = ProductImage::uploadImage($image, $product->catalog->slug, count($ids) === $n + 1);
                             ProductImage::create(['product_id' => $product->id, 'image' => $file_name, 'order' => $i]);
                         }
                     }

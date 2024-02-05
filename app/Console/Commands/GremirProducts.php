@@ -71,11 +71,12 @@ class GremirProducts extends Command
 
 //        $this->parseCatalog('Тройники стальные оцинкованные', 'https://gremir.ru/troyniki-gost-17376/troyniki-stalnye-ocinkovannyei-gost-17376/', 487);
 //        $this->parseCatalog('Фитинги для труб из сшитого полиэтилена', 'https://gremir.ru/fitingi/fitingi-dlya-pe-x/', 638);
-//        $this->parseCustomCatalog(
-//            'Кольца уплотнительные Тайтон для ВЧШГ',
-//            'https://gremir.ru/fasonnye-chasti/kolca-uplotnitelnye-tajton-dlya-vchshg/',
-//            528
-//        );
+        $this->parseCustomCatalog(
+            'Hawle с электроприводом AUMA',
+            'https://gremir.ru/zadvizhki/klinovye-s-elektroprivodom-el-privodom/ele2-4000ele2/',
+            90
+        );
+        exit();
 //        $this->parseCustomCatalog(
 //            'Муфты ПЭ для асбестоцементных труб',
 //            'https://gremir.ru/fitingi/polietilen-pe-i-pe100/fitingi-pe-dlya-asbestocementnyh-trub/mufty-pe-dlya-asbestocementnyh-trub/',
@@ -108,8 +109,20 @@ class GremirProducts extends Command
 //            }
 //        }
 
+
+        $skip_names = [
+            'Задвижки с обрез. клином с электроприводом',
+            'Задвижки с электроприводом Ду 50',
+            'Задвижки с электроприводом Ду 80',
+            'Задвижки с электроприводом Ду 100',
+            'Задвижки с электроприводом Ду 150',
+            'Задвижки с электроприводом Ду 200',
+            'Hawle с электроприводом AUMA'
+        ];
         foreach ($this->catalogList() as $catName => $catUrl) {
-            $this->parseCatalog($catName, $catUrl);
+            if(!in_array($catName, $skip_names)) {
+                $this->parseCatalog($catName, $catUrl);
+            }
 
         }
 
@@ -333,8 +346,7 @@ class GremirProducts extends Command
 
     public function parseCustomCatalog($categoryName, $categoryUrl, $parent = 0)
     {
-        $this->info('Парсим раздел: ' . $categoryName);
-        $this->info('Url раздела: ' . $categoryUrl);
+        $this->info('Парсим раздел: ' . $categoryName . ' (' . $categoryUrl . ')');
         $catalog = $this->getCatalogByName($categoryName, $parent);
 
         try {
@@ -403,7 +415,7 @@ class GremirProducts extends Command
                             if (!is_file(
                                 public_path(CatalogDoc::UPLOAD_URL . $catalog->slug . '/' . $url_full_file_name)
                             )) {
-                                $this->downloadPdfFile(
+                                $this->downloadFile(
                                     $url,
                                     CatalogDoc::UPLOAD_URL . $catalog->slug . '/',
                                     $url_full_file_name
@@ -441,6 +453,8 @@ class GremirProducts extends Command
                         $product = Product::where('parse_url', $url)->first();
                         if (!$product) {
                             $this->parseProduct($catalog, $name, $url);
+                        } else {
+                            $this->updateProduct($product, $url, $catalog);
                         }
                     }
                 );
@@ -640,7 +654,7 @@ class GremirProducts extends Command
                                 if (!is_file(
                                     public_path(ProductDoc::UPLOAD_URL . $catalog->slug . '/' . $url_full_file_name)
                                 )) {
-                                    $this->downloadPdfFile(
+                                    $this->downloadFile(
                                         $url,
                                         ProductDoc::UPLOAD_URL . $catalog->slug . '/',
                                         $url_full_file_name
@@ -735,7 +749,7 @@ class GremirProducts extends Command
                                 if (!is_file(
                                     public_path(ProductDoc::UPLOAD_URL . $catalog->slug . '/' . $url_full_file_name)
                                 )) {
-                                    $this->downloadPdfFile(
+                                    $this->downloadFile(
                                         $url,
                                         ProductDoc::UPLOAD_URL . $catalog->slug . '/',
                                         $url_full_file_name
@@ -763,6 +777,8 @@ class GremirProducts extends Command
                     }
                 );
             }
+
+            $product->update(['catalog_id' => $catalog->id]);
 
         } catch (\Exception $e) {
             $this->error('Ошибка parseProduct: ' . $e->getMessage());

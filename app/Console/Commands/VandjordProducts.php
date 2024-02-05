@@ -358,7 +358,7 @@ class VandjordProducts extends Command
                                 $url = $this->baseUrl . $image->attr('href');
                                 $file_name = $product->article . '_' . $i;
                                 $ext = $this->getExtensionFromSrc($url);
-                                $upload_path = ProductImage::UPLOAD_URL . $product->catalog->alias . '/';
+                                $upload_path = ProductImage::UPLOAD_URL . $product->catalog->slug . '/';
 
                                 if (strtolower($ext) == '.webp') {
                                     $res = $this->downloadWebpFileWithConvert($url, $upload_path, $file_name);

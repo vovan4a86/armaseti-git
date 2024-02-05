@@ -22,7 +22,7 @@
         <ul class="nav nav-tabs">
             <li class="{{ isset($tab) ? '' : 'active' }}"><a href="#tab_1" data-toggle="tab">Параметры</a></li>
             <li><a href="#tab_2" data-toggle="tab">Тексты</a></li>
-            <li><a href="#tab_images" data-toggle="tab">Изображения ({{ count($catalog->images) }})</a></li>
+            <li><a href="#tab_images" data-toggle="tab">Слайдер ({{ count($catalog->images) }})</a></li>
             <li class="{{ isset($tab) && $tab === 'docs' ? 'active' : '' }}">
                 <a href="#tab_docs" data-toggle="tab">Документы ({{ count($catalog->docs) }})</a>
             </li>
