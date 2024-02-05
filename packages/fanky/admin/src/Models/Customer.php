@@ -45,4 +45,9 @@ class Customer extends Model
 
         return $date;
     }
+
+    public function getFileSrcAttribute(): string
+    {
+        return self::UPLOAD_URL . $this->details;
+    }
 }

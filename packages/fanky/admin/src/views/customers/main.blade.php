@@ -31,6 +31,7 @@
 						<th>Email</th>
 						<th>Имя</th>
 						<th>Телефон</th>
+						<th>Реквизиты</th>
 						<th width="50"></th>
 					</tr>
 				</thead>

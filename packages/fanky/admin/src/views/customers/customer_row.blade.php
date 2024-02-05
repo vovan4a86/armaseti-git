@@ -12,6 +12,11 @@
 		{{ $item->phone }}
 	</td>
 	<td>
+		@if ($item->details)
+			<a href="{{ $item->file_src }}" target="_blank">Открыть файл</a>
+		@endif
+	</td>
+	<td>
 		<a class="glyphicon glyphicon-trash"
 		   href="{{ route('admin.customers.delete', [$item->id]) }}"
 		   style="font-size:20px; color:red;"
