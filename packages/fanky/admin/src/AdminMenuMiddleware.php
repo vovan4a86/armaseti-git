@@ -37,6 +37,9 @@ class AdminMenuMiddleware
                     $menu->add('Заказы', ['route' => 'admin.orders', 'icon' => 'fa-dollar'])
                         ->active('/admin/orders/*');
 
+                    $menu->add('Покупатели', ['route' => 'admin.customers', 'icon' => 'fa-users'])
+                        ->active('/admin/customers/*');
+
 //            $menu->add('Отзывы', ['route' => 'admin.reviews', 'icon' => 'fa-star'])
 //                ->active('/admin/reviews/*');
 
@@ -52,8 +55,7 @@ class AdminMenuMiddleware
                         ->active('/admin/settings/*');
                     $menu->settings->add('Редиректы', ['route' => 'admin.redirects', 'icon' => 'fa-retweet'])
                         ->active('/admin/redirects/*');
-
-                    $menu->add('Пользователи', ['route' => 'admin.users', 'icon' => 'fa-users'])
+                    $menu->settings->add('Пользователи', ['route' => 'admin.users', 'icon' => 'fa-user-circle'])
                         ->active('/admin/users/*');
 
                     $menu->add('Файловый менеджер', ['route' => 'admin.pages.filemanager', 'icon' => 'fa-file'])

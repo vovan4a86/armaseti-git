@@ -85,7 +85,7 @@
         </div>
         <div class="prod-card__data prod-card__data--order" data-id="{{ $product->id }}">
             <div class="prod-card__pricing">
-                <div class="prod-card__price">{{ $product->price }} ₽</div>
+                <div class="prod-card__price">{{ $product->getFormatPrice() }} ₽</div>
                 <div class="prod-card__price prod-card__price--old"></div>
             </div>
             <div class="prod-card__actions">

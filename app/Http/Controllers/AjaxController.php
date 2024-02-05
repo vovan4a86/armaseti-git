@@ -7,6 +7,7 @@ use DB;
 use Fanky\Admin\Models\Catalog;
 use Fanky\Admin\Models\CatalogFilter;
 use Fanky\Admin\Models\City;
+use Fanky\Admin\Models\Customer;
 use Fanky\Admin\Models\Feedback;
 use Fanky\Admin\Models\Order as Order;
 use Fanky\Admin\Models\Page;
@@ -197,12 +198,39 @@ class AjaxController extends Controller
                 $data['file'] = $file_name;
             }
             if ($details) {
-                $file_name = md5(uniqid(rand(), true)) . '.' . $file->getClientOriginalExtension();
-                $details->move(public_path(Order::UPLOAD_URL), $file_name);
+                $file_name = md5(uniqid(rand(), true)) . '.' . $details->getClientOriginalExtension();
+                copy($details, public_path(Order::UPLOAD_URL) . $file_name);
                 $data['details'] = $file_name;
             }
 
             $order = Order::create($data);
+
+            //обновляем покупателя
+            $customer = Customer::whereEmail($data['email'])->first();
+            if (!$customer) {
+                $customer = Customer::create(
+                    [
+                        'name' => $data['name'] ,
+                        'email' => $data['email'],
+                        'phone' => $data['phone']
+                    ]
+                );
+            } else {
+                if ($data['name']) $customer->update(['name' => $data['name']]);
+                if ($data['phone']) $customer->update(['phone' => $data['phone']]);
+            }
+
+            if ($details) {
+                if ($customer->details) {
+                    if (is_file(public_path(Customer::UPLOAD_URL . $customer->details))) {
+                        unlink(public_path(Customer::UPLOAD_URL . $customer->details));
+                    }
+                }
+                $file_name = md5(uniqid(rand(), true)) . '.' . $details->getClientOriginalExtension();
+                $details->move(public_path(Customer::UPLOAD_URL), $file_name);
+                $customer->update(['details' => $file_name]);
+            }
+
             $items = Cart::all();
 
             foreach ($items as $item) {
@@ -285,12 +313,16 @@ class AjaxController extends Controller
             ];
 
             $feedback = Feedback::create($feedback_data);
-            Mail::send('mail.feedback', ['feedback' => $feedback], function ($message) use ($feedback) {
-                $title = $feedback->id . ' | Заявка | Армасети';
-                $message->from($this->fromMail, $this->fromName)
-                    ->to(Settings::get('feedback_email'))
-                    ->subject($title);
-            });
+            Mail::send(
+                'mail.feedback',
+                ['feedback' => $feedback],
+                function ($message) use ($feedback) {
+                    $title = $feedback->id . ' | Заявка | Армасети';
+                    $message->from($this->fromMail, $this->fromName)
+                        ->to(Settings::get('feedback_email'))
+                        ->subject($title);
+                }
+            );
 
 
             return ['success' => true, 'redirect' => route('order-success')];

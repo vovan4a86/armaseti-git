@@ -313,6 +313,9 @@ Route::group(['namespace' => 'Fanky\Admin\Controllers', 'prefix' => 'admin', 'as
         Route::get('edit/{id?}', $controller . 'getEdit')
             ->name('.edit');
 
+        Route::post('edit/{id?}', $controller . 'postEdit')
+            ->name('.edit');
+
         Route::post('save', $controller . 'postSave')
             ->name('.save');
 

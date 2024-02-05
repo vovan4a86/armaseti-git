@@ -2,45 +2,39 @@
 namespace Fanky\Admin\Models;
 
 use App\Classes\SiteHelper;
-use App\Traits\HasFile;
-use App\Traits\HasH1;
-use App\Traits\HasImage;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Str;
 
 /**
- * Fanky\Admin\Models\Review
+ * Fanky\Admin\Models\Customer
  *
  * @property int $id
- * @property string $type
  * @property string|null $text
- * @property string $adress
- * @property string $video
+ * @property string $details
  * @property int $on_main
  * @property int $order
  * @property \Carbon\Carbon|null $created_at
  * @property \Carbon\Carbon|null $updated_at
- * @property-read mixed $type_name
- * @property-read mixed $video_src
- * @property-read mixed $video_thumb
- * @property-read mixed $video_url
- * @method static \Illuminate\Database\Eloquent\Builder|\Fanky\Admin\Models\Review onMain()
- * @method static \Illuminate\Database\Eloquent\Builder|\Fanky\Admin\Models\Review whereAdress($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\Fanky\Admin\Models\Review whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\Fanky\Admin\Models\Review whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\Fanky\Admin\Models\Review whereOnMain($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\Fanky\Admin\Models\Review whereOrder($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\Fanky\Admin\Models\Review whereText($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\Fanky\Admin\Models\Review whereType($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\Fanky\Admin\Models\Review whereUpdatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\Fanky\Admin\Models\Review whereVideo($value)
+ * @method static Builder|Customer whereCreatedAt($value)
+ * @method static Builder|Customer whereId($value)
+ * @method static Builder|Customer whereOnMain($value)
+ * @method static Builder|Customer whereOrder($value)
+ * @method static Builder|Customer whereText($value)
+ * @method static Builder|Customer whereType($value)
+ * @method static Builder|Customer whereUpdatedAt($value)
  * @mixin \Eloquent
- * @method static \Illuminate\Database\Eloquent\Builder|\Fanky\Admin\Models\Review newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|\Fanky\Admin\Models\Review newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|\Fanky\Admin\Models\Review query()
+ * @method static Builder|Customer newModelQuery()
+ * @method static Builder|Customer newQuery()
+ * @method static Builder|Customer query()
+ * @method static whereEmail(mixed $email)
  */
 class Customer extends Model
 {
     protected $guarded = ['id'];
+
+    const UPLOAD_URL = '/uploads/customers/';
 
     public function dateFormat($format = 'd F Y')
     {
