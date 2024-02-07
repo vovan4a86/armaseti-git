@@ -62,13 +62,13 @@ class AdminCatalogController extends AdminController
         }
         $catalog = Catalog::findOrFail($catalog_id);
 
-        $products = $catalog->products()->orderBy('order');
-//        $products = Pagination::init($catalog->products()->orderBy('order'), 20)->get();
+        $products = $catalog->products()->orderBy('order')->with(['catalog', 'image']);
 
         if ($q = Request::get('q')) {
             $products->where(function ($query) use ($q) {
                 $query->orWhere('name', 'LIKE', '%' . $q . '%')
-                    ->orWhere('article', 'LIKE', '%' . $q . '%');
+                    ->orWhere('article', 'LIKE', '%' . $q . '%')
+                    ->with(['catalog', 'image']);
             });
         }
         $products = Pagination::init($products, $per_page)->get();
@@ -666,6 +666,23 @@ class AdminCatalogController extends AdminController
         if ($item_ids && $catalog_id) {
             Product::whereIn('id', $item_ids)
                 ->update(['catalog_id' => $catalog_id]);
+        }
+
+        return ['success' => true];
+    }
+
+    public function postPublishProducts()
+    {
+        $item_ids = Request::get('items', []);
+        if ($item_ids) {
+            foreach ($item_ids as $id) {
+                $product = Product::findOrFail($id);
+                if ($product->published == 1) {
+                    $product->update(['published' => 0]);
+                } else {
+                    $product->update(['published' => 1]);
+                }
+            }
         }
 
         return ['success' => true];

@@ -1,6 +1,6 @@
 <aside class="layout__aside">
     <div class="layout__item">
-        <form class="b-filter" action="{{ $route }}">
+        <form class="b-filter b-cat" action="{{ $route }}" data-cat="{{ $cat }}">
             <div class="b-filter__item">
                 <div class="b-filter__title is-active">Цена, ₽</div>
                 <div class="b-filter__body is-active" data-range-slider="data-range-slider">
@@ -38,7 +38,8 @@
                 </div>
             </div>
 
-            @foreach($filters_list as $name => $filter)
+            @if(isset($filters_list) && count($filters_list))
+                @foreach($filters_list as $name => $filter)
                 <div class="b-filter__item">
                 <div class="b-filter__title">{{ $name }}</div>
                 <div class="b-filter__body">
@@ -77,6 +78,7 @@
                 </div>
             </div>
             @endforeach
+            @endif
 
             <div class="b-filter__actions">
                 <button class="b-filter__submit btn-reset" aria-label="Применить">

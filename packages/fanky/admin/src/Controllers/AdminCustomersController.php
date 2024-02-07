@@ -27,6 +27,7 @@ class AdminCustomersController extends AdminController {
     {
 		$id = Request::input('id');
 		$data = Request::only(['name', 'email', 'phone', 'username']);
+		$details = Request::file('details');
 
 		// валидация данных
 		$validator = Validator::make(
@@ -39,6 +40,11 @@ class AdminCustomersController extends AdminController {
 			return ['errors' => $validator->messages()];
 		}
 
+		if($details) {
+            $file_name = Customer::uploadDetails($details);
+            $data['details'] = $file_name;
+        }
+
 		// сохраняем страницу
 		$customer = Customer::find($id);
 		if (!$customer) {
@@ -47,7 +53,11 @@ class AdminCustomersController extends AdminController {
 			$customer->update($data);
 		}
 
-		return ['success' => true, 'id' => $customer->id, 'row' => view('admin::customers.customer_row', ['item' => $customer])->render()];
+		return [
+		    'success' => true,
+            'id' => $customer->id,
+            'row' => view('admin::customers.customer_row', ['item' => $customer])->render()
+        ];
 	}
 
 	public function postDelete($id): array
@@ -57,6 +67,17 @@ class AdminCustomersController extends AdminController {
 		    unlink(public_path(Customer::UPLOAD_URL) . $customer->details);
         }
 		$customer->delete();
+
+		return ['success' => true];
+	}
+
+	public function postDeleteDetails($id): array
+    {
+		$customer = Customer::findOrFail($id);
+		if ($customer->details) {
+		    unlink(public_path(Customer::UPLOAD_URL) . $customer->details);
+        }
+		$customer->update(['details' => null]);
 
 		return ['success' => true];
 	}

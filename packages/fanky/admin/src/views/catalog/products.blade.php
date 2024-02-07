@@ -27,6 +27,10 @@
                             data-toggle="modal" data-target="#moveDialog"
                             disabled>Переместить
                     </button>
+                    <button class="btn btn-warning btn-sm js-publish-btn"
+                            onclick="publishProducts(this, event)"
+                            disabled>Не/Показывать
+                    </button>
                     <button class="btn btn-danger btn-sm js-delete-btn"
                             onclick="deleteProducts(this, event)"
                             disabled>Удалить

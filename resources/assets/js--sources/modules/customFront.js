@@ -137,9 +137,13 @@ export const applyFilter = () => {
         e.preventDefault();
         const form = $(this).closest('form');
         const ajax_url = $(form).attr('action');
-        const data = $(form).serialize();
+        let cat = $('.b-filter.b-cat').data('cat'); //только для страницы новинок
+        let data = $(form).serialize();
         const news_list = $('.cat-view__list');
         const current_url = $(form).data('current-url');
+        if (cat) {
+            data += '&cat=' + cat;
+        }
 
         const btn = $('.cat-view__load .b-loader');
         const pagination = $('.cat-view__pagination .b-pagination')
@@ -197,6 +201,7 @@ resetFilter();
 export const toggleCostSort = () => {
     $('.b-sort__action.btn-reset').click(function () {
         const url = $('.b-filter').attr('action');
+        let cat = $('.b-filter.b-cat').data('cat'); //только для страницы новинок
         const current = $(this);
         const news_list = $('.cat-view__list');
         const btn = $('.cat-view__load .b-loader');
@@ -213,7 +218,7 @@ export const toggleCostSort = () => {
         }
 
         if (price_order) {
-            sendAjax(url, {price_order}, function (json) {
+            sendAjax(url, {price_order, cat}, function (json) {
                 // history.pushState('', '', json.current_url);
                 if (json.items) {
                     $(news_list).empty();

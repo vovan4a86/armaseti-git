@@ -280,41 +280,67 @@ class CatalogController extends Controller
         $page->setSeo();
         $page = $this->add_region_seo($page);
 
-        $products = Product::public()
-            ->where('is_new', 1)
-            ->with('images')
-            ->get();
+        $price_order = request()->get('price_order', session('price_order', 'asc')); //сортировка
+        session(['price_order' => $price_order]);
+        $cat = request()->get('cat', 'all');
 
-        $products_categories = [];
-        foreach ($products as $product) {
-            $main_category = $product->findRootParentCatalog($product->catalog_id);
-            $products_categories[$main_category->name][] = $product;
+        if ($cat == 'all') {
+            $products_query = Product::public()
+                ->where('is_new', 1)
+                ->with(['images', 'chars', 'catalog'])
+                ->orderBy('price', $price_order);
+        } else {
+            $catalog = Catalog::find($cat);
+            $ids = $catalog->getRecurseChildrenIds();
+            $products_query = Product::public()
+                ->whereIn('catalog_id', $ids)
+                ->where('is_new', 1)
+                ->with(['images', 'chars', 'catalog'])
+                ->orderBy('price', $price_order);
         }
-
-        $main_products_categories = [];
-        foreach ($products_categories as $name => $values) {
-            $catalog = Catalog::where('name', $name)->first();
-            $main_products_categories[] = $catalog;
-        }
+        $main_products_categories = Catalog::getNewProductsCategories();
 
         //макс цена для фильтра
-        $filter_max_price = $products->max('price');
+        $filter_max_price = $products_query->max('price');
 
-        //формирование массива фильтров
-        $filters_list = [];
-        foreach ($products as $product) {
-            foreach ($product->chars as $char) {
-                $filters_list[$char->name]['translit'] = $char->translit;
-                if (!isset($filters_list[$char->name]['values'])) {
-                    $filters_list[$char->name]['values'] = [];
-                }
-                if (!in_array($char->value, $filters_list[$char->name]['values'])) {
-                    $filters_list[$char->name]['values'][] = $char->value;
-                }
+//        $products_get = $products_query->get();
+//        $filters_list = [];
+//        foreach ($products_get as $product) {
+//            //формирование массива фильтров
+//            foreach ($product->chars as $char) {
+//                $filters_list[$char->name]['translit'] = $char->translit;
+//                if (!isset($filters_list[$char->name]['values'])) {
+//                    $filters_list[$char->name]['values'] = [];
+//                }
+//                if (!in_array($char->value, $filters_list[$char->name]['values'])) {
+//                    $filters_list[$char->name]['values'][] = $char->value;
+//                }
+//            }
+//        }
+//        unset($filters_list['Наличие на складе'], $filters_list['Примечание']);
+
+        $products = $products_query->paginate(Settings::get('products_per_page', 9));
+
+        if (request()->ajax()) {
+            //загрузить еще
+            $view_items = [];
+            foreach ($products as $item) {
+                $view_items[] = view('catalog.product_item_catalog', ['product' => $item,])->render();
             }
+
+            $btn_paginate = null;
+            if ($products->nextPageUrl()) {
+                $btn_paginate = view('paginations.load_more', ['paginator' => $products])->render();
+            }
+
+            $paginate = view('paginations.with_pages', ['paginator' => $products])->render();
+
+            return [
+                'items' => $view_items,
+                'btn' => $btn_paginate,
+                'paginate' => $paginate,
+            ];
         }
-        unset($filters_list['Наличие на складе'], $filters_list['Примечание']);
-//        dd($filters_list);
 
         return view(
             'catalog.new_products',
@@ -324,8 +350,9 @@ class CatalogController extends Controller
                 'products' => $products,
                 'main_products_categories' => $main_products_categories,
                 'filter_max_price' => $filter_max_price,
-                'filters_list' => $filters_list,
-                'route' => route('new-products')
+//                'filters_list' => $filters_list,
+                'route' => route('new-products'),
+                'cat' => $cat
             ]
         );
     }

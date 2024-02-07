@@ -19,8 +19,8 @@
                                     <ul class="b-nav__list list-reset">
                                         @foreach($main_products_categories as $category)
                                             <li class="b-nav__item">
-                                                <a class="b-nav__link {{ $category->isActive ? 'is-active' : '' }}"
-                                                   href="{{ $category->url }}" data-link="data-link">
+                                                <a class="b-nav__link {{ $cat == $category->id ? 'is-active' : '' }}"
+                                                   href="{{ route('new-products', ['cat' => $category->id]) }}" data-link="data-link">
                                                     {{ $category->name }}
                                                 </a>
                                             </li>

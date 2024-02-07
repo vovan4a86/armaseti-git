@@ -45,6 +45,12 @@ class GremirProducts extends Command
 
     public function handle()
     {
+        $cat = '1';
+        $id = '9234';
+        $id = str_pad($id, 8, '0', STR_PAD_LEFT );
+        $result = $cat . '-' . $id;
+        dd($result);
+
 //        $images = CatalogDoc::all();
 //        $count = count($images);
 //        $deleted = 0;

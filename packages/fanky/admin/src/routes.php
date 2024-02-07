@@ -185,6 +185,11 @@ Route::group(['namespace' => 'Fanky\Admin\Controllers', 'prefix' => 'admin', 'as
             'uses' => $controller . 'postMoveProducts'
         ]);
 
+        Route::post('publish-products', [
+            'as' => '.publish-products',
+            'uses' => $controller . 'postPublishProducts'
+        ]);
+
         Route::post('delete-products', [
             'as' => '.delete-products',
             'uses' => $controller . 'postDeleteProducts'
@@ -321,6 +326,9 @@ Route::group(['namespace' => 'Fanky\Admin\Controllers', 'prefix' => 'admin', 'as
 
         Route::post('delete/{id}', $controller . 'postDelete')
             ->name('.delete');
+
+        Route::post('delete-details/{id}', $controller . 'postDeleteDetails')
+            ->name('.deleteDetails');
 
         Route::post('favorites', $controller . 'postGetFavorites')
             ->name('.favorites');

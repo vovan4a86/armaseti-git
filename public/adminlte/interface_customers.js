@@ -1,7 +1,31 @@
-function customerSave(form){
-	var url = $(form).attr('action');
-	var data = $(form).serialize();
-	sendAjax(url, data, function(json){
+var details;
+
+function detailsAttache(elem, e) {
+	$.each(e.target.files, function (key, file) {
+		if (file['size'] > max_file_size) {
+			alert('Слишком большой размер файла. Максимальный размер 10Мб');
+		} else {
+			details = file;
+			renderImage(file, function () {
+				let item = '<img class="img-polaroid" src="/adminlte/document_small.png" height="100" alt="document">';
+				$('#details').html(item);
+			});
+		}
+	});
+	$(elem).val('');
+}
+
+function customerSave(form, e){
+	e.preventDefault();
+	const url = $(form).attr('action');
+	let data = new FormData();
+	$.each($(form).serializeArray(), function (key, value) {
+		data.append(value.name, value.value);
+	});
+	if (details) {
+		data.append('details', details);
+	}
+	sendFiles(url, data, function(json){
 		if (typeof json.row != 'undefined') {
 			if ($('#users-list tr[data-id='+json.id+']').length) {
 				$('#users-list tr[data-id='+json.id+']').replaceWith(urldecode(json.row));
@@ -16,6 +40,7 @@ function customerSave(form){
 			$(form).find('[type=submit]').after(autoHideMsg('red', urldecode(errMsg.join(' '))));
 		}
 		if (typeof json.success != 'undefined' && json.success === true) {
+			details = null;
 			popupClose();
 		}
 	});
@@ -28,6 +53,21 @@ function customerDel(elem){
 	sendAjax(url, {}, function(json){
 		if (typeof json.success != 'undefined' && json.success === true) {
 			$(elem).closest('tr').fadeOut(300, function(){ $(this).remove(); });
+		}
+	});
+	return false;
+}
+
+function detailsDelete(elem, e) {
+	e.preventDefault();
+	if (!confirm('Удалить реквизиты?')) return false;
+	let url = $(elem).attr('href');
+	sendAjax(url, {}, function (json) {
+		if (typeof json.msg != 'undefined') alert(urldecode(json.msg));
+		if (typeof json.success != 'undefined' && json.success === true) {
+			$(elem).closest('#details').fadeOut(300, function () {
+				$(this).empty();
+			});
 		}
 	});
 	return false;

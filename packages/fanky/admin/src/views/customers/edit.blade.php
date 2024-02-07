@@ -1,4 +1,4 @@
-<form action="{{ route('admin.customers.save') }}" onsubmit="return customerSave(this)">
+<form action="{{ route('admin.customers.save') }}" onsubmit="return customerSave(this, event)">
 	<input type="hidden" name="id" value="{{ $customer->id }}">
 
 	<div class="form-group">
@@ -19,6 +19,23 @@
 			   type="text" name="phone" value="{{ $customer->phone }}">
 	</div>
 
+	<div class="form-group">
+		<input type="file" name="details" value=""
+			   accept=".pdf,.xls,.xlsx,.doc,docx"
+			   onchange="return detailsAttache(this, event)">
+		<div id="details">
+			@if ($customer->details)
+				<a href="{{ $customer->file_src }}">{{ $customer->details }}</a>
+				<a class="images_del"
+				   href="{{ route('admin.customers.deleteDetails', $customer->id) }}"
+				   onclick="return detailsDelete(this, event)">
+					<span class="glyphicon glyphicon-trash text-red"></span>
+				</a>
+			@else
+				<p class="text-yellow">Реквизиты не загружены.</p>
+			@endif
+		</div>
+	</div>
 
 	<button class="btn btn-primary" type="submit">Сохранить</button>
 </form>

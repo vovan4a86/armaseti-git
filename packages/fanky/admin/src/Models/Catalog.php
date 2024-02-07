@@ -388,11 +388,14 @@ class Catalog extends Model
     }
 
     //max цена товара в каталоге для фильтра
-    public function getProductMaxPriceInCatalog(): string
+    public function getProductMaxPriceInCatalog()
     {
         return Cache::remember('product_max_price_' . $this->id, env('CACHE_TIME', 60), function () {
             $ids = $this->getRecurseChildrenIds();
-            return Product::whereIn('catalog_id', $ids)->public()->max('price');
+            $count = Product::whereIn('catalog_id', $ids)->public()->max('price');
+            if (!$count) return 0;
+
+            return $count;
         });
     }
 
@@ -530,5 +533,20 @@ class Catalog extends Model
     public function getIconSrcAttribute(): string
     {
         return self::UPLOAD_URL . $this->menu_icon;
+    }
+
+    public static function getNewProductsCategories() {
+        $products = Product::public()
+            ->where('is_new', 1)
+            ->get();
+
+        $main_products_categories = [];
+        foreach ($products as $product) {
+            $main_category = $product->findRootParentCatalog($product->catalog_id);
+            if (!in_array($main_category, $main_products_categories)) {
+                $main_products_categories[] = $main_category;
+            }
+        }
+        return $main_products_categories;
     }
 }

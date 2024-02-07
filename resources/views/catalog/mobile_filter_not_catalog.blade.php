@@ -9,7 +9,7 @@
         </div>
         <div class="filter-view__aside" :class="filterIsOpen &amp;&amp; 'is-active'">
             <!--form.b-filter-->
-            <form class="b-filter" action="{{ $route }}" data-current-url="{{ URL::full() }}">
+            <form class="b-filter" action="{{ $route }}">
                 <div class="b-filter__item">
                     <div class="b-filter__title is-active">Цена, ₽</div>
                     <div class="b-filter__body is-active" data-range-slider="data-range-slider">

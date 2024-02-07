@@ -46,6 +46,12 @@ class Customer extends Model
         return $date;
     }
 
+    public static function uploadDetails(UploadedFile $file): string {
+        $file_name = md5(uniqid(rand(), true)) . '_' . time() . '.' . Str::lower($file->getClientOriginalExtension());
+        $file->move(public_path(self::UPLOAD_URL), $file_name);
+        return $file_name;
+    }
+
     public function getFileSrcAttribute(): string
     {
         return self::UPLOAD_URL . $this->details;
