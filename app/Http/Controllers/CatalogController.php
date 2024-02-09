@@ -12,6 +12,7 @@ use Fanky\Admin\Settings;
 use Fanky\Admin\Text;
 use Fanky\Auth\Auth;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Cache;
 use phpDocumentor\Reflection\Types\Collection;
 use SEOMeta;
 use Request;
@@ -178,19 +179,22 @@ class CatalogController extends Controller
 
         $all_filters = $category->getPublicRecurseFilterList();
 
-        $filters_list = [];
-        foreach ($all_filters as $filter) {
-            $values = ProductChar::where('name', $filter->name)
-                ->whereIn('catalog_id', $children_ids)
-                ->select('value')
-                ->distinct()
-                ->pluck('value')
-                ->all();
-            natsort($values);
-            $filters_list[$filter->name] = [
-                'translit' => Text::translit($filter->name),
-                'values' => $values
-            ];
+        $filters_list = Cache::get('filters_list_' . $category->id, []);
+        if (!count($filters_list)) {
+            foreach ($all_filters as $filter) {
+                $values = ProductChar::where('name', $filter->name)
+                    ->whereIn('catalog_id', $children_ids)
+                    ->select('value')
+                    ->distinct()
+                    ->pluck('value')
+                    ->all();
+                natsort($values);
+                $filters_list[$filter->name] = [
+                    'translit' => Text::translit($filter->name),
+                    'values' => $values
+                ];
+            }
+            Cache::add('filters_list_' . $category->id, $filters_list, now()->addMinutes(60));
         }
 
         if (request()->ajax()) {
@@ -215,6 +219,10 @@ class CatalogController extends Controller
             ];
         }
 
+        $current_categories = count($category->public_children)
+            ? $category->public_children
+            : $category->public_parent->public_children;
+
         $data = [
             'bread' => $bread,
             'category' => $category,
@@ -223,7 +231,7 @@ class CatalogController extends Controller
             'text' => $category->text,
             'text_after' => $category->text_after,
             'canonical' => $canonical,
-            'children' => $category->public_children,
+            'current_categories' => $current_categories,
             'products' => $products,
             'filters_list' => $filters_list,
             'filter_max_price' => $filter_max_price,

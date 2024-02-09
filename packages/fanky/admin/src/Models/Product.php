@@ -356,4 +356,11 @@ class Product extends Model
             return number_format($this->discount, 0, ',', ' ') . ' ₽';
         }
     }
+
+    public function generateArticle(): string {
+        $cat = str_pad($this->catalog_id, 4, '0', STR_PAD_LEFT);
+        $prod = str_pad($this->id, 7, '0', STR_PAD_LEFT);
+
+        return $cat . '-' . $prod;
+    }
 }

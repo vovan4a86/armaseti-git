@@ -30,20 +30,16 @@ use URL;
  * @property string $og_title
  * @property string $og_description
  * @property string $image
- * @property string $action_image
  * @property string $icon_image
  * @property string $section_image
  * @property string $announce
  * @property string $text
  * @property string $chars
- * @property string $sphere
  * @property string $alias
  * @property string $slug
  * @property string $title
  * @property bool $is_action
  * @property string $action_text
- * @property int $action_old_price
- * @property int $action_new_price
  * @property string $product_description_template
  * @property string $product_title_template
  * @property string $product_text_template
@@ -54,7 +50,6 @@ use URL;
  * @property bool $on_main_list
  * @property bool $on_footer_menu
  * @property bool $on_drop_down
- * @property mixed background
  * @property mixed $children
  * @property mixed $filters_list
  * @mixin \Eloquent
@@ -138,6 +133,13 @@ class Catalog extends Model
         return $this->belongsTo('Fanky\Admin\Models\Catalog', 'parent_id');
     }
 
+    public function public_parent(): BelongsTo
+    {
+        return $this->parent()
+            ->where('published', 1)
+            ->orderBy('order');
+    }
+
     public function children(): HasMany
     {
         return $this->hasMany('Fanky\Admin\Models\Catalog', 'parent_id')->orderBy('order');
@@ -202,21 +204,26 @@ class Catalog extends Model
 
     public function getPublicRecurseFilterList()
     {
-        if (!count($this->children)) {
-            return $this->filters_list()
-                ->public()
-                ->groupBy('name')
-                ->orderBy('order')
-                ->get();
+        $filter_list = Cache::get('filter_list_' . $this->id, collect());
+        if (!count($filter_list)) {
+            if (!count($this->public_children)) {
+                $filter_list = $this->filters_list()
+                    ->public()
+                    ->groupBy('name')
+                    ->orderBy('order')
+                    ->get();
+            } else {
+                $children_ids = $this->getRecurseChildrenIds();
+
+                $filter_list = CatalogFilter::whereIn('catalog_id', $children_ids)
+                    ->public()
+                    ->groupBy('name')
+                    ->orderBy('order')
+                    ->get();
+            }
+            Cache::add('filter_list_' . $this->id, $filter_list, now()->addMinutes(60));
         }
-
-        $children_ids = $this->getRecurseChildrenIds();
-
-        return CatalogFilter::whereIn('catalog_id', $children_ids)
-            ->public()
-            ->groupBy('name')
-            ->orderBy('order')
-            ->get();
+        return $filter_list;
     }
 
     public function scopePublic($query)
@@ -263,7 +270,7 @@ class Catalog extends Model
         return self::whereParentId($this->parent_id);
     }
 
-    public function getParents($with_self = false, $reverse = false)
+    public function getParents($with_self = false, $reverse = false): array
     {
         $p = $this;
         $parents = [];
@@ -351,23 +358,19 @@ class Catalog extends Model
         return array_reverse($bread, true);
     }
 
-    public function getPublicChildren()
-    {
-        return $this->children()->public()->whereOnMain(1)->orderBy('order')->get();
-    }
-
-    public function getMainCatalog()
-    {
-        return $this->public()->whereOnMain(1)->orderBy('order')->get();
-    }
-
     public function getRecurseChildrenIds(self $parent = null): array
     {
         if (!$parent) {
             $parent = $this;
         }
-        return self::query()->where('slug', 'like', $parent->slug . '%')
-            ->pluck('id')->all();
+        $ids = Cache::get('ids_' . $this->id, collect());
+        if (!count($ids)) {
+            $ids =  self::query()->where('slug', 'like', $parent->slug . '%')
+                ->pluck('id')->all();
+            Cache::add('ids_' . $this->id, $ids, now()->addMinutes(60));
+        }
+
+        return $ids;
     }
 
     public function getRecurseChildrenIdsInner(self $parent = null)

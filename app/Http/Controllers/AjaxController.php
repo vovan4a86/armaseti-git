@@ -14,6 +14,7 @@ use Fanky\Admin\Models\Page;
 use Fanky\Admin\Models\ParentCatalogFilter;
 use Fanky\Admin\Models\Product;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Mail;
 
 use Cart;
@@ -486,23 +487,22 @@ class AjaxController extends Controller
 
     public function showCitiesPopup()
     {
-        $cities = City::query()->orderBy('name')
-            ->get(['id', 'alias', 'name', DB::raw('LEFT(name,1) as letter')]);
-        $citiesArr = [];
-        if (count($cities)) {
-            foreach ($cities as $city) {
-                $citiesArr[$city->letter][] = $city; //Группировка по первой букве
+        $cities = Cache::get('cities', collect());
+        if (!count($cities)) {
+            $cities = City::query()->orderBy('name')
+                ->get(['id', 'alias', 'name', DB::raw('LEFT(name,1) as letter')]);
+            Cache::add('cities', $cities, now()->addMinutes(60));
+        }
+        $citiesArr = Cache::get('cities_arr', []);
+        if (!count($citiesArr)) {
+            if (count($cities)) {
+                foreach ($cities as $city) {
+                    $citiesArr[$city->letter][] = $city; //Группировка по первой букве
+                }
             }
+            Cache::add('cities_arr', $citiesArr, now()->addMinutes(60));
         }
 
-        $mainCities = City::query()->orderBy('name')
-            ->whereIn(
-                'id',
-                [
-                    3, // msk
-                    5, //spb
-                ]
-            )->get(['id', 'alias', 'name']);
         $curUrl = url()->previous() ?: '/';
         $curUrl = str_replace(url('/') . '/', '', $curUrl);
 
@@ -512,7 +512,6 @@ class AjaxController extends Controller
             'blocks.popup_cities',
             [
                 'cities' => $citiesArr,
-                'mainCities' => $mainCities,
                 'curUrl' => $curUrl,
                 'current_city' => $current_city,
             ]

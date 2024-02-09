@@ -5,18 +5,13 @@ namespace App\Console\Commands;
 use App\Traits\ParseFunctions;
 use Fanky\Admin\Models\Catalog;
 use Fanky\Admin\Models\CatalogDoc;
-use Fanky\Admin\Models\CatalogFilter;
-use Fanky\Admin\Models\ParentCatalogFilter;
 use Fanky\Admin\Models\Product;
-use Fanky\Admin\Models\ProductChar;
 use Fanky\Admin\Models\ProductDoc;
-use Fanky\Admin\Models\ProductImage;
 use Fanky\Admin\Text;
 use GuzzleHttp\Client;
 use Illuminate\Console\Command;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Log;
-use League\CommonMark\Block\Element\Document;
 use Symfony\Component\DomCrawler\Crawler;
 
 class GremirProducts extends Command
@@ -45,11 +40,27 @@ class GremirProducts extends Command
 
     public function handle()
     {
-        $cat = '1';
-        $id = '9234';
-        $id = str_pad($id, 8, '0', STR_PAD_LEFT );
-        $result = $cat . '-' . $id;
-        dd($result);
+//        $images = ProductImage::all();
+//        $count = count($images);
+//
+//        foreach ($images as $i => $image) {
+//            $product = Product::with('catalog')->find($image->product_id);
+//            $article = $product->article;
+//            $old_name = $image->image;
+//
+//            $name_arr = explode('.', $old_name);
+//            $ext = array_pop($name_arr);
+//            $new_name = $article . '_' . $image->order . '.' . $ext;
+//            $path = ProductImage::UPLOAD_URL . $product->catalog->slug . '/';
+//
+//            if (is_file(public_path($path) . $old_name)) {
+//                rename(public_path($path) . $old_name, public_path($path) . $new_name);
+//            }
+//
+//            $image->update(['image' => $new_name]);
+//            $this->info($i . ' / ' . $count);
+//        }
+//        exit();
 
 //        $images = CatalogDoc::all();
 //        $count = count($images);

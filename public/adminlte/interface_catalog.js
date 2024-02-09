@@ -615,17 +615,6 @@ function publishProducts(btn, e) {
     sendAjax(url, {items: items}, function (json) {
         if (typeof json.success != 'undefined' && json.success === true) {
             location.reload();
-            // $(selected).each(function (n, el) {
-                // $("#row td").animate({'line-height':0},1000).remove();
-                // $(el).closest('tr').fadeOut(300, function(){ $(this).remove(); });
-                // $(el).closest('tr').children('td, th')
-                //     .animate({paddingBottom: 0, paddingTop: 0}, 300)
-                //     .wrapInner('<div />')
-                //     .children()
-                //     .slideUp(function () {
-                //         $(this).closest('tr').remove();
-                //     });
-            // })
         }
     })
 }
