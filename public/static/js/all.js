@@ -3576,11 +3576,15 @@ var applyFilter = function applyFilter() {
     var form = jquery__WEBPACK_IMPORTED_MODULE_0___default()(this).closest('form');
     var ajax_url = jquery__WEBPACK_IMPORTED_MODULE_0___default()(form).attr('action');
     var cat = jquery__WEBPACK_IMPORTED_MODULE_0___default()('.b-filter.b-cat').data('cat'); //только для страницы новинок
+    var s = jquery__WEBPACK_IMPORTED_MODULE_0___default()('.b-filter.b-cat').data('search'); //только для страницы поиска
     var data = jquery__WEBPACK_IMPORTED_MODULE_0___default()(form).serialize();
     var news_list = jquery__WEBPACK_IMPORTED_MODULE_0___default()('.cat-view__list');
     var current_url = jquery__WEBPACK_IMPORTED_MODULE_0___default()(form).data('current-url');
     if (cat) {
       data += '&cat=' + cat;
+    }
+    if (s) {
+      data += '&s=' + s;
     }
     var btn = jquery__WEBPACK_IMPORTED_MODULE_0___default()('.cat-view__load .b-loader');
     var pagination = jquery__WEBPACK_IMPORTED_MODULE_0___default()('.cat-view__pagination .b-pagination');
@@ -3638,6 +3642,7 @@ var toggleCostSort = function toggleCostSort() {
   jquery__WEBPACK_IMPORTED_MODULE_0___default()('.b-sort__action.btn-reset').click(function () {
     var url = jquery__WEBPACK_IMPORTED_MODULE_0___default()('.b-filter').attr('action');
     var cat = jquery__WEBPACK_IMPORTED_MODULE_0___default()('.b-filter.b-cat').data('cat'); //только для страницы новинок
+    var s = jquery__WEBPACK_IMPORTED_MODULE_0___default()('.b-filter.b-cat').data('search'); //только для страницы поиска
     var current = jquery__WEBPACK_IMPORTED_MODULE_0___default()(this);
     var news_list = jquery__WEBPACK_IMPORTED_MODULE_0___default()('.cat-view__list');
     var btn = jquery__WEBPACK_IMPORTED_MODULE_0___default()('.cat-view__load .b-loader');
@@ -3652,7 +3657,8 @@ var toggleCostSort = function toggleCostSort() {
     if (price_order) {
       sendAjax(url, {
         price_order: price_order,
-        cat: cat
+        cat: cat,
+        s: s
       }, function (json) {
         // history.pushState('', '', json.current_url);
         if (json.items) {

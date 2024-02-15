@@ -40,6 +40,7 @@ use URL;
  * @property bool $on_main_list
  * @property bool $on_top_menu
  * @property bool $on_footer_menu
+ * @property mixed url
  * @mixin \Eloquent
  * @method static whereParentId(int|mixed $id)
  * @method static Builder whereAlias($value)
@@ -93,6 +94,10 @@ class Page extends Model
     //региональность пока только для каталога
     public static $regionAliases = [
         'catalog'
+    ];
+
+    public static $regionPage = [
+        '2', //catalog
     ];
 
     public static $hasImageField = [];

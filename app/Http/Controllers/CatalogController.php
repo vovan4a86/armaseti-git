@@ -296,6 +296,9 @@ class CatalogController extends Controller
         $page->setSeo();
         $page = $this->add_region_seo($page);
 
+        $price_from = request()->get('price_from'); //встроенный фильтр
+        $price_to = request()->get('price_to'); //встроенный фильтр
+        $in_stock = request()->get('in_stock'); //встроенный фильтр
         $price_order = request()->get('price_order', session('price_order', 'asc')); //сортировка
         session(['price_order' => $price_order]);
         $cat = request()->get('cat', 'all');
@@ -319,23 +322,22 @@ class CatalogController extends Controller
         //макс цена для фильтра
         $filter_max_price = $products_query->max('price');
 
-//        $products_get = $products_query->get();
-//        $filters_list = [];
-//        foreach ($products_get as $product) {
-//            //формирование массива фильтров
-//            foreach ($product->chars as $char) {
-//                $filters_list[$char->name]['translit'] = $char->translit;
-//                if (!isset($filters_list[$char->name]['values'])) {
-//                    $filters_list[$char->name]['values'] = [];
-//                }
-//                if (!in_array($char->value, $filters_list[$char->name]['values'])) {
-//                    $filters_list[$char->name]['values'][] = $char->value;
-//                }
-//            }
-//        }
-//        unset($filters_list['Наличие на складе'], $filters_list['Примечание']);
+        if($price_to && $in_stock) {
+            $products_query = $products_query->where('price', '>', $price_from)
+                ->where('price', '<=', $price_to)
+                ->where('in_stock', $in_stock);
+            $query_string =  $cat == 'all' ? '?' : '&';
+            $query_string .= 'price_from=' . $price_from . '&price_to=' . $price_to . '&in_stock=' . $in_stock;
+            $appends = ['price_from' => $price_from, 'price_to' => $price_to, 'in_stock' => $in_stock];
+            $products = $products_query
+                ->paginate(Settings::get('products_per_page', 9))
+                ->appends($appends);
+        } else {
+            $query_string = '';
+            $products = $products_query->paginate(Settings::get('products_per_page', 9));
+        }
 
-        $products = $products_query->paginate(Settings::get('products_per_page', 9));
+        $current_url = $cat == 'all' ? route('new-products') . $query_string : route('new-products', ['cat' => $cat]) . $query_string;
 
         if (request()->ajax()) {
             //загрузить еще
@@ -355,6 +357,7 @@ class CatalogController extends Controller
                 'items' => $view_items,
                 'btn' => $btn_paginate,
                 'paginate' => $paginate,
+                'current_url' => $current_url,
             ];
         }
 
@@ -366,8 +369,8 @@ class CatalogController extends Controller
                 'products' => $products,
                 'main_products_categories' => $main_products_categories,
                 'filter_max_price' => $filter_max_price,
-//                'filters_list' => $filters_list,
                 'route' => route('new-products'),
+                'current_url' => $current_url,
                 'cat' => $cat
             ]
         );
@@ -384,6 +387,8 @@ class CatalogController extends Controller
         $price_to = request()->get('price_to'); //встроенный фильтр
         $in_stock = request()->get('in_stock'); //встроенный фильтр
         $reset_filter = request()->get('reset'); //нажали кнопку сброса фильтра
+        $price_order = request()->get('price_order', session('price_order', 'asc')); //сортировка
+        session(['price_order' => $price_order ?? 'asc']);
 
         $query_string = '';
         $appends = [];
@@ -399,23 +404,30 @@ class CatalogController extends Controller
         }
 
         if ($s = Request::get('s')) {
+            $query_string = '?s=' . $s;
             $products_query = Product::public()
-                ->orWhere('name', 'LIKE', '%' . str_replace(' ', '%', $s) . '%')
-                ->orWhere('article', 'LIKE', '%' . str_replace(' ', '%', $s) . '%');
+                ->where('name', 'LIKE', '%' . $s . '%');
+//                ->orWhere('article', 'LIKE', '%' . $s . '%');
+            \Debugbar::log($products_query->count());
+
 
             //макс цена для фильтра
             $filter_max_price = $products_query->max('price');
 
             if ($price_from || $price_to || $in_stock) {
+                $query_string .= '&price_from=' . $price_from . '&price_to=' . $price_to . '&in_stock=' . $in_stock;
                 $products_query = $products_query
                     ->where('price', '>', $price_from)
                     ->where('price', '<=', $price_to)
-                    ->where('in_stock', '>', $in_stock);
+                    ->where('in_stock', $in_stock);
+                \Debugbar::log($products_query->count());
             }
 
             $products = $products_query
+                ->orderBy('price', $price_order)
+                ->with(['images', 'catalog'])
                 ->paginate(Settings::get('search_per_page', 9))
-                ->appends(['s' => $s]);
+                ->appends(array_merge(['s' => $s], $appends));
         } else {
             $filter_max_price = 0;
             $products = collect();
@@ -437,11 +449,12 @@ class CatalogController extends Controller
 
             $paginate = view('paginations.with_pages', ['paginator' => $products])->render();
 
+            // . '&page=' . $products->currentPage()
             return [
                 'items' => $view_items,
                 'btn' => $btn_paginate,
                 'paginate' => $paginate,
-                'current_url' => route('search') . '?' . $s . $query_string . '&page=' . $products->currentPage()
+                'current_url' => route('search') . $query_string
             ];
         }
 
@@ -454,7 +467,8 @@ class CatalogController extends Controller
                 'title' => 'Результат поиска «' . $s . '»',
                 's' => $s,
                 'route' => route('search'),
-                'filter_max_price' => $filter_max_price
+                'filter_max_price' => $filter_max_price,
+                'in_stock' => $in_stock,
             ]
         );
     }

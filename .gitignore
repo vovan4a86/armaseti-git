@@ -5,6 +5,8 @@
 /public/uploads/
 /public/test/
 /public/data-site/
+/public/sitemap.xml
+/public/sitemaps/
 .env
 .idea/
 .yarn

@@ -1,6 +1,6 @@
 <aside class="layout__aside">
     <div class="layout__item">
-        <form class="b-filter b-cat" action="{{ $route }}" data-cat="{{ $cat }}">
+        <form class="b-filter b-cat" action="{{ $route }}" data-cat="{{ $cat ?? '' }}" data-search="{{ $s ?? '' }}">
             <div class="b-filter__item">
                 <div class="b-filter__title is-active">Цена, ₽</div>
                 <div class="b-filter__body is-active" data-range-slider="data-range-slider">
@@ -25,12 +25,14 @@
                 <div class="b-filter__body is-active">
                     <div class="b-filter__boxes">
                         <label class="c-radio">
-                            <input class="c-radio__input" type="radio" name="in_stock" value="1" checked="checked" />
+                            <input class="c-radio__input" type="radio" name="in_stock"
+                                   value="1" {{ $in_stock === '1' || $in_stock === null  ? 'checked' : '' }} />
                             <span class="c-radio__box"></span>
                             <span class="c-radio__label">В наличии</span>
                         </label>
                         <label class="c-radio">
-                            <input class="c-radio__input" type="radio" name="in_stock" value="0" />
+                            <input class="c-radio__input" type="radio" name="in_stock"
+                                   value="0" {{ $in_stock === '0' ? 'checked' : '' }} />
                             <span class="c-radio__box"></span>
                             <span class="c-radio__label">Под заказ</span>
                         </label>

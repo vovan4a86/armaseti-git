@@ -36,9 +36,9 @@ trait HasImage{
 		@unlink(public_path($upload_url . $this->{$this->icon_field}));
 	}
 
-	public function imageSrc($alias = null) {
-	    if ($alias) {
-            return $this->{$this->image_field} ? url(self::UPLOAD_URL . $alias . '/'  . $this->{$this->image_field}) : null;
+	public function imageSrc($slug = null) {
+	    if ($slug) {
+            return $this->{$this->image_field} ? url(self::UPLOAD_URL . $slug . '/'  . $this->{$this->image_field}) : null;
         }
         return $this->{$this->image_field} ? url(self::UPLOAD_URL . $this->{$this->image_field}) : null;
     }

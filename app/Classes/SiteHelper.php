@@ -124,35 +124,44 @@ class SiteHelper {
 	 * @param Sitemap $map
 	 * @param Catalog $parent
 	 */
-	private static function recurseAddCatalog(&$map, $parent = null) {
-		if ($parent) {
-			$parent_url = $parent->url;
-			$catalogs = $parent->getPublicChildren();
-		} else {
-			$parent_url = Page::getByPath(['catalog'])->url;
-			$catalogs = Catalog::whereParentId(0)->public()->get();
-		}
-		foreach ($catalogs as $catalog) {
-			$catalog_url = $parent_url . '/' . $catalog->alias;
-			$map->add_url($catalog_url);
-			self::$urls[] = $catalog_url;
-			$products = $catalog->products()->public()->get();
-			foreach ($products as $product) {
-				$map->add_url($catalog_url . '/' . $product->id);
-				self::$urls[] = $catalog_url . '/' . $product->id;
-			}
-			self::recurseAddCatalog($map, $catalog);
-		}
+	private static function recurseAddCatalog(Catalog $parent = null) {
+        if ($parent) {
+            $parent_url = $parent->url;
+            $catalogs = $parent->public_children()->with(['public_products', 'public_products.image'])->get();
+        } else {
+            $parent_url = Page::getByPath(['catalog'])->url;
+            $catalogs = Catalog::whereParentId(0)->public()->get();
+        }
+        foreach ($catalogs as $catalog) {
+            $catalog_url = $parent_url . '/' . $catalog->alias;
+            $sitemapCatalogItem = new SitemapItem($catalog_url, true);
+            $catalog_image = $catalog->image ? $catalog->imageSrc($catalog->slug) : null;
+            self::$urls[] = $sitemapCatalogItem;
+            //request()->getSchemeAndHttpHost()
+
+            foreach ($catalog->public_products as $product) {
+                $sitemapItem = new SitemapItem($catalog_url . '/' . $product->alias, true);
+                if ($img = $product->image) {
+                    $sitemapItem->addImage($img->imageSrc($catalog->slug), $product->name);
+                } else {
+                    if ($catalog_image) {
+                        $sitemapItem->addImage($catalog_image, $product->name);
+                    }
+                }
+                self::$urls[] = $sitemapItem;
+            }
+            self::recurseAddCatalog($catalog);
+        }
 	}
 
 	/**
 	 * @param Sitemap $map
 	 * @param Page    $parent
 	 */
-	public static function recurseAddPages(&$map, $parent = null) {
+	public static function recurseAddPages(Page $parent = null) {
 		if ($parent) {
 			$parent_url = $parent->url;
-			$pages = $parent->getPublicChildren();
+			$pages = $parent->public_children()->with(['public_children'])->get();
 		} else {
 			$parent_url = url('/');
 			$pages = Page::whereId(1)->get();
@@ -165,79 +174,116 @@ class SiteHelper {
 				$url = $parent_url . '/' . $page->alias;
 			}
 
-			$map->add_url($url);
-			if(!in_array($page->alias, Page::$excludeRegionAlias)){
-				self::$urls[] = $url;
-			}
-
-			self::recurseAddPages($map, $page);
+            self::$urls[] = new SitemapItem($url, in_array($page->id, Page::$regionPage));
+            self::recurseAddPages($page);
 		}
 	}
 
-    public static function generateSitemap() {
-		array_map("unlink", glob(public_path('/sitemaps/*.xml')));
-		self::generateFederalSitemap();
-//		self::generateRegionSitemap();
-//		self::generateSitemapIndex();
-	}
+    public static function generateSitemap()
+    {
+        if (!file_exists(public_path('sitemaps'))) {
+            mkdir(public_path('sitemaps'));
+        }
+        array_map("unlink", glob(public_path('/sitemaps/*.xml')));
+        array_map("unlink", glob(public_path('/sitemaps/*.xml')));
+        /** @var \Laravelium\Sitemap\Sitemap $sitemap */
+        self::$sitemap = App::make('sitemap');
+        self::generateFederalSitemap();
+//        self::generateRegionSitemap();
+        self::generateSitemapIndex();
+    }
 
 	private static $urls = [];
+    private static $sitemap;
 
-	private static function generateFederalSitemap() {
-		session(['city_alias' => '']);
-		$map = new Sitemap('');
 
-		//страницы
-		self::recurseAddPages($map);
+    private static function generateFederalSitemap()
+    {
+        session(['city_alias' => '']);
 
-		//разделы каталога
-		self::recurseAddCatalog($map);
+        //страницы
+        self::recurseAddPages();
+        //разделы каталога
+        self::recurseAddCatalog();
 
-		//товары
-		$products = Product::wherePublished(1)->get();
-		foreach ($products as $item) {
-			$map->add_url($item->url);
-		}
+        //новости
+        $items = News::wherePublished(1)->get();
+        foreach ($items as $item) {
+            $sitemapItem = new SitemapItem($item->url, true);
+            if ($image = $item->thumb(1)) {
+                $sitemapItem->addImage($image, $item->name);
+            }
+            self::$urls[] = $sitemapItem;
+        }
 
-		//Новости
-		$items = News::wherePublished(1)->get();
-		foreach ($items as $item) {
-			$map->add_url($item->url);
-		}
+        /** @var \Laravelium\Sitemap\Sitemap $sitemap */
+        $counter = 0;
+        $sitemapCounter = 0;
+        $linksLimit = 5000;
+        foreach (self::$urls as $sitemapItem) {
+            if ($counter >= $linksLimit) {
+                self::$sitemap->store('xml', 'sitemaps/sitemap-federal-' . $sitemapCounter);
+                self::$sitemap->addSitemap(url('sitemaps/sitemap-federal-' . $sitemapCounter . '.xml'));
+                self::$sitemap->model->resetItems();
+                $counter = 0;
+                $sitemapCounter++;
+            }
+            self::$sitemap->addItem($sitemapItem->toArray());
+            $counter++;
+        }
+        // записываем остатки в файл, если есть
+        if (!empty(self::$sitemap->model->getItems())) {
+            // generate sitemap with last items
+            self::$sitemap->store('xml', 'sitemaps/sitemap-federal-' . $sitemapCounter);
+            // add sitemap to sitemaps array
+            self::$sitemap->addSitemap(url('sitemaps/sitemap-federal-' . $sitemapCounter . '.xml'));
+            // reset items array
+            self::$sitemap->model->resetItems();
+        }
+    }
 
-//		$map->save('sitemaps/federal.xml');
-		$map->save('sitemap.xml');
-	}
+    private static function generateRegionSitemap()
+    {
+        $cities = City::query()->orderBy('name')->get();
+        foreach ($cities as $city) {
+            self::$sitemap->add(url($city->alias));
+            $counter = 0;
+            $sitemapCounter = 0;
+            $linksLimit = 4999;
+            foreach (self::$urls as $sitemapItem) {
+                if (!$sitemapItem->isRegional) {
+                    continue;
+                }
+                if ($counter >= $linksLimit) {
+                    self::$sitemap->store('xml', 'sitemaps/sitemap-' . $city->alias . '-' . $sitemapCounter);
+                    self::$sitemap->addSitemap(
+                        url('sitemaps/sitemap-' . $city->alias . '-' . $sitemapCounter . '.xml')
+                    );
+                    self::$sitemap->model->resetItems();
+                    $counter = 0;
+                    $sitemapCounter++;
+                }
+                $regionSitemapItem = clone $sitemapItem;
+                $regionSitemapItem->loc = self::replaceFederalLinkToRegional($city, $regionSitemapItem->loc);
+                self::$sitemap->addItem($regionSitemapItem->toArray());
+                $counter++;
+            }
+            // записываем остатки в файл, если есть
+            if (!empty(self::$sitemap->model->getItems())) {
+                // generate sitemap with last items
+                self::$sitemap->store('xml', 'sitemaps/sitemap-' . $city->alias . '-' . $sitemapCounter);
+                // add sitemap to sitemaps array
+                self::$sitemap->addSitemap(url('sitemaps/sitemap-' . $city->alias . '-' . $sitemapCounter . '.xml'));
+                // reset items array
+                self::$sitemap->model->resetItems();
+            }
+        }
+    }
 
-	private static function generateRegionSitemap() {
-		$cities = City::query()->get();
-		foreach ($cities as $city) {
-			session(['city_alias' => $city->alias]);
-			$map = new Sitemap('');
-			$map->add_url(url($city->alias));
-			$urls = self::getRegionLinkFromFederal($city, self::$urls);
-			foreach ($urls as $url) {
-				$map->add_url($url);
-			}
-
-			$map->save('sitemaps/' . $city->alias . '.xml');
-		}
-	}
-
-	private static function generateSitemapIndex() {
-		$xml = new \SimpleXMLElement('<sitemapindex />');
-		$xml->addAttribute('xmlns', 'http://www.sitemaps.org/schemas/sitemap/0.9');
-		foreach (glob(public_path('/sitemaps/*.xml')) as $filename) {
-			$sitemap = $xml->addChild('sitemap');
-			$p_info = pathinfo($filename);
-			//YYYY-MM-DDThh:mm:ss±hh:mm
-			$timestamp = \File::lastModified($filename);
-			$lastmodify = date('c', $timestamp);
-			$sitemap->addChild('loc', \URL::to('sitemaps/' . array_get($p_info, 'basename')));
-			$sitemap->addChild('lastmod', $lastmodify);
-		}
-		$xml->asXML(public_path('sitemap.xml'));
-	}
+    private static function generateSitemapIndex()
+    {
+        self::$sitemap->store('sitemapindex');
+    }
 
 
 	public static $category_ids = [];
@@ -656,6 +702,26 @@ class SiteHelper {
 
 		return $links;
 	}
+
+    public static function replaceFederalLinkToRegional(City $city, string $cur_url): string
+    {
+        $main_url = url('/') . '/';
+
+        if ($cur_url == url('/')) {
+            $cur_url = '';
+        } else {
+            $cur_url = str_replace($main_url, '', $cur_url); //отсекаем домен
+        }
+
+        if ($cur_url != '') {
+            /* не проверяем - региональная ссылка или федеральная */
+            $cur_url = $city->alias . '/' . $cur_url;
+        } else { //Если на главной
+            $cur_url = $city->alias;
+        }
+
+        return url($cur_url);
+    }
 
 	public static function getUpdateDate() {
 //		09:39 18.12.2018

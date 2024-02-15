@@ -138,11 +138,15 @@ export const applyFilter = () => {
         const form = $(this).closest('form');
         const ajax_url = $(form).attr('action');
         let cat = $('.b-filter.b-cat').data('cat'); //только для страницы новинок
+        let s = $('.b-filter.b-cat').data('search'); //только для страницы поиска
         let data = $(form).serialize();
         const news_list = $('.cat-view__list');
         const current_url = $(form).data('current-url');
         if (cat) {
             data += '&cat=' + cat;
+        }
+        if (s) {
+            data += '&s=' + s;
         }
 
         const btn = $('.cat-view__load .b-loader');
@@ -202,6 +206,7 @@ export const toggleCostSort = () => {
     $('.b-sort__action.btn-reset').click(function () {
         const url = $('.b-filter').attr('action');
         let cat = $('.b-filter.b-cat').data('cat'); //только для страницы новинок
+        let s = $('.b-filter.b-cat').data('search'); //только для страницы поиска
         const current = $(this);
         const news_list = $('.cat-view__list');
         const btn = $('.cat-view__load .b-loader');
@@ -218,7 +223,7 @@ export const toggleCostSort = () => {
         }
 
         if (price_order) {
-            sendAjax(url, {price_order, cat}, function (json) {
+            sendAjax(url, {price_order, cat, s}, function (json) {
                 // history.pushState('', '', json.current_url);
                 if (json.items) {
                     $(news_list).empty();

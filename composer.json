@@ -20,8 +20,9 @@
 		"lavary/laravel-menu": "^1.7",
 		"artesaos/seotools": "~0.18",
 		"laravel/helpers": "^1.2",
-      	"ext-gd": "*"
-    },
+      	"ext-gd": "*",
+		"laravelium/sitemap": "7.*"
+	},
 	"require-dev": {
 		"filp/whoops": "~2.0",
 		"fzaninotto/faker": "~1.4",
