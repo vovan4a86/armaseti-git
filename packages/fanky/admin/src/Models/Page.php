@@ -391,7 +391,7 @@ class Page extends Model
         parent::delete();
     }
 
-    public function getLastModifed()
+    public function getLastModified()
     {
         /** @var Carbon $updated */
         return $this->updated_at;

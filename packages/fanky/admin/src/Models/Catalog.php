@@ -1,4 +1,5 @@
 <?php
+
 namespace Fanky\Admin\Models;
 
 use App\Traits\HasFile;
@@ -52,6 +53,8 @@ use URL;
  * @property bool $on_drop_down
  * @property mixed $children
  * @property mixed $filters_list
+ * @property mixed features
+ * @property mixed benefits
  * @mixin \Eloquent
  * @method static whereId(int|mixed $id)
  * @method static whereName($value)
@@ -90,18 +93,20 @@ class Catalog extends Model
     {
         parent::boot();
 
-        self::saved(function (self $category) {
-            if ($category->isDirty('alias') || $category->isDirty('parent_id')) {
-                if (!$category->_disableEventUpdateSlug) {
-                    self::updateUrlRecurse($category);
+        self::saved(
+            function (self $category) {
+                if ($category->isDirty('alias') || $category->isDirty('parent_id')) {
+                    if (!$category->_disableEventUpdateSlug) {
+                        self::updateUrlRecurse($category);
+                    }
+                }
+                if ($category->isDirty('published') && $category->published == 0) {
+                    if (!$category->_disableEventUpdatePublished) {
+                        self::updateDisablePublishedRecurse($category);
+                    }
                 }
             }
-            if ($category->isDirty('published') && $category->published == 0) {
-                if (!$category->_disableEventUpdatePublished) {
-                    self::updateDisablePublishedRecurse($category);
-                }
-            }
-        });
+        );
     }
 
     public static function getCatalogList($parent_id = 0, $lvl = 0)
@@ -113,6 +118,92 @@ class Catalog extends Model
         }
 
         return $result;
+    }
+
+    public static function getCatalogs()
+    {
+        $catalogs = Cache::get('catalogs', []);
+        if (!$catalogs) {
+            $catalog_arr = Catalog::all(['id', 'parent_id', 'name', 'alias', 'published']);
+            foreach ($catalog_arr as $item) {
+                $catalogs[$item->id] = $item;
+            }
+            Cache::add('catalogs', $catalogs, 1);
+        }
+
+        return $catalogs;
+    }
+
+    public static function getByPath($path): ?Catalog
+    {
+        if (is_array($path)) {
+            $path = implode('/', $path);
+        }
+
+        return self::query()->public()->whereSlug($path)->first();
+    }
+
+    public static function getRecurseCategory($parent_id)
+    {
+        $categories = Catalog::whereParentId($parent_id)->pluck('id')->all();
+        if (!count($categories)) {
+            return [];
+        }
+        $result = $categories;
+        foreach ($categories as $id) {
+            $children = self::getRecurseCategory($id);
+            if (count($children)) {
+                $result = array_merge($result, $children);
+            }
+        }
+
+        return $result;
+    }
+
+    public static function updateUrlRecurse(self $category)
+    {
+        $parents = $category->getParents(true, true);
+        $slug_arr = [];
+        foreach ($parents as $parent) {
+            $slug_arr[] = $parent->alias;
+        }
+        //чтобы событие на обновление не сработало
+        $category->_disableEventUpdateSlug = true;
+        $category->update(['slug' => implode('/', $slug_arr)]);
+        foreach ($category->children()->get() as $child) {
+            self::updateUrlRecurse($child);
+        }
+    }
+
+    public static function updateDisablePublishedRecurse(self $category)
+    {
+        //чтобы событие на обновление не сработало
+        $category->_disableEventUpdatePublished = true;
+        $category->update(['published' => 0]);
+        foreach ($category->children()->get() as $child) {
+            self::updateUrlRecurse($child);
+        }
+    }
+
+    public static function getTopLevel()
+    {
+        return self::public()->whereParentId(0)->orderBy('order')->get();
+    }
+
+    public static function getNewProductsCategories(): array
+    {
+        $products = Product::public()
+            ->where('is_new', 1)
+            ->get();
+
+        $main_products_categories = [];
+        foreach ($products as $product) {
+            $main_category = $product->findRootParentCatalog($product->catalog_id);
+            if (!in_array($main_category, $main_products_categories)) {
+                $main_products_categories[] = $main_category;
+            }
+        }
+        return $main_products_categories;
     }
 
     public function delete()
@@ -130,7 +221,7 @@ class Catalog extends Model
 
     public function parent(): BelongsTo
     {
-        return $this->belongsTo('Fanky\Admin\Models\Catalog', 'parent_id');
+        return $this->belongsTo(Catalog::class, 'parent_id')->with(['parent']);
     }
 
     public function public_parent(): BelongsTo
@@ -162,6 +253,18 @@ class Catalog extends Model
         return $this->hasMany(CatalogImage::class)
             ->orderBy('order')
             ->with(['catalog']);
+    }
+
+    public function features(): HasMany
+    {
+        return $this->hasMany(CatalogFeat::class)
+            ->orderBy('order');
+    }
+
+    public function benefits(): HasMany
+    {
+        return $this->hasMany(CatalogBenefit::class)
+            ->orderBy('order');
     }
 
     public function docs(): HasMany
@@ -241,7 +344,7 @@ class Catalog extends Model
         return $query->public()->where('parent_id', 0)->orderBy('order');
     }
 
-    public function getUrlAttribute()
+    public function getUrlAttribute(): string
     {
         if ($this->_url) {
             return $this->_url;
@@ -257,7 +360,7 @@ class Catalog extends Model
         return $this->_url;
     }
 
-    public function getIsActiveAttribute()
+    public function getIsActiveAttribute(): bool
     {
         //берем или весь или часть адреса, для родительских страниц
         $url = substr(URL::current(), 0, strlen($this->getUrlAttribute()));
@@ -292,25 +395,13 @@ class Catalog extends Model
         return $parents;
     }
 
-    public static function getCatalogs()
-    {
-        $catalogs = Cache::get('catalogs', []);
-        if (!$catalogs) {
-            $catalog_arr = Catalog::all(['id', 'parent_id', 'name', 'alias', 'published']);
-            foreach ($catalog_arr as $item) {
-                $catalogs[$item->id] = $item;
-            }
-            Cache::add('catalogs', $catalogs, 1);
-        }
-
-        return $catalogs;
-    }
-
     public function findRootCategory($catalog_id = null)
     {
         if (!$catalog_id) {
             $catalog_id = $this->parent_id;
-            if ($catalog_id == 0) return $this;
+            if ($catalog_id == 0) {
+                return $this;
+            }
         }
 
         $this->cur_cat = Catalog::find($catalog_id);
@@ -320,15 +411,6 @@ class Catalog extends Model
             $this->findRootCategory($catalog_id);
         }
         return $this->cur_cat;
-    }
-
-    public static function getByPath($path): ?Catalog
-    {
-        if (is_array($path)) {
-            $path = implode('/', $path);
-        }
-
-        return self::query()->public()->whereSlug($path)->first();
     }
 
     public function getBread(): array
@@ -363,9 +445,9 @@ class Catalog extends Model
         if (!$parent) {
             $parent = $this;
         }
-        $ids = Cache::get('ids_' . $this->id, collect());
+        $ids = Cache::get('ids_' . $this->id, []);
         if (!count($ids)) {
-            $ids =  self::query()->where('slug', 'like', $parent->slug . '%')
+            $ids = self::query()->where('slug', 'like', $parent->slug . '%')
                 ->pluck('id')->all();
             Cache::add('ids_' . $this->id, $ids, now()->addMinutes(60));
         }
@@ -373,7 +455,7 @@ class Catalog extends Model
         return $ids;
     }
 
-    public function getRecurseChildrenIdsInner(self $parent = null)
+    public function getRecurseChildrenIdsInner(self $parent = null): array
     {
         if (!$parent) {
             $parent = $this;
@@ -384,31 +466,45 @@ class Catalog extends Model
 
     public function getRecurseProductsCount(): string
     {
-        return Cache::remember('product_count_' . $this->id, env('CACHE_TIME', 60), function () {
-            $ids = $this->getRecurseChildrenIds();
-            return Product::whereIn('catalog_id', $ids)->public()->count();
-        });
+        return Cache::remember(
+            'product_count_' . $this->id,
+            env('CACHE_TIME', 60),
+            function () {
+                $ids = $this->getRecurseChildrenIds();
+                return Product::whereIn('catalog_id', $ids)->public()->count();
+            }
+        );
     }
 
     //max цена товара в каталоге для фильтра
     public function getProductMaxPriceInCatalog()
     {
-        return Cache::remember('product_max_price_' . $this->id, env('CACHE_TIME', 60), function () {
-            $ids = $this->getRecurseChildrenIds();
-            $count = Product::whereIn('catalog_id', $ids)->public()->max('price');
-            if (!$count) return 0;
+        return Cache::remember(
+            'product_max_price_' . $this->id,
+            env('CACHE_TIME', 60),
+            function () {
+                $ids = $this->getRecurseChildrenIds();
+                $count = Product::whereIn('catalog_id', $ids)->public()->max('price');
+                if (!$count) {
+                    return 0;
+                }
 
-            return $count;
-        });
+                return $count;
+            }
+        );
     }
 
     public function getRecurseProductsCountWithEnd(): string
     {
-		$count = Cache::remember('product_count_' . $this->id, env('CACHE_TIME', 60), function () {
-			$ids = $this->getRecurseChildrenIds();
-			return Product::whereIn('catalog_id', $ids)->public()->count();
-		});
-		return $count . ' ' . SiteHelper::getNumEnding($count, ['товар', 'товара', 'товаров']);
+        $count = Cache::remember(
+            'product_count_' . $this->id,
+            env('CACHE_TIME', 60),
+            function () {
+                $ids = $this->getRecurseChildrenIds();
+                return Product::whereIn('catalog_id', $ids)->public()->count();
+            }
+        );
+        return $count . ' ' . SiteHelper::getNumEnding($count, ['товар', 'товара', 'товаров']);
     }
 
     public function getH1(): string
@@ -416,7 +512,7 @@ class Catalog extends Model
         return $this->h1 ?: $this->name;
     }
 
-    public function getHasChildrenAttribute()
+    public function getHasChildrenAttribute(): bool
     {
         if ($this->_has_children === null) {
             $this->_has_children = ($this->children()->public()->count()) ? true : false;
@@ -446,24 +542,7 @@ class Catalog extends Model
         }
     }
 
-    public static function getRecurseCategory($parent_id)
-    {
-        $categories = Catalog::whereParentId($parent_id)->pluck('id')->all();
-        if (!count($categories)) {
-            return [];
-        }
-        $result = $categories;
-        foreach ($categories as $id) {
-            $children = self::getRecurseCategory($id);
-            if (count($children)) {
-                $result = array_merge($result, $children);
-            }
-        }
-
-        return $result;
-    }
-
-    public function getLastModifed(): Carbon
+    public function getLastModified(): Carbon
     {
         /** @var Carbon $updated */
         $updated = $this->updated_at;
@@ -476,36 +555,6 @@ class Catalog extends Model
         } else {
             return $updated;
         }
-    }
-
-    public static function updateUrlRecurse(self $category)
-    {
-        $parents = $category->getParents(true, true);
-        $slug_arr = [];
-        foreach ($parents as $parent) {
-            $slug_arr[] = $parent->alias;
-        }
-        //чтобы событие на обновление не сработало
-        $category->_disableEventUpdateSlug = true;
-        $category->update(['slug' => implode('/', $slug_arr)]);
-        foreach ($category->children()->get() as $child) {
-            self::updateUrlRecurse($child);
-        }
-    }
-
-    public static function updateDisablePublishedRecurse(self $category)
-    {
-        //чтобы событие на обновление не сработало
-        $category->_disableEventUpdatePublished = true;
-        $category->update(['published' => 0]);
-        foreach ($category->children()->get() as $child) {
-            self::updateUrlRecurse($child);
-        }
-    }
-
-    public static function getTopLevel()
-    {
-        return self::public()->whereParentId(0)->orderBy('order')->get();
     }
 
     public function getProducts()
@@ -538,18 +587,43 @@ class Catalog extends Model
         return self::UPLOAD_URL . $this->menu_icon;
     }
 
-    public static function getNewProductsCategories() {
-        $products = Product::public()
-            ->where('is_new', 1)
-            ->get();
+    public function getFeatures()
+    {
+        if (count($this->features)) {
+            return $this->features;
+        }
 
-        $main_products_categories = [];
-        foreach ($products as $product) {
-            $main_category = $product->findRootParentCatalog($product->catalog_id);
-            if (!in_array($main_category, $main_products_categories)) {
-                $main_products_categories[] = $main_category;
+        $catalog = Catalog::with(['parent', 'features'])->find($this->id);
+        while ($catalog) {
+            if (count($catalog->features)) {
+                return $catalog->features;
+            } else {
+                if ($catalog->parent) {
+                    $catalog = $catalog->parent;
+                } else {
+                    return $catalog->features;
+                }
             }
         }
-        return $main_products_categories;
+    }
+
+    public function getBenefits()
+    {
+        if (count($this->benefits)) {
+            return $this->benefits;
+        }
+
+        $catalog = Catalog::with(['parent', 'benefits'])->find($this->id);
+        while ($catalog) {
+            if (count($catalog->benefits)) {
+                return $catalog->benefits;
+            } else {
+                if ($catalog->parent) {
+                    $catalog = $catalog->parent;
+                } else {
+                    return $catalog->benefits;
+                }
+            }
+        }
     }
 }

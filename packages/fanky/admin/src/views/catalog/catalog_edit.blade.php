@@ -29,6 +29,9 @@
             <li class="{{ isset($tab) && $tab === 'filters' ? 'active' : '' }}">
                 <a href="#tab_filters" data-toggle="tab">Фильтры раздела</a>
             </li>
+            <li class="{{ isset($tab) && $tab === 'features' ? 'active' : '' }}">
+                <a href="#tab_features" data-toggle="tab">Преимущества</a>
+            </li>
 
             @if($catalog->id)
                 <li class="pull-right">
@@ -175,53 +178,13 @@
             </div>
 
             <div class="tab-pane {{ isset($tab) && $tab === 'filters' ? 'active' : '' }}" id="tab_filters">
-                @if(count($catalogFiltersList))
-                    <div style="display: flex; flex-direction: column;" class="catalog_filters">
-                        @foreach($catalogFiltersList as $item)
-                            <div class="filter" data-id="{{ $item->id }}">
-                                <div style="width: 50px;">
-                                    <i class="fa fa-ellipsis-v"></i>
-                                    <i class="fa fa-ellipsis-v"></i>
-                                </div>
-                                <div class="form-group">
-                                    <input type="checkbox" name="filters[]" id="f_{{ $item->id }}"
-                                           value="{{ $item->id }}" {{ $item->published ? 'checked' : '' }}>
-                                    <label for="f_{{ $item->id }}"
-                                           style="margin-right: 10px;">{{ $item->name }}</label>
-                                    <a class="filter-edit"
-                                       href="{{ route('admin.catalog.catalog-filter-edit', [$catalog->id]) }}"
-                                       onclick="return catalogFilterEdit(this, event)">
-                                        <span class="glyphicon glyphicon-edit"></span>
-                                    </a>
-                                    <a class="filter-delete"
-                                       href="{{ route('admin.catalog.catalog-filter-delete', [$catalog->id]) }}"
-                                       onclick="return catalogFilterDelete(this, event)">
-                                        <span class="glyphicon glyphicon-trash text-red"></span>
-                                    </a>
-                                </div>
-                            </div>
-                        @endforeach
-                    </div>
-                    <script type="text/javascript">
-                        $(".catalog_filters").sortable({
-                            update: function () {
-                                let url = "{{ route('admin.catalog.catalog-filter-update-order') }}";
-                                let data = {};
-                                data.sorted = $('.catalog_filters').sortable("toArray", {attribute: 'data-id'});
-                                data.catalog_id = $('input[name=id]').val();
-                                sendAjax(url, data);
-                            },
-                        }).disableSelection();
-                    </script>
-                    <style>
-                        .filter {
-                            display: flex;
-                        }
-                    </style>
-                @else
-                    <p>Нет фильтров</p>
-                @endif
+                @include('admin::catalog.tabs_catalog.tab_filters')
             </div>
+
+            <div class="tab-pane {{ isset($tab) && $tab === 'features' ? 'active' : '' }}" id="tab_features">
+                @include('admin::catalog.tabs_catalog.tab_features')
+            </div>
+
 
             <div class="box-footer">
                 <button type="submit" class="btn btn-primary">Сохранить</button>

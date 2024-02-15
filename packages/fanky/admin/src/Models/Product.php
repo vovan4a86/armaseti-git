@@ -185,7 +185,7 @@ class Product extends Model
         return $query->where('on_main', 1);
     }
 
-    public function getImageSrcAttribute()
+    public function getImageSrcAttribute(): string
     {
         return $this->image;
     }
@@ -239,7 +239,7 @@ class Product extends Model
         return $this->updated_at;
     }
 
-    public function getBread()
+    public function getBread(): array
     {
         $bread = $this->catalog->getBread();
         $bread[] = [
@@ -337,14 +337,18 @@ class Product extends Model
         return number_format($this->price, 0, ',', ' ');
     }
 
-    public function getImagePath($image): string {
+    public function getImagePath($image): string
+    {
         return self::UPLOAD_URL . $this->slug . '/' . $image;
     }
 
-    public function getDiscountPriceAttribute(): string {
-        if (!$this->discount) return '';
+    public function getDiscountPriceAttribute(): string
+    {
+        if (!$this->discount) {
+            return '';
+        }
 
-        if (stripos($this->discount,'%')) {
+        if (stripos($this->discount, '%')) {
             if ($this->price) {
                 $dis = preg_replace('/\D/', '', $this->discount) / 100;
                 $res = $this->price + $this->price * $dis;
@@ -357,10 +361,12 @@ class Product extends Model
         }
     }
 
-    public function generateArticle(): string {
+    public function generateArticle(): string
+    {
         $cat = str_pad($this->catalog_id, 4, '0', STR_PAD_LEFT);
         $prod = str_pad($this->id, 7, '0', STR_PAD_LEFT);
 
         return $cat . '-' . $prod;
     }
+
 }

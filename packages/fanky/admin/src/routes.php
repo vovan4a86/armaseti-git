@@ -175,6 +175,38 @@ Route::group(['namespace' => 'Fanky\Admin\Controllers', 'prefix' => 'admin', 'as
         Route::post('catalog-update-order-doc', $controller . 'postCatalogUpdateOrderDoc')
             ->name('.catalog-update-order-doc');
 
+        //catalog features
+        Route::post('feature-upload/{id}', $controller . 'postFeatureUpload')
+            ->name('.feature-upload');
+
+        Route::post('feature-edit/{id?}', $controller . 'postFeatureEdit')
+            ->name('.feature-edit');
+
+        Route::post('feature-save/{id}', $controller . 'postFeatureSave')
+            ->name('.feature-save');
+
+        Route::post('feature-reorder', $controller . 'postFeatureReorder')
+            ->name('.feature-reorder');
+
+        Route::post('feature-delete/{id}', $controller . 'postFeatureDelete')
+            ->name('.feature-delete');
+
+        //product benefits
+        Route::post('benefit-upload/{id}', $controller . 'postBenefitUpload')
+            ->name('.benefit-upload');
+
+        Route::post('benefit-edit/{id?}', $controller . 'postBenefitEdit')
+            ->name('.benefit-edit');
+
+        Route::post('benefit-save/{id}', $controller . 'postBenefitSave')
+            ->name('.benefit-save');
+
+        Route::post('benefit-reorder', $controller . 'postBenefitReorder')
+            ->name('.benefit-reorder');
+
+        Route::post('benefit-delete/{id}', $controller . 'postBenefitDelete')
+            ->name('.benefit-delete');
+
         //search
         Route::get('search', $controller . 'search')
             ->name('.search');

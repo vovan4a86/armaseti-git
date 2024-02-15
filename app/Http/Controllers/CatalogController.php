@@ -56,7 +56,8 @@ class CatalogController extends Controller
         if ($category && $category->published) {
             $product = Product::whereAlias($end)
                 ->public()
-                ->whereCatalogId($category->id)->first();
+                ->whereCatalogId($category->id)
+                ->first();
         }
         if ($product) {
             return $this->product($product);
@@ -253,7 +254,6 @@ class CatalogController extends Controller
         $product->setSeo();
         $product->ogGenerate();
         $product = $this->add_region_seo($product);
-        $product->load('images', 'docs', 'chars', 'catalog');
 
         $image = null;
         if (count($product->images) == 0) {
@@ -265,6 +265,11 @@ class CatalogController extends Controller
             View::share('admin_edit_link', route('admin.catalog.productEdit', $product->id));
         }
 
+        $related = [];
+
+        $features = $product->catalog->getFeatures();
+        $benefits = $product->catalog->getBenefits();
+
         return view(
             'catalog.product',
             [
@@ -272,7 +277,10 @@ class CatalogController extends Controller
                 'h1' => $product->getH1(),
                 'bread' => $bread,
                 'text' => $product->text,
-                'image' => $image
+                'image' => $image,
+                'related' => $related,
+                'features' => $features,
+                'benefits' => $benefits,
             ]
         );
     }

@@ -3,7 +3,9 @@
 namespace Fanky\Admin\Controllers;
 
 use Exception;
+use Fanky\Admin\Models\CatalogBenefit;
 use Fanky\Admin\Models\CatalogDoc;
+use Fanky\Admin\Models\CatalogFeat;
 use Fanky\Admin\Models\CatalogFilter;
 use Fanky\Admin\Models\CatalogImage;
 use Fanky\Admin\Models\Page;
@@ -120,6 +122,8 @@ class AdminCatalogController extends AdminController
 
         $tab = Request::get('tab');
         $catalogFiltersList = $catalog->getRecurseFilterList();
+        $features = $catalog->features;
+        $benefits = $catalog->benefits;
 
         return view(
             'admin::catalog.catalog_edit',
@@ -128,7 +132,9 @@ class AdminCatalogController extends AdminController
                 'catalogs' => $catalogs,
                 'tab' => $tab,
                 'catalogProducts' => $catalogProducts,
-                'catalogFiltersList' => $catalogFiltersList
+                'catalogFiltersList' => $catalogFiltersList,
+                'features' => $features,
+                'benefits' => $benefits,
             ]
         );
     }
@@ -880,7 +886,6 @@ class AdminCatalogController extends AdminController
         return ['success' => true];
     }
 
-
     //документы товара
     public function postProductAddDoc($product_id): array
     {
@@ -944,6 +949,148 @@ class AdminCatalogController extends AdminController
         $sorted = Request::input('sorted', []);
         foreach ($sorted as $order => $id) {
             DB::table('product_docs')->where('id', $id)->update(array('order' => $order));
+        }
+
+        return ['success' => true];
+    }
+
+    //преимущества каталога
+    public function postFeatureUpload($catalog_id): array
+    {
+        $feats = Request::file('features');
+        $items = [];
+        if ($feats) {
+            foreach ($feats as $feat) {
+                $file_name = CatalogFeat::uploadIcon($feat);
+                $order = CatalogFeat::where('catalog_id', $catalog_id)
+                        ->max('order') + 1;
+                $item = CatalogFeat::create(
+                    [
+                        'catalog_id' => $catalog_id,
+                        'image' => $file_name,
+                        'order' => $order
+                    ]
+                );
+                $items[] = $item;
+            }
+        }
+
+        $html = '';
+        foreach ($items as $item) {
+            $html .= view('admin::catalog.tabs_catalog.feature_row', ['item' => $item]);
+        }
+
+        return ['html' => $html];
+    }
+
+    public function postFeatureEdit($id)
+    {
+        $item = CatalogFeat::findOrFail($id);
+        return view('admin::catalog.tabs_catalog.feature_row_edit', ['item' => $item]);
+    }
+
+    public function postFeatureSave($id): array
+    {
+        $item = CatalogFeat::findOrFail($id);
+        $text = Request::get('feature-text');
+        $item->update(['text' => $text]);
+
+        $render_item = view('admin::catalog.tabs_catalog.feature_row', ['item' => $item])->render();
+
+        return [
+            'success' => true,
+            'id' => $id,
+            'item' => $render_item
+        ];
+    }
+
+    public function postFeatureDelete($id): array
+    {
+        $item = CatalogFeat::findOrFail($id);
+        $item->deleteImage();
+        $item->delete();
+
+        return ['success' => true];
+    }
+
+    public function postFeatureReorder(): array
+    {
+        $sorted = Request::input('sorted', []);
+        foreach ($sorted as $order => $id) {
+            DB::table('catalog_features')
+                ->where('id', $id)
+                ->update(array('order' => $order));
+        }
+
+        return ['success' => true];
+    }
+
+    //преимущества покупки
+    public function postBenefitUpload($catalog_id): array
+    {
+        $feats = Request::file('benefits');
+        $items = [];
+        if ($feats) {
+            foreach ($feats as $feat) {
+                $file_name = CatalogBenefit::uploadIcon($feat);
+                $order = CatalogBenefit::where('catalog_id', $catalog_id)
+                        ->max('order') + 1;
+                $item = CatalogBenefit::create(
+                    [
+                        'catalog_id' => $catalog_id,
+                        'image' => $file_name,
+                        'order' => $order
+                    ]
+                );
+                $items[] = $item;
+            }
+        }
+
+        $html = '';
+        foreach ($items as $item) {
+            $html .= view('admin::catalog.tabs_catalog.benefit_row', ['item' => $item]);
+        }
+
+        return ['html' => $html];
+    }
+
+    public function postBenefitEdit($id)
+    {
+        $item = CatalogBenefit::findOrFail($id);
+        return view('admin::catalog.tabs_catalog.benefit_row_edit', ['item' => $item]);
+    }
+
+    public function postBenefitSave($id): array
+    {
+        $item = CatalogBenefit::findOrFail($id);
+        $text = Request::get('benefit-text');
+        $item->update(['text' => $text]);
+
+        $render_item = view('admin::catalog.tabs_catalog.benefit_row', ['item' => $item])->render();
+
+        return [
+            'success' => true,
+            'id' => $id,
+            'item' => $render_item
+        ];
+    }
+
+    public function postBenefitDelete($id): array
+    {
+        $item = CatalogBenefit::findOrFail($id);
+        $item->deleteImage();
+        $item->delete();
+
+        return ['success' => true];
+    }
+
+    public function postBenefitReorder(): array
+    {
+        $sorted = Request::input('sorted', []);
+        foreach ($sorted as $order => $id) {
+            DB::table('catalog_benefits')
+                ->where('id', $id)
+                ->update(array('order' => $order));
         }
 
         return ['success' => true];

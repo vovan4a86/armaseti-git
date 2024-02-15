@@ -5,7 +5,6 @@
         <section class="page container">
             <div class="page__title">{{ $h1 }}</div>
             <div class="prod">
-                <!--._grid-->
                 <div class="prod__grid">
                     <div class="prod__view">
                         <div class="prod-view">
@@ -82,9 +81,11 @@
                     </div>
                     <div class="prod__data" data-id="{{ $product->id }}">
                         <div class="prod__meta">
-                            <div class="prod__id">Артикул
-                                <span>{{ $product->article ?: '-' }}</span>
-                            </div>
+                            @if ($product->article)
+                                <div class="prod__id">Артикул
+                                    <span>{{ $product->article }}</span>
+                                </div>
+                            @endif
                             <div class="prod__availability">
                                 <!-- .unactive - цвет нет в наличии-->
                                 @if($product->in_stock)
@@ -94,21 +95,20 @@
                                 @endif
                             </div>
                         </div>
-                        <div class="prod__feat">
-                            <div class="prod__feat-item">
-                                <div class="prod-feat">
-                                    <span class="prod-feat__icon iconify" data-icon="bx:shield" data-width="20"></span>
-                                    <span class="prod-feat__label">Гарантия 12 месяцев</span>
-                                </div>
+                        @if(count($benefits))
+                            <div class="prod__feat">
+                                @foreach($benefits as $item)
+                                    <div class="prod__feat-item">
+                                        <div class="prod-feat">
+                                            <span class="prod-feat__icon">
+                                                <img src="{{ $item->imageSrc() }}" alt="benefit {{ $loop->iteration }}">
+                                            </span>
+                                            <span class="prod-feat__label">{{ $item->text }}</span>
+                                        </div>
+                                    </div>
+                                @endforeach
                             </div>
-                            <div class="prod__feat-item">
-                                <div class="prod-feat">
-                                    <span class="prod-feat__icon iconify" data-icon="icon-park-outline:time"
-                                          data-width="20"></span>
-                                    <span class="prod-feat__label">Отсрочка до 30 дней</span>
-                                </div>
-                            </div>
-                        </div>
+                        @endif
                         <div class="prod__pricing">
                             <div class="prod__price">{{ $product->getFormatPrice() }}&nbsp;₽</div>
                             @if ($product->discount)

@@ -5,6 +5,7 @@ namespace App\Providers;
 use Cache;
 use Fanky\Admin\Models\Catalog;
 use Fanky\Admin\Models\City;
+use Fanky\Admin\Settings;
 use Illuminate\Support\ServiceProvider;
 use View;
 use Fanky\Admin\Models\Page;
@@ -64,6 +65,12 @@ class SiteServiceProvider extends ServiceProvider
                     Cache::add('footer_menu', $footer_menu, now()->addMinutes(60));
                 }
 
+                $header_features = Cache::get('header_features', collect());
+                if (!count($header_features)) {
+                    $header_features = Settings::get('header_features', []);
+                    Cache::add('header_features', $header_features, now()->addMinutes(60));
+                }
+
                 if (!$city_alias = session('city_alias')) {
                     $current_city = null;
                 } else {
@@ -78,6 +85,7 @@ class SiteServiceProvider extends ServiceProvider
                             'mobile_menu',
                             'footer_menu',
                             'current_city',
+                            'header_features'
                         ]
                     )
                 );

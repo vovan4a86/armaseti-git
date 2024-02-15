@@ -74,26 +74,18 @@
                 @endif
                 <div class="header__label">Доставка от 3-х дней</div>
             </div>
-            <div class="header__features">
-                <div class="header__feat">
-                    <div class="b-feat">
-                        <span class="b-feat__icon iconify" data-icon="ph:arrow-fat-down" data-width="22"></span>
-                        <span class="b-feat__label">Дешевле конкурентов</span>
-                    </div>
+            @if(count($header_features))
+                <div class="header__features">
+                    @foreach($header_features as $feat_item)
+                        <div class="header__feat">
+                            <div class="b-feat">
+                                <span class="b-feat__icon"><img src="{{ Settings::fileSrc($feat_item['img']) }}" alt="feature {{ $loop->iteration }}"></span>
+                                <span class="b-feat__label">{{ $feat_item['text'] }}</span>
+                            </div>
+                        </div>
+                    @endforeach
                 </div>
-                <div class="header__feat">
-                    <div class="b-feat">
-                        <span class="b-feat__icon iconify" data-icon="iconoir:delivery-truck" data-width="22"></span>
-                        <span class="b-feat__label">Экспорт из Китая</span>
-                    </div>
-                </div>
-                <div class="header__feat">
-                    <div class="b-feat">
-                        <span class="b-feat__icon iconify" data-icon="circum:boxes" data-width="22"></span>
-                        <span class="b-feat__label">Большие складские запасы</span>
-                    </div>
-                </div>
-            </div>
+            @endif
             <div class="header__actions">
                 @include('blocks.header_favorites')
                 @include('blocks.header_compare')

@@ -40,6 +40,16 @@ class GremirProducts extends Command
 
     public function handle()
     {
+        $catalogs = Catalog::all();
+
+        foreach ($catalogs as $catalog) {
+            if (!count($catalog->children) && !count($catalog->products)) {
+                $this->info($catalog->name . ' (' . $catalog->slug . ')');
+//                $catalog->delete();
+            }
+        }
+        exit();
+
 //        $images = ProductImage::all();
 //        $count = count($images);
 //
@@ -88,12 +98,12 @@ class GremirProducts extends Command
 
 //        $this->parseCatalog('Тройники стальные оцинкованные', 'https://gremir.ru/troyniki-gost-17376/troyniki-stalnye-ocinkovannyei-gost-17376/', 487);
 //        $this->parseCatalog('Фитинги для труб из сшитого полиэтилена', 'https://gremir.ru/fitingi/fitingi-dlya-pe-x/', 638);
-        $this->parseCustomCatalog(
-            'Hawle с электроприводом AUMA',
-            'https://gremir.ru/zadvizhki/klinovye-s-elektroprivodom-el-privodom/ele2-4000ele2/',
-            90
-        );
-        exit();
+//        $this->parseCustomCatalog(
+//            '30с941нж с электроприводом ГЗ',
+//            'https://gremir.ru/zadvizhki/klinovye-s-elektroprivodom-el-privodom/stalnye-30s941nzh/',
+//            71
+//        );
+//        exit();
 //        $this->parseCustomCatalog(
 //            'Муфты ПЭ для асбестоцементных труб',
 //            'https://gremir.ru/fitingi/polietilen-pe-i-pe100/fitingi-pe-dlya-asbestocementnyh-trub/mufty-pe-dlya-asbestocementnyh-trub/',
@@ -561,11 +571,6 @@ class GremirProducts extends Command
                 $data['price'] = $product_crawler->filter('.product-price .price')->attr('data-price');
             }
 
-            // артикул
-            if ($product_crawler->filter('.product-cart-top span.bold')->count()) {
-                $data['article'] = trim($product_crawler->filter('.product-cart-top span.bold')->text());
-            }
-
             // наличие
             if ($product_crawler->filter('.product-count--outstock')->count() > 0) {
 //                $data['product_count'] = 'Под заказ';
@@ -608,6 +613,7 @@ class GremirProducts extends Command
             }
 
             $product = Product::create($data);
+            $product->update(['article' => $product->generateArticle()]);
 
             //характеристики
             if ($product_crawler->filter('#product-features')->count() > 0) {
@@ -795,7 +801,7 @@ class GremirProducts extends Command
                 );
             }
 
-            $product->update(['catalog_id' => $catalog->id]);
+//            $product->update(['catalog_id' => $catalog->id]);
 
         } catch (\Exception $e) {
             $this->error('Ошибка parseProduct: ' . $e->getMessage());

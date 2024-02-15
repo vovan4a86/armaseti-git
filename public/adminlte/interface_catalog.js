@@ -729,3 +729,111 @@ function sendAddedProductImages(elem, e) {
         }
     });
 }
+
+//catalog features
+function catalogFeatureUpload(elem, e) {
+    var url = $(elem).data('url');
+    let files = e.target.files;
+    let data = new FormData();
+    $.each(files, function (key, value) {
+        if (value['size'] > max_file_size) {
+            alert('Слишком большой размер файла. Максимальный размер 10Мб');
+        } else {
+            data.append('features[]', value);
+        }
+    });
+    $(elem).val('');
+
+    sendFiles(url, data, function (json) {
+        if (typeof json.html != 'undefined') {
+            $('#features-list').append(urldecode(json.html));
+        }
+    });
+}
+
+function featureEdit(elem, e) {
+    e.preventDefault();
+    const url = $(elem).attr('href');
+    popupAjax(url);
+}
+
+function featureDelete(elem, e) {
+    e.preventDefault();
+    if (!confirm('Удалить преимущество?')) return false;
+    const url = $(elem).attr('href');
+    sendAjax(url, {}, function (json) {
+        if (typeof json.msg != 'undefined') alert(urldecode(json.msg));
+        if (typeof json.success != 'undefined' && json.success === true) {
+            $(elem).closest('tr').fadeOut(300, function () {
+                $(this).remove();
+            });
+        }
+    });
+    return false;
+}
+
+function featureSave(form, e) {
+    e.preventDefault();
+    const url = $(form).attr('action');
+    const data = $(form).serialize();
+    sendAjax(url, data, function (json) {
+        if (typeof json.success != 'undefined' && json.success === true) {
+            $('tr[data-id=' + json.id + ']').replaceWith(json.item);
+            popupClose();
+        }
+    });
+}
+
+//catalog features
+function catalogBenefitUpload(elem, e) {
+    var url = $(elem).data('url');
+    let files = e.target.files;
+    let data = new FormData();
+    $.each(files, function (key, value) {
+        if (value['size'] > max_file_size) {
+            alert('Слишком большой размер файла. Максимальный размер 10Мб');
+        } else {
+            data.append('benefits[]', value);
+        }
+    });
+    $(elem).val('');
+
+    sendFiles(url, data, function (json) {
+        if (typeof json.html != 'undefined') {
+            $('#benefits-list').append(urldecode(json.html));
+        }
+    });
+}
+
+function benefitEdit(elem, e) {
+    e.preventDefault();
+    const url = $(elem).attr('href');
+    popupAjax(url);
+}
+
+function benefitDelete(elem, e) {
+    e.preventDefault();
+    if (!confirm('Удалить преимущество?')) return false;
+    const url = $(elem).attr('href');
+    sendAjax(url, {}, function (json) {
+        if (typeof json.msg != 'undefined') alert(urldecode(json.msg));
+        if (typeof json.success != 'undefined' && json.success === true) {
+            $(elem).closest('tr').fadeOut(300, function () {
+                $(this).remove();
+            });
+        }
+    });
+    return false;
+}
+
+function benefitSave(form, e) {
+    e.preventDefault();
+    const url = $(form).attr('action');
+    const data = $(form).serialize();
+    sendAjax(url, data, function (json) {
+        if (typeof json.success != 'undefined' && json.success === true) {
+            $('tr.benefit[data-id=' + json.id + ']').replaceWith(json.item);
+            popupClose();
+        }
+    });
+}
